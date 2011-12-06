@@ -76,6 +76,7 @@ public class AnalizadorLexico {
 		String lexema;
 		if(!asterisco)
 			preanalisis = getChar();
+		asterisco = false;
 		int digito;
 		int parteEntera = 0;
 		int parteEnteraB10 = 0; // para el caso en el que el numero empieza como un octal pero resulta ser un real
@@ -109,10 +110,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.SEPARADOR,0000);		//hay que crear en enumerado de separadores
 				} else if (preanalisis == '-') {
 					transita(45);
-				}
-				
-				
-				else if (preanalisis == '|') {
+				}else if (preanalisis == '|') {
 					transita(83);					
 				}else if (preanalisis == '&') {
 					transita(87);
@@ -156,6 +154,15 @@ public class AnalizadorLexico {
 					transita(14);
 				} else if(preanalisis == 'x' || preanalisis == 'X') {
 					transita(4);
+				} else if(preanalisis == 'l') {
+					transita(8);
+				} else if(preanalisis == 'L') {
+					transita(5);
+				} else if(preanalisis == 'u' || preanalisis == 'U') {
+					transita(6);
+				} else {
+					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					asterisco = true;
 				}
 			case 3:	
 				if(digito >= 0 && digito <= 7) {
@@ -166,11 +173,59 @@ public class AnalizadorLexico {
 					parteEntera = parteEnteraB10;
 					parteEntera = parteEntera*10 + digito;
 					transita(14);
+				} else if(preanalisis == '.') {
+					transita(16);
+				} else if(preanalisis == 'e' || preanalisis == 'E') {
+					transita(17);
+				} else if(preanalisis == 'l') {
+					transita(8);
+				} else if(preanalisis == 'L') {
+					transita(5);
+				} else if(preanalisis == 'u' || preanalisis == 'U') {
+					transita(6);
+				} else {
+					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					asterisco = true;
 				}
 			case 4:	
+				if((digito >= 0 && digito <= 9)) {
+					parteEntera = parteEntera*16 + digito;
+					transita(7);
+				} else if((preanalisis >= 'a' && preanalisis <= 'f') || (preanalisis >= 'A' && preanalisis <= 'F')){
+					int hex = valHex(preanalisis);
+					parteEntera = parteEntera*16 + hex;
+					transita(7);
+				} else {
+					//TODO Error del tipo IV (o caracter no esperado, deberia ser un hexadecimal)
+				}
 			case 5:	
+				if(preanalisis == 'L') {
+					transita(13);
+				} else if(preanalisis == 'u' || preanalisis == 'U') {
+					transita(11);
+				} else {
+					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					asterisco = true;
+				}
 			case 6:	
 			case 7:	
+				if((digito >= 0 && digito <= 9)) {
+					parteEntera = parteEntera*16 + digito;
+					transita(7);
+				} else if((preanalisis >= 'a' && preanalisis <= 'f') || (preanalisis >= 'A' && preanalisis <= 'F')){
+					int hex = valHex(preanalisis);
+					parteEntera = parteEntera*16 + hex;
+					transita(7);
+				} else if(preanalisis == 'l') {
+					transita(8);
+				} else if(preanalisis == 'L') {
+					transita(5);
+				} else if(preanalisis == 'u' || preanalisis == 'U') {
+					transita(6);
+				} else {
+					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					asterisco = true;
+				}
 			case 8:	
 			case 9:	
 			case 10:	
@@ -257,13 +312,22 @@ public class AnalizadorLexico {
 	}
 
 
+	private int valHex(char car) {
+		int hex = 0;
+		if(car >= 'a' && car <= 'f')
+			hex = 10 + car-'a';
+		if(car >= 'A' && car <= 'F')
+			hex = 10 + car-'A';
+		return hex;
+	}
+
 	private char getChar() {
 		// TODO Auto-generated method stub
 		//Incrementara las columnas
 		return 0;
 	}
 	
-	public void transita(int est){
+	private void transita(int est){
 		preanalisis = getChar();
 		estado = est;
 	}

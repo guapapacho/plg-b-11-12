@@ -311,8 +311,9 @@ public class AnalizadorLexico {
 				} else if (preanalisis == '+') {					
 					token = new Token(TipoToken.OP_ARITMETICO,"++");
 					return token;
-				} else if (preanalisis == 'f') {						//I1 Tengo que poner valores al preanalisis
-					transita(0000); //44								//Asteriscooooooooooooooooooo
+				} else if (preanalisis == 'f') {						//valores al preanalisis DELIM2 - {+,=}
+					token = new Token(TipoToken.OP_ARITMETICO,"+");
+					asterisco = true;
 				}
 				break;
 			case 45:
@@ -325,26 +326,27 @@ public class AnalizadorLexico {
 				} else if (preanalisis == '>') {					
 					token = new Token(TipoToken.OP_ASIGNACION,"->");
 					return token;
-				} else if (preanalisis == 'f') {						//I2 Tengo que poner valores al preanalisis
-					token = new Token(TipoToken.OP_ARITMETICO,"-");		//Asteriscooooooooooooooooooo
-					return token;
+				} else if (preanalisis == 'f') {						//valores al preanalisis DELIM2 - {-,=}
+					token = new Token(TipoToken.OP_ARITMETICO,"-");		
+					asterisco = true;
 				}
 				break;
 			case 49:
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_ASIGNACION,"*=");
 					return token;
-				} else if (preanalisis == 'f') {						//I3 Tengo que poner valores al preanalisis
-					token = new Token(TipoToken.OP_ARITMETICO,"*");		//Asteriscooooooooooooooooooo
-					return token;
+				} else if (preanalisis == 'f') {						//valores al preanalisis DELIM2 - {=}
+					token = new Token(TipoToken.OP_ARITMETICO,"*");
+					asterisco = true;
 				}
 				break;
 			case 52:
 				if (preanalisis == '>') {
 					token = new Token(TipoToken.SEPARADOR,"%>");
 					return token;
-				} else if (preanalisis == 'f') {						//I5 Tengo que poner valores al preanalisis
-					transita(0000); //54								//Asteriscoooooooooooooooooooooo
+				} else if (preanalisis == 'f') {						//valores al preanalisis DELIM2 - {>,=,:}
+					token = new Token(TipoToken.OP_ARITMETICO, "%");
+					asterisco = true;
 				} else if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_ASIGNACION,"%=");
 					return token;
@@ -355,8 +357,9 @@ public class AnalizadorLexico {
 			case 56:
 				if (preanalisis == '%') {
 					transita(57);
-				} else if (preanalisis == 'f') {						//M5 Tengo que poner valores al preanalisis
-					transita(0000); //58								//Asteriscoooooooooooooooooooooo
+				} else if (preanalisis == 'f') {						//valores al preanalisis DELIM2 - {%}
+					token = new Token(TipoToken.SEPARADOR, "%:");
+					asterisco = true;
 				}
 				break;
 			case 57:
@@ -368,24 +371,27 @@ public class AnalizadorLexico {
 				if (preanalisis == '#') {
 					token = new Token(TipoToken.SEPARADOR,"##");
 					return token;
-				} else if (preanalisis == 'f') {						//M5 Tengo que poner valores al preanalisis
-					transita(0000); //58								//Asteriscoooooooooooooooooooooo
+				} else if (preanalisis == 'f') {						//valores al preanalisis DELIM2 - {#}
+					token = new Token(TipoToken.SEPARADOR,"#");
+					asterisco = true;
 				}
 				break;
 			case 62:
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_ASIGNACION,"/=");
 					return token;
-				} else if (preanalisis == 'f') {						//K3 Tengo que poner valores al preanalisis
-					transita(0000); //63								//Asteriscoooooooooooooooooooooo
+				} else if (preanalisis == 'f') {						//valores al preanalisis DELIM2 - {=}
+					token = new Token(TipoToken.OP_ARITMETICO, "/");
+					asterisco = true;
 				}
 				break;
 			case 64:
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_COMPARACION,"==");
 					return token;
-				} else if (preanalisis == 'f') {						//H1 Tengo que poner valores al preanalisis
-					transita(0000); //66								//Asteriscoooooooooooooooooooooo
+				} else if (preanalisis == 'f') {						//valores al preanalisis DELIM2 - {=}
+					token = new Token(TipoToken.OP_ASIGNACION,"=");
+					asterisco = true;
 				}
 				break;
 			case 68:
@@ -394,16 +400,18 @@ public class AnalizadorLexico {
 					return token;
 				} else if (preanalisis == '>') {
 					transita(69);
-				} else if (preanalisis == 'f') {						//J4 Tengo que poner valores al preanalisis
-					transita(0000); //67								//Asteriscoooooooooooooooooooooo
+				} else if (preanalisis == 'f') {						//valores al preanalisis DELIM2 - {>,=}
+					token = new Token(TipoToken.OP_COMPARACION,">");
+					asterisco = true;
 				}
 				break;
 			case 69:
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_ASIGNACION,">>=");
 					return token;
-				} else if (preanalisis == 'f') {						//K9 Tengo que poner valores al preanalisis
-					transita(0000); //72								//Asteriscoooooooooooooooooooooo
+				} else if (preanalisis == 'f') {						//valores al preanalisis DELIM2 - {=}
+					token = new Token(TipoToken.OP_LOGICO, ">>");
+					asterisco = true;
 				}
 				break;
 			case 75:
@@ -412,16 +420,18 @@ public class AnalizadorLexico {
 					return token;
 				}else if (preanalisis == '<') {
 					transita(78);
-				} else if (preanalisis == 'f') {						//J3 Tengo que poner valores al preanalisis
-					transita(0000); //77								//Asteriscoooooooooooooooooooooo
+				} else if (preanalisis == 'f') {						//valores al preanalisis DELIM2 - {<,%,=,:}
+					token = new Token(TipoToken.OP_COMPARACION,"<");
+					asterisco = true;
 				}
 				break;
 			case 78:
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_ASIGNACION,"<<=");
 					return token;
-				} else if (preanalisis == 'f') {						//K8 Tengo que poner valores al preanalisis
-					transita(0000); //80								//Asteriscoooooooooooooooooooooo
+				} else if (preanalisis == 'f') {						//valores al preanalisis DELIM2 - {=}
+					token = new Token(TipoToken.OP_LOGICO,"<<");
+					asterisco = true;
 				}
 				break;
 			case 81:
@@ -434,8 +444,9 @@ public class AnalizadorLexico {
 				if (preanalisis == '|') {
 					token = new Token(TipoToken.OP_LOGICO,"||");
 					return token;
-				} else if (preanalisis == 'f') {					//K5
-					transita(0000); //85
+				} else if (preanalisis == 'f') {					//valores al preanalisis DELIM - {|,=}
+					token = new Token(TipoToken.OP_LOGICO,"|");
+					asterisco = true;
 				} else if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_ASIGNACION,"|=");
 					return token;
@@ -448,16 +459,18 @@ public class AnalizadorLexico {
 				} else if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_ASIGNACION,"&=");
 					return token;
-				} else if (preanalisis == 'f') {					//K4
-					transita(0000); //90
+				} else if (preanalisis == 'f') {					//valores al preanalisis DELIM - {&,=}
+					token = new Token(TipoToken.OP_LOGICO,"&");
+					asterisco = true;
 				}
 				break;
 			case 91:
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_LOGICO,"^=");
 					return token;
-				} else if (preanalisis == 'f') {					//K7
-					transita(0000); //93
+				} else if (preanalisis == 'f') {					//valores al preanalisis DELIM - {=}
+					token = new Token(TipoToken.OP_LOGICO,"^");
+					asterisco = true;
 				}
 				break;
 			// RECONOCIMIENTO DE CADENAS, IDENTIFICADORES Y PALABRAS RESERVADAS

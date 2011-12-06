@@ -338,7 +338,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_ARITMETICO,"+");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -356,7 +356,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_ARITMETICO,"-");		
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -368,7 +368,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_ARITMETICO,"*");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -385,7 +385,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_ARITMETICO, "%");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -396,7 +396,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.SEPARADOR, "%:");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -405,7 +405,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.SEPARADOR,"%:%:");
 					return token;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 			case 60:	
@@ -416,7 +416,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.SEPARADOR,"#");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -428,7 +428,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_ARITMETICO, "/");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -440,7 +440,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_ASIGNACION,"=");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -454,7 +454,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_COMPARACION,">");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -466,7 +466,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_LOGICO, ">>");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -480,7 +480,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_COMPARACION,"<");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -492,7 +492,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_LOGICO,"<<");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -501,7 +501,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.SEPARADOR,":>");
 					return token;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 			case 83:
@@ -515,7 +515,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_LOGICO,"|");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -530,7 +530,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_LOGICO,"&");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;
@@ -542,7 +542,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_LOGICO,"^");
 					asterisco = true;
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico);
 					return token;
 				}
 				break;

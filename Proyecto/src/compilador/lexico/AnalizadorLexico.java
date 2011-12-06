@@ -3,7 +3,12 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 import compilador.lexico.tokens.*;
-import compilador.lexico.tokens.Token.Tipo;
+import compilador.lexico.tokens.Token.TipoToken;
+import compilador.lexico.tokens.Token.OpAritmetico;
+import compilador.lexico.tokens.Token.OpAsignacion;
+import compilador.lexico.tokens.Token.OpComparacion;
+import compilador.lexico.tokens.Token.OpLogico;
+import compilador.lexico.tokens.Token.Separadores;
 
 /**
  * 
@@ -11,7 +16,6 @@ import compilador.lexico.tokens.Token.Tipo;
  *
  */
 public class AnalizadorLexico {
-
 
 	/**
 	 * Atributo que identifica el fichero con el codigo de entrada
@@ -29,20 +33,30 @@ public class AnalizadorLexico {
 	private int numcolumna;
 	
 	/**
-	 * 
+	 * Array de tokens que vamos formando desde el fichero de entrada
 	 */
 	private ArrayList<Token> arraytokens; 
 	
-	char preanalisis;
-	int estado;
 	/**
-	 * 
+	 * Atributo que indica el caracter actual que leemos de la entrada
+	 */
+	char preanalisis;
+	
+	/**
+	 * Atributo que indica el estado del automata en el que nos encontramos
+	 */
+	int estado;
+	
+	
+	/**
+	 * Constructora de la clase
 	 */
 	public AnalizadorLexico() {
 		this.numlinea = 1;
 		this.numcolumna = 0;
+		this.preanalisis = ' ';
+		this.estado = 0; 
 	}
-
 
 	/**
 	 * 
@@ -64,16 +78,16 @@ public class AnalizadorLexico {
 				} else if (preanalisis == '\t') {
 					preanalisis = getChar();
 				} else if (preanalisis == '\f'/*fin fichero*/) {
-					token = new Token(Tipo.EOF,null);
+					token = new Token(TipoToken.EOF,null);
 					return token;
 				} else if (preanalisis == ' ') {
 					preanalisis = getChar();
 				} else if (preanalisis == '{') {
-					token = new Token(Tipo.SEPARADOR,0000);		//hay que crear en enumerado de separadores			
+					token = new Token(TipoToken.SEPARADOR,0000);		//hay que crear en enumerado de separadores			
 				} else if (preanalisis == '}') {
-					token = new Token(Tipo.SEPARADOR,0000);		//hay que crear en enumerado de separadores
+					token = new Token(TipoToken.SEPARADOR,0000);		//hay que crear en enumerado de separadores
 				} else if (preanalisis == '~') {
-					token = new Token(Tipo.SEPARADOR,0000);		//hay que crear en enumerado de separadores
+					token = new Token(TipoToken.SEPARADOR,0000);		//hay que crear en enumerado de separadores
 				} else if (preanalisis == '-') {
 					transita(45);
 				}

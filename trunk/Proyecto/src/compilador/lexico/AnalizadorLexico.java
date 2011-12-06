@@ -48,6 +48,9 @@ public class AnalizadorLexico {
 	 */
 	boolean asterisco;
 	
+	private String errorGenerico = "Error en linea "+numlinea+" y columna "+numcolumna;
+	private final String errorIV = ", se esperaba un digito hexadecimal";
+	
 	
 	/**
 	 * Constructora de la clase
@@ -169,13 +172,18 @@ public class AnalizadorLexico {
 					transita(8);
 				} else if(preanalisis == 'L') {
 					transita(5);
-				// NO IBAMOS A QUITAR LO DE LOS SUFIJOS???
+				// Tomas: NO IBAMOS A QUITAR LO DE LOS SUFIJOS???
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
-				} else {
+				} else{
+					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					return token;
+				}
+				/* Tomas: he comentado esto porque no me cuadraba... (no tiene que ser el caso de error de arriba?)
+				else {
 					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
 					asterisco = true;
-				}
+				}*/
 				//break;
 			case 2:	
 				if(digito >= 0 && digito <= 7) {
@@ -186,16 +194,22 @@ public class AnalizadorLexico {
 					transita(14);
 				} else if(preanalisis == 'x' || preanalisis == 'X') {
 					transita(4);
+				// Tomas: NO IBAMOS A QUITAR LO DE LOS SUFIJOS???	
 				} else if(preanalisis == 'l') {
 					transita(8);
 				} else if(preanalisis == 'L') {
 					transita(5);
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
-				} else {
+				} else{
+					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					return token;
+				}
+				/* Tomas: lo mismo de arriba....
+				else {
 					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
 					asterisco = true;
-				}
+				}*/
 				//break;
 			case 3:	
 				if(digito >= 0 && digito <= 7) {
@@ -210,16 +224,22 @@ public class AnalizadorLexico {
 					transita(16);
 				} else if(preanalisis == 'e' || preanalisis == 'E') {
 					transita(17);
+				// Tomas: NO IBAMOS A QUITAR LO DE LOS SUFIJOS???	
 				} else if(preanalisis == 'l') {
 					transita(8);
 				} else if(preanalisis == 'L') {
 					transita(5);
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
-				} else {
+				} else{
+					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					return token;
+				}
+				/* Tomas: lo mismo de arriba....
+				else {
 					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
 					asterisco = true;
-				}
+				}*/
 				//break;
 			case 4:	
 				if((digito >= 0 && digito <= 9)) {
@@ -230,6 +250,8 @@ public class AnalizadorLexico {
 					parteEntera = parteEntera*16 + hex;
 					transita(7);
 				} else {
+					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna+errorIV);
+					return token;
 					//TODO Error del tipo IV (o caracter no esperado, deberia ser un hexadecimal)
 				}
 				//break;

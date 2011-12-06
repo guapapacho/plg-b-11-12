@@ -91,6 +91,24 @@ public class AnalizadorLexico {
 				} else if (preanalisis == '-') {
 					transita(45);
 				}
+				
+				
+				else if (preanalisis == '|') {
+					transita(83);					
+				}else if (preanalisis == '&') {
+					transita(87);
+				}else if (preanalisis == '^') {
+					transita(91);
+				}else if (preanalisis == '~') {
+					token = new Token(TipoToken.OP_LOGICO,'~');
+					return token;
+				}else if (preanalisis == '(') {
+					token = new Token(TipoToken.SEPARADOR,'(');
+					return token;
+				}else if (preanalisis == ')') {
+					token = new Token(TipoToken.SEPARADOR, ')');
+					return token;
+				}
 				break;
 			case 1:
 			case 2:	
@@ -138,6 +156,38 @@ public class AnalizadorLexico {
 			case 44:		
 			case 45:	
 
+				
+				
+			case 83:
+				if (preanalisis == '|') {
+					token = new Token(TipoToken.OP_LOGICO,"||");
+					return token;
+				} else if (preanalisis == 'f') {					//K5
+					transita(0000); //85
+				} else if (preanalisis == '=') {
+					token = new Token(TipoToken.OP_ASIGNACION,"|=");
+					return token;
+				}
+				break;
+			case 87:
+				if (preanalisis == '&') {
+					token = new Token(TipoToken.OP_LOGICO,"&&");
+					return token;
+				} else if (preanalisis == '=') {
+					token = new Token(TipoToken.OP_ASIGNACION,"&=");
+					return token;
+				} else if (preanalisis == 'f') {					//K4
+					transita(0000); //90
+				}
+				break;
+			case 91:
+				if (preanalisis == '=') {
+					token = new Token(TipoToken.OP_LOGICO,"^=");
+					return token;
+				} else if (preanalisis == 'f') {					//K7
+					transita(0000); //93
+				}
+				break;
 			}
 		}
 		return token;

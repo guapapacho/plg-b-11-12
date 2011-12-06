@@ -48,8 +48,9 @@ public class AnalizadorLexico {
 	 */
 	boolean asterisco;
 	
-	private String errorGenerico = "Error en linea "+numlinea+" y columna "+numcolumna;
-	private final String errorIV = ", se esperaba un digito hexadecimal";
+	private String errorGenerico = "Error en linea "+numlinea+" y columna "+numcolumna; // Este es el mismo error tipo I
+	private final String errorVI = ", se esperaba un digito hexadecimal.";
+	private final String errorV = ", numero mal formado.";
 	
 	
 	/**
@@ -78,6 +79,9 @@ public class AnalizadorLexico {
 		int digito;
 		int parteEntera = 0;
 		int parteEnteraB10 = 0; // para el caso en el que el numero empieza como un octal pero resulta ser un real
+		float parteDecimal = 0;
+		int parteExponencial = 0;
+		int signo = 1;
 		
 		while (! fin) {
 			digito = preanalisis -'0';
@@ -176,7 +180,7 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else{
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
 					return token;
 				}
 				/* Tomas: he comentado esto porque no me cuadraba... (no tiene que ser el caso de error de arriba?)
@@ -202,7 +206,7 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else{
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
 					return token;
 				}
 				/* Tomas: lo mismo de arriba....
@@ -232,7 +236,7 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else{
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna);
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
 					return token;
 				}
 				/* Tomas: lo mismo de arriba....
@@ -250,9 +254,8 @@ public class AnalizadorLexico {
 					parteEntera = parteEntera*16 + hex;
 					transita(7);
 				} else {
-					token = new Token(TipoToken.ERROR,"Error en linea "+numlinea+" y columna "+numcolumna+errorIV);
+					token = new Token(TipoToken.ERROR,errorGenerico+errorVI);
 					return token;
-					//TODO Error del tipo IV (o caracter no esperado, deberia ser un hexadecimal)
 				}
 				//break;
 			case 5:	
@@ -260,12 +263,29 @@ public class AnalizadorLexico {
 					transita(13);
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(11);
-				} else {
+				} else if(esDelimitador()){
 					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
 					asterisco = true;
+					// FALTA ESTO??
+					//return token;
+				} else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;					
 				}
 				//break;
-			case 6:	
+			case 6: 
+				//No están los casos de los sufijos...	
+				if(esDelimitador()){
+					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					asterisco = true;
+					// FALTA ESTO??
+					//return token;
+				
+				} else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;					
+				}
+				// break;
 			case 7:
 				if((digito >= 0 && digito <= 9)) {
 					parteEntera = parteEntera*16 + digito;
@@ -280,17 +300,83 @@ public class AnalizadorLexico {
 					transita(5);
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
-				} else {
+				} else if(esDelimitador()){
 					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
 					asterisco = true;
+					// FALTA ESTO??
+					//return token;
+				
+				} else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;					
 				}
 				//break;
 			case 8:	
+				//No están los casos de los sufijos...	
+				if(esDelimitador()){
+					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					asterisco = true;
+					// FALTA ESTO??
+					//return token;
+				
+				} else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;					
+				}
+				//break;
 			case 9:	
-			case 10:	
-			case 11:	
+			case 10:
+				//No están los casos de los sufijos...	
+				if(esDelimitador()){
+					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					asterisco = true;
+					// FALTA ESTO??
+					//return token;
+				
+				} else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;					
+				}
+				//break;
+			case 11:
+				//No están los casos de los sufijos...	
+				if(esDelimitador()){
+					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					asterisco = true;
+					// FALTA ESTO??
+					//return token;
+				
+				} else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;					
+				}
+				//break;
 			case 12:	
+				//No están los casos de los sufijos...	
+				if(esDelimitador()){
+					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					asterisco = true;
+					// FALTA ESTO??
+					//return token;
+				
+				} else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;					
+				}
+				//break;
 			case 13:	
+				//No están los casos de los sufijos...	
+				if(esDelimitador()){
+					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					asterisco = true;
+					// FALTA ESTO??
+					//return token;
+				
+				} else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;					
+				}
+				//break;
 			case 14:
 				digito = preanalisis -'0';
 				if(digito >= 0 && digito <= 9) {
@@ -299,13 +385,80 @@ public class AnalizadorLexico {
 					transita(16);
 				} else if(preanalisis == 'e' || preanalisis == 'E') {
 					transita(17);
+				} else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;					
 				}
 				//break;
 			case 15:	
+				digito = preanalisis -'0';
+				if(digito >= 0 && digito <= 9) {
+					parteEntera = parteEntera*10 + digito;
+					transita(16);
+				} else if(esDelim2(preanalisis)){
+					token = new Token(TipoToken.SEPARADOR, ".");
+					return token;
+				} else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;					
+				}
+				//break;
 			case 16:	
+				//No están los casos de los sufijos...	
+				digito = preanalisis -'0';
+				if(digito >= 0 && digito <= 9) {
+					parteEntera = parteEntera*10 + digito;
+					transita(16);
+				} else if(esDelimitador()){ 
+					token = new Token(TipoToken.NUM_REAL, Math.pow(parteEntera /*+ parteDecimal*/, parteExponencial) * signo /* + sufijoReal*/);
+					asterisco=true;
+					// FALTA ESTO??
+					//return token; 
+				} else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;					
+				}	
+				//break;
 			case 17:	
-			case 18:	
+				digito = preanalisis -'0';
+				if(digito >= 0 && digito <= 9) {
+					parteExponencial = parteExponencial*10 + digito;
+					transita(19);
+				} else if(preanalisis=='-'){
+					signo=-1;
+					transita(18); 
+				} else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;					
+				}	
+				//break;
+			case 18:
+				digito = preanalisis -'0';
+				if(digito >= 0 && digito <= 9) {
+					parteExponencial = parteExponencial*10 + digito;
+					transita(19);
+				} else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;
+				}	
+				//break;
 			case 19:	
+				//No están los casos de los sufijos...	
+				digito = preanalisis -'0';
+				if(digito >= 0 && digito <= 9) {
+					parteExponencial = parteExponencial*10 + digito;
+					transita(19);
+				} else if(esDelimitador()){ 
+					token = new Token(TipoToken.NUM_REAL, Math.pow(parteEntera /*+ parteDecimal*/, parteExponencial) * signo /* + sufijoReal*/); 
+					asterisco=true;
+					// FALTA ESTO??
+					//return token;
+				}
+				else{
+					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
+					return token;
+				}		
+				//break;
 			case 20:	
 			case 21:	
 			case 22:	
@@ -585,7 +738,7 @@ public class AnalizadorLexico {
 		} //while
 		return token;
 	}
-
+	
 	private boolean esDelimitador() {
 		/**
 		 * ‘ ’ (blanco) | TAB | EOL | EOF 

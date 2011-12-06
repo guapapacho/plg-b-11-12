@@ -169,6 +169,7 @@ public class AnalizadorLexico {
 					transita(8);
 				} else if(preanalisis == 'L') {
 					transita(5);
+				// NO IBAMOS A QUITAR LO DE LOS SUFIJOS???
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else {

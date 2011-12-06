@@ -68,15 +68,6 @@ public class Token {
      */
     private Object atributo;
     
-    /**
-     * Numero de linea en el que se encuentra el token
-     */
-    private int numlinea = 1;
-    
-    /**
-     * Numero de columna en la que se encuentra el token
-     */
-    private int numcolumna = 0;
     
     /**
      * Constructora de la clase
@@ -97,14 +88,6 @@ public class Token {
 	public TipoToken getTipo() {
 		return tipo;
 	}
-
-	/**
-	 * 
-	 * @param tipo
-	 */
-	public void setTipo(TipoToken tipo) {
-		this.tipo = tipo;
-	}
 	
 	/**
 	 * 
@@ -114,43 +97,4 @@ public class Token {
 		return atributo;
 	}
 	
-	/**
-	 * 
-	 * @param argumento
-	 */
-	public void setAtribto(Object atributo) {
-		this.atributo = atributo;
-	}
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public int getNumlinea() {
-		return numlinea;
-	}
-	
-	/**
-	 * 
-	 * @param numlinea
-	 */
-	public void setNumlinea(int numlinea) {
-		this.numlinea = numlinea;
-	}
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public int getNumcolumna() {
-		return numcolumna;
-	}
-	
-	/**
-	 * 
-	 * @param numcolumna
-	 */
-	public void setNumcolumna(int numcolumna) {
-		this.numcolumna = numcolumna;
-	}
 }

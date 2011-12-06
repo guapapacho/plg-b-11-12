@@ -47,6 +47,12 @@ public class AnalizadorLexico {
 	 */
 	int estado;
 	
+	/**
+	 * Atributo que indica si el estado final anterior tenia asterisco o no,
+	 * necesario para comprobar si tenemos que leer otro caracter, o procesar el último
+	 */
+	boolean asterisco;
+	
 	
 	/**
 	 * Constructora de la clase
@@ -56,6 +62,7 @@ public class AnalizadorLexico {
 		this.numcolumna = 0;
 		this.preanalisis = ' ';
 		this.estado = 0; 
+		this.asterisco = false;
 	}
 
 	/**
@@ -67,12 +74,24 @@ public class AnalizadorLexico {
 		Token token = null;
 		boolean fin = false;
 		String lexema;
-		preanalisis = getChar();
+		if(!asterisco)
+			preanalisis = getChar();
+		int digito;
+		int parteEntera = 0;
+		int parteEnteraB10 = 0; // para el caso en el que el numero empieza como un octal pero resulta ser un real
 		
 		while (! fin) {
+			digito = preanalisis -'0';
+			
 			switch(estado) {
-			case 0: 
-				if (preanalisis == '\n') {
+			case 0: 		
+				if(digito == 0) {
+					transita(2);
+				} else if(digito >= 1 && digito <= 9) {
+					transita(1);
+				} else if(preanalisis == '.') {
+					transita(15);
+				} else if (preanalisis == '\n') {
 					numlinea++;
 					preanalisis = getChar();
 				} else if (preanalisis == '\t') {
@@ -111,8 +130,43 @@ public class AnalizadorLexico {
 				}
 				break;
 			case 1:
+				if(digito >= 0 && digito <= 9) {
+					parteEntera = parteEntera*10 + digito;
+					transita(1);
+				} else if(preanalisis == '.') {
+					transita(16);
+				}  else if(preanalisis == 'e' || preanalisis == 'E') {
+					transita(17);
+				} else if(preanalisis == 'l') {
+					transita(8);
+				} else if(preanalisis == 'L') {
+					transita(5);
+				} else if(preanalisis == 'u' || preanalisis == 'U') {
+					transita(6);
+				} else {
+					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					asterisco = true;
+				}
 			case 2:	
+				if(digito >= 0 && digito <= 7) {
+					parteEntera = parteEntera*8 + digito;
+					parteEnteraB10 = parteEnteraB10*10 + digito;
+					transita(3);
+				} else if(digito == 8 || digito == 9) {
+					transita(14);
+				} else if(preanalisis == 'x' || preanalisis == 'X') {
+					transita(4);
+				}
 			case 3:	
+				if(digito >= 0 && digito <= 7) {
+					parteEntera = parteEntera*8 + digito;
+					parteEnteraB10 = parteEnteraB10*10 + digito;
+					transita(3);
+				} else if(digito == 8 || digito == 9) {
+					parteEntera = parteEnteraB10;
+					parteEntera = parteEntera*10 + digito;
+					transita(14);
+				}
 			case 4:	
 			case 5:	
 			case 6:	
@@ -123,7 +177,15 @@ public class AnalizadorLexico {
 			case 11:	
 			case 12:	
 			case 13:	
-			case 14:	
+			case 14:
+				digito = preanalisis -'0';
+				if(digito >= 0 && digito <= 9) {
+					parteEntera = parteEntera*10 + digito;
+				} else if(preanalisis == '.') {
+					transita(16);
+				} else if(preanalisis == 'e' || preanalisis == 'E') {
+					transita(17);
+				}
 			case 15:	
 			case 16:	
 			case 17:	

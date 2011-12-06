@@ -15,21 +15,18 @@ public class TablaSimbolos {
 	Hashtable<String, Integer> palres;
 	
 	/**
+	 * 
+	 */
+	Hashtable<Integer,TablaSimbolos> global;	//No se como ponerlo... :S
+	
+	/**
 	 * Constructora de la clase
 	 */
 	public TablaSimbolos(){
 		palres = new Hashtable<String,Integer>();
 	}
 	
-	/**
-	 * Crea una nueva tabla de simbolos
-	 * @return
-	 */
-	public static TablaSimbolos creaTS() {
-        TablaSimbolos t = new TablaSimbolos();
-        return t;
-    }
-
+	
 	public Hashtable<String, Integer> getPalres() {
 		return palres;
 	}

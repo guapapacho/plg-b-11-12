@@ -21,10 +21,20 @@ public class Token {
      * Separadores
      */
     public enum Separadores {
-    	PUNTO, PUNTO_COMA, ABRE_LLAVE, CIERRA_LLAVE, ABRE_CORCHETE,
-    	CIERRA_CORCHETE, ALMOHADILLA, DOBLE_ALMOHADILLA, ABRE_PARENTESIS,
-    	CIERRA_PARENTESIS, MENOS_DOSPUNTOS, DOSPUNTOS_MAYOR, MENOR_PORCENTAJE,
-    	PORCENTAJE_MAYOR, PORCENTAJE_DOSPUNTOS, PORCENTAJE_DOSPUNTOS_BIS
+    	
+    
+    	PUNTO("."),PUNTO_COMA(";"), ABRE_LLAVE("{"), CIERRA_LLAVE("}"), ABRE_CORCHETE("["),
+    	CIERRA_CORCHETE("]"), ALMOHADILLA("#"), DOBLE_ALMOHADILLA("##"), ABRE_PARENTESIS("("),
+    	CIERRA_PARENTESIS(")"), MENOS_DOSPUNTOS("<:"), DOSPUNTOS_MAYOR(":>"), MENOR_PORCENTAJE("<%"),
+    	PORCENTAJE_MAYOR("%>"), PORCENTAJE_DOSPUNTOS("%:"), PORCENTAJE_DOSPUNTOS_BIS("%:%:");
+    	
+    	private String description;
+    	private Separadores(String desc) { description = desc; };
+    	public String getDesc() { return description; };
+    	
+
+    	
+    
     }
     
     /**

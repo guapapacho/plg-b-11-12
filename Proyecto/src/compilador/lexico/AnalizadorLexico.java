@@ -4,11 +4,6 @@ import java.util.ArrayList;
 
 import compilador.lexico.tokens.*;
 import compilador.lexico.tokens.Token.TipoToken;
-import compilador.lexico.tokens.Token.OpAritmetico;
-import compilador.lexico.tokens.Token.OpAsignacion;
-import compilador.lexico.tokens.Token.OpComparacion;
-import compilador.lexico.tokens.Token.OpLogico;
-import compilador.lexico.tokens.Token.Separadores;
 
 /**
  * 
@@ -49,7 +44,7 @@ public class AnalizadorLexico {
 	
 	/**
 	 * Atributo que indica si el estado final anterior tenia asterisco o no,
-	 * necesario para comprobar si tenemos que leer otro caracter, o procesar el �ltimo
+	 * necesario para comprobar si tenemos que leer otro caracter, o procesar el �ltimo
 	 */
 	boolean asterisco;
 	
@@ -73,7 +68,7 @@ public class AnalizadorLexico {
 		estado = 0;
 		Token token = null;
 		boolean fin = false;
-		String lexema;
+		String lexema = "";
 		if(!asterisco)
 			preanalisis = getChar();
 		asterisco = false;
@@ -126,6 +121,17 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.SEPARADOR, ')');
 					return token;
 				}
+				// RECONOCIMIENTO DE CADENAS, IDENTIFICADORES Y PALABRAS RESERVADAS 
+				  else if (preanalisis == '\'') {
+					transita(102);
+				} else if (preanalisis == '"') {
+					transita(99);
+				} else if (noDigito()) {
+					lexema = lexema+preanalisis;
+					transita(97);
+				} else if (preanalisis == '\\') {
+					transita(105);
+				}	
 				break;
 			case 1:
 				if(digito >= 0 && digito <= 9) {
@@ -192,7 +198,7 @@ public class AnalizadorLexico {
 					parteEntera = parteEntera*16 + digito;
 					transita(7);
 				} else if((preanalisis >= 'a' && preanalisis <= 'f') || (preanalisis >= 'A' && preanalisis <= 'F')){
-					int hex = valHex(preanalisis);
+					int hex = valHex();
 					parteEntera = parteEntera*16 + hex;
 					transita(7);
 				} else {
@@ -213,7 +219,7 @@ public class AnalizadorLexico {
 					parteEntera = parteEntera*16 + digito;
 					transita(7);
 				} else if((preanalisis >= 'a' && preanalisis <= 'f') || (preanalisis >= 'A' && preanalisis <= 'F')){
-					int hex = valHex(preanalisis);
+					int hex = valHex();
 					parteEntera = parteEntera*16 + hex;
 					transita(7);
 				} else if(preanalisis == 'l') {
@@ -305,19 +311,97 @@ public class AnalizadorLexico {
 					transita(0000); //93
 				}
 				break;
+				
+				
+			// RECONOCIMIENTO DE CADENAS, IDENTIFICADORES Y PALABRAS RESERVADAS 
+			case 97:	
+				if (noDigito() || digito()) {
+					lexema = lexema+preanalisis;
+					transita(97);
+				} else if(esDelimitador()) { //TODO Implementar TablaSimbolos
+//					Token token = TablaSimbolos.getPalRes.Busca(lexema);
+//					if(token == null)
+//					{	
+//						token = TablaSimbolos.Busca(lexema);
+//						if (token == null) //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
+//							token = new Token(lexema, TablaSimbolos.Inserta(lexema)); 
+//					}	
+//					return token;
+					
+				}
+			case 98:
+			case 99:
+				if((preanalisis != '"') && (preanalisis != '\\') && (preanalisis != '\n') )
+				{
+					lexema = lexema+preanalisis;
+					transita(99);
+				} else if(preanalisis == '"') {
+					return new Token(TipoToken.LIT_CADENA,lexema); //OJO, segun tabla tokens indice a la TS
+					//OJO, pensar cuando reinicializar lexema = ""
+				}
+					
+			case 100:
+			case 101:
+			case 102:	
+				if((preanalisis != '\'') && (preanalisis != '\\') && (preanalisis != '\n') )
+				{
+					lexema = lexema+preanalisis;
+					transita(102);
+				} else if(preanalisis == '\'') {
+					return new Token(TipoToken.LIT_CARACTER,lexema);
+				}
 			}
 		}
 		return token;
 		
 	}
+	
+	
+	private boolean esDelimitador() {
+		/**
+		 * ‘ ’ (blanco) | TAB | EOL | EOF 
+		 * Separadores: ‘;’ | ‘|’ | ‘:’ | ‘+’ | ‘-’ | ‘/’ | ‘*’ | ‘<’ | ‘>’ | ‘=’ | ‘&’ | ‘^’| ‘%’ | ‘!’ | ‘~’ | ‘,‘ | ‘-’ | ‘*‘ | ‘+’ | ‘#’ | ‘(‘ | ‘)’
+		 */
+		
+		for ( Token.Separadores i :Token.Separadores.values())
+		{	
+			String s = "";
+			s = ""+preanalisis;
+			if(s.equals(i.getDesc().charAt(0)))
+				return true;
+		}	
+		if(preanalisis == ' ' || preanalisis == '\t' || preanalisis == '\n') /// FALTA EL DE EOG
+			return true;
+		
+		return false;
+	}
 
+	private boolean noDigito() {
 
-	private int valHex(char car) {
+		if(preanalisis >= 'a' && preanalisis <= 'z')
+			return true;
+		
+		if(preanalisis >= 'A' && preanalisis <= 'Z')
+			return true;
+		
+		if(preanalisis == '_')
+			return true;
+		
+		return false;
+	}
+
+	private boolean digito() {
+		if (preanalisis >= '0' && preanalisis <= '9')
+				return true;
+		return false;
+	}
+	
+	private int valHex() {
 		int hex = 0;
-		if(car >= 'a' && car <= 'f')
-			hex = 10 + car-'a';
-		if(car >= 'A' && car <= 'F')
-			hex = 10 + car-'A';
+		if(preanalisis >= 'a' && preanalisis <= 'f')
+			hex = 10 + preanalisis-'a';
+		if(preanalisis >= 'A' && preanalisis <= 'F')
+			hex = 10 + preanalisis-'A';
 		return hex;
 	}
 

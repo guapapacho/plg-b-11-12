@@ -83,7 +83,7 @@ public class AnalizadorLexico {
 		int parteExponencial = 0;
 		int signo = 1;
 		
-		while (! fin) {//Una pregunta: ¿Dónde se reinician todas estas variables que tiene scanner (parteEntera, lexema, etc)?
+		while (! fin) {
 			digito = preanalisis -'0';
 			switch(estado) {
 			case 0: 

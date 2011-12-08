@@ -2,6 +2,8 @@ package compilador.tablaSimbolos;
 
 import java.util.*;
 
+import compilador.tablaSimbolos.Ambito.Atributos;
+
 /**
  * 
  * @author Grupo 1
@@ -16,11 +18,10 @@ public class TablaSimbolos {
 	
 	/**
 	 * Una lista de ambitos
-	 * Cada ambito tiene una tabla hash
-	 * (Hashtable<String, ArrayList<Object>>) con un campo clave, que seria el identificador de la
-	 * funcion o variable
-	 * y un campo valor que sera una lista de todos sus atributos (Tipo, numArgs, tipoArgs, pasoArgs, retorno, contenido..)
-	 * ademas de un atributo para continente 
+	 * Cada ambito tiene un atributo para continente y una tabla hash
+	 * (Hashtable<String, EnumMap<Atributos, Object>>) con un campo clave, que seria el identificador del
+	 * procedimiento, variable o constante
+	 * y un campo valor que sera una tabla con todos sus atributos (Tipo, numArgs, tipoArgs, pasoArgs, retorno, contenido..)
 	 * No se si os parece bien esta forma de implementarlo, si veis alguna otra forma mejor comentarlo
 	 */
 	private ArrayList<Ambito> listaAmbitos;
@@ -28,8 +29,9 @@ public class TablaSimbolos {
 	/** Puntero al ambito actual */
 	private int bloque_actual;
 	
+	
 	/**
-	 * 
+	 * ??
 	 */
 	private Hashtable<Integer,TablaSimbolos> global;	//No se como ponerlo... :S
 	
@@ -85,22 +87,50 @@ public class TablaSimbolos {
 	
 	
 	/**
-	 * Adds a new scope range table and updates all related resources.
-	 * @see #CierraAmbito()
+	 * Añade un nuevo ambito a la lista y modifica los parametros que haga falta
+	 * campo lexema es el id del lexema (procedimiento, bucle, if, switch,..) al que se le añade un nuevo ambito
 	 */
-	public void AbreAmbito(){
-		
+	public void abreAmbito(String lexema){
 		
 		//Crea un ambito, actualiza continente y lo añade a la lista de ambitos
 		Ambito a = new Ambito();
 		a.setContinente(bloque_actual);
 		listaAmbitos.add(a);
+		int bloque_nuevo = listaAmbitos.size() - 1;
 		
 		//Actualiza contenido del ambito anterior
-		
-	
+		ArrayList<Object> l = new ArrayList<Object>();
+		l.add(bloque_nuevo);
+		listaAmbitos.get(bloque_actual).getFilaAmbito().get(lexema).put(Ambito.Atributos.CONTENIDO, bloque_nuevo);
+
+			
 		//Actualiza el puntero de ámbito actual
-		bloque_actual = listaAmbitos.size() - 1;
+		bloque_actual = bloque_nuevo;
+	}
+	
+	/**
+	 *Cierra el ambito actual y regresa a su padre
+	 */
+	public void CierraAmbito(){
+		Ambito ambito = listaAmbitos.get(bloque_actual);
+		bloque_actual = ambito.getContinente();
+	}
+	
+	/**
+	 * Busca a ver si esta el identificador en el ambito actual, si no esta lo inserta y devuelve cierto
+	 * si esta o es una palabra reservada no lo inserta y devuelve falso
+	 */
+	public boolean insertaIdentificador(String id){
+		
+		if (esReservada(id)){
+			return false;
+		}
+
+		if(listaAmbitos.get(bloque_actual).getFilaAmbito().containsKey(id))
+			return false;
+		
+		listaAmbitos.get(bloque_actual).getFilaAmbito().put(id, new EnumMap<Atributos, Object>(Ambito.Atributos.class));
+		return true;
 	}
 	
 

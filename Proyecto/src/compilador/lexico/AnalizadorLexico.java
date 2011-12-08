@@ -725,14 +725,14 @@ public class AnalizadorLexico {
 				//break;
 			case 98:
 			case 99: //SI NO ES CAJON DESASTRE..
-				if((preanalisis != '"') && (preanalisis != '\\') && (preanalisis != '\n') )
+				/*if((preanalisis != '"') && (preanalisis != '\\') && (preanalisis != '\n') )
 				{
 					lexema = lexema+preanalisis;
 					transita(99);
 				} else if(preanalisis == '"') {
 					return new Token(TipoToken.LIT_CADENA,lexema); // puntero a la TS
-				}
-				/*if(preanalisis == '"') {
+				}*/
+				if(preanalisis == '"') {
 					return new Token(TipoToken.LIT_CADENA,lexema); // puntero a la TS
 				} else	if((preanalisis == '\\') || (preanalisis != '\n'))	{
 					token = new Token(TipoToken.ERROR,errorGenerico);
@@ -740,18 +740,18 @@ public class AnalizadorLexico {
 				} else {	
 					lexema = lexema+preanalisis;
 					transita(99);
-				} */
+				} 
 				//break;
 			case 100:
 			case 101:
 			case 102://SI NO ES CAJON DESASTRE..
-				if((preanalisis != '\'') && (preanalisis != '\\') && (preanalisis != '\n') ) {
+				/*if((preanalisis != '\'') && (preanalisis != '\\') && (preanalisis != '\n') ) {
 					lexema = lexema+preanalisis;
 					transita(102);
 				} else if(preanalisis == '\'') {
 					return new Token(TipoToken.LIT_CARACTER,lexema);
-				}
-				/*if(preanalisis == '\''){
+				}*/
+				if(preanalisis == '\''){
 					return new Token(TipoToken.LIT_CARACTER,lexema);
 				} else if ((preanalisis == '\n') || (preanalisis == '\\')){
 					token = new Token(TipoToken.ERROR,errorGenerico);
@@ -759,7 +759,7 @@ public class AnalizadorLexico {
 				} else {
 					lexema = lexema+preanalisis;
 					transita(102);
-				}*/
+				}
 				// Y este caso: no sería válido??
 				// char c = '\\'; 
 				//break;
@@ -827,7 +827,7 @@ public class AnalizadorLexico {
 			preanalisis == '#' || preanalisis == ';' || preanalisis == '.' /*Este char esta en SEPARADORES pero en DELIM no Â¿Por quÃ©?*/	)
 			return true;
 		return false;
-	}
+	}  
 	
 	private boolean esDelim2() {
 	

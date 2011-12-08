@@ -21,7 +21,7 @@ public class AnalizadorLexico {
 	/**
 	 * Atributo que indica el numero de linea
 	 */
-	private int numlinea; //LINEA Y COLUMNA ESTAN AQUI Y EN LA CLASE TOKEN, NO DEBERIAN ESTAR SOLO AQUI??
+	private int numlinea;
 	
 	/**
 	 * Atributo que indica el numero de columna
@@ -49,11 +49,10 @@ public class AnalizadorLexico {
 	 */
 	boolean asterisco;
 	
-	boolean eof;
-	
 	private String errorGenerico = "Error en linea "+numlinea+" y columna "+numcolumna; // Este es el mismo error tipo I
 	private final String errorVI = "se esperaba un digito hexadecimal.";
 	private final String errorV = "numero mal formado.";
+	private final String errorIII = "caracter no esperado.";
 	
 	
 	/**
@@ -69,13 +68,13 @@ public class AnalizadorLexico {
 	}
 
 	/**
-	 * 
-	 * @return
+	 * Método que devuelve el siguiente token
+	 * @return el siguiente token
 	 */
 	public Token scanner(){
 		estado = 0;
 		Token token = null;
-		boolean fin = false;
+		boolean fin = false; // parece que no lo usamos
 		String lexema = "";
 		if(!asterisco)
 			preanalisis = getChar();
@@ -93,10 +92,7 @@ public class AnalizadorLexico {
 			
 			switch(estado) {
 			case 0: 
-				if(eof) {
-					token = new Token(TipoToken.EOF,null);
-					return token;
-				} if(digito == 0) {
+				if(digito == 0) {
 					transita(2);
 				} else if(digito()) {
 					parteEntera = parteEntera*10 + digito;
@@ -111,6 +107,9 @@ public class AnalizadorLexico {
 					preanalisis = getChar();
 				} else if (preanalisis == '\t') {
 					preanalisis = getChar();
+				} else if(preanalisis == '\0') { // fin de fichero
+					token = new Token(TipoToken.EOF,null);
+					return token;
 				} else if (preanalisis == ' ') {
 					preanalisis = getChar();
 				} else if (preanalisis == '}') {
@@ -195,7 +194,7 @@ public class AnalizadorLexico {
 				} else if(letra()){
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
 					return new Token(TipoToken.ERROR, error);
-				} else { // solo puede ser un delim o separador
+				} else {
 					asterisco = true;
 					return new Token(TipoToken.NUM_ENTERO, parteEntera);
 				}
@@ -207,6 +206,8 @@ public class AnalizadorLexico {
 					transita(3);
 				} else if(digito == 8 || digito == 9) {
 					transita(14);
+				} else if(preanalisis == '.') {
+					transita(16);
 				} else if(preanalisis == 'x' || preanalisis == 'X') {
 					transita(4);
 				} else if(preanalisis == 'l') {
@@ -218,7 +219,7 @@ public class AnalizadorLexico {
 				} else if(letra()){
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
 					return new Token(TipoToken.ERROR,error);
-				} else { // solo puede ser un delim o separador
+				} else {
 					asterisco = true;
 					return new Token(TipoToken.NUM_ENTERO, parteEntera);
 				}
@@ -233,6 +234,7 @@ public class AnalizadorLexico {
 					parteEntera = parteEntera*10 + digito;
 					transita(14);
 				} else if(preanalisis == '.') {
+					parteEntera = parteEnteraB10;
 					transita(16);
 				} else if(preanalisis == 'e' || preanalisis == 'E') {
 					transita(17);
@@ -371,8 +373,8 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'e' || preanalisis == 'E') {
 					transita(17);
 				} else{
-					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
-					return token;					
+					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					return new Token(TipoToken.ERROR,error);
 				}
 				break;
 			case 15:	
@@ -384,8 +386,8 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.SEPARADOR, ".");
 					return token;
 				} else{
-					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
-					return token;					
+					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					return new Token(TipoToken.ERROR,error);				
 				}
 				break;
 			case 16:	
@@ -399,11 +401,10 @@ public class AnalizadorLexico {
 					transita(21);
 				} else if(esDelim()){ 
 					asterisco=true;
-					token = new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial));
-					return token; 
+					return new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial));
 				} else{
-					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
-					return token;					
+					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					return new Token(TipoToken.ERROR,error);
 				}	
 				break;
 			case 17:	
@@ -417,8 +418,8 @@ public class AnalizadorLexico {
 					signo = 1;
 					transita(18); 
 				} else{
-					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
-					return token;					
+					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					return new Token(TipoToken.ERROR,error);
 				}	
 				break;
 			case 18:
@@ -426,8 +427,8 @@ public class AnalizadorLexico {
 					parteExponencial = parteExponencial*10 + digito;
 					transita(19);
 				} else{
-					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
-					return token;
+					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					return new Token(TipoToken.ERROR,error);
 				}	
 				break;
 			case 19:	
@@ -438,22 +439,20 @@ public class AnalizadorLexico {
 					transita(21);
 				} else if(esDelim()){ 
 					asterisco=true;
-					token = new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial)); 
-					return token;
+					return new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial)); 
 				} else{
-					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
-					return token;
+					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					return new Token(TipoToken.ERROR,error);
 				}		
 				break;
 //			case 20:
 			case 21:
 				if(esDelim()){ 
 					asterisco=true;
-					token = new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial)); 
-					return token;
+					return new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial)); 
 				} else{
-					token = new Token(TipoToken.ERROR,errorGenerico+errorV);
-					return token;
+					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					return new Token(TipoToken.ERROR,error);
 				}
 				//break;
 //			case 22:	
@@ -523,7 +522,7 @@ public class AnalizadorLexico {
 				break;
 			case 52:
 				if (preanalisis == '>') {
-					token = new Token(TipoToken.SEPARADOR,"%>");
+					token = new Token(TipoToken.SEPARADOR,"}");
 					return token;
 				} else if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_ASIGNACION,"%=");
@@ -542,7 +541,7 @@ public class AnalizadorLexico {
 				if (preanalisis == '%') {
 					transita(57);
 				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {%}
-					token = new Token(TipoToken.SEPARADOR, "%:");
+					token = new Token(TipoToken.SEPARADOR, "#");
 					asterisco = true;
 				} else {
 					token = new Token(TipoToken.ERROR,errorGenerico);
@@ -551,7 +550,7 @@ public class AnalizadorLexico {
 				break;
 			case 57:
 				if (preanalisis == ':') {
-					token = new Token(TipoToken.SEPARADOR,"%:%:");
+					token = new Token(TipoToken.SEPARADOR,"##");
 					return token;
 				} else {
 					token = new Token(TipoToken.ERROR,errorGenerico);
@@ -625,8 +624,12 @@ public class AnalizadorLexico {
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_COMPARACION,"<=");
 					return token;
-				}else if (preanalisis == '<') {
+				} else if (preanalisis == '<') {
 					transita(78);
+				} else if (preanalisis == ':') {
+					return new Token(TipoToken.SEPARADOR,"[");
+				} else if (preanalisis == '%') {
+					return new Token(TipoToken.SEPARADOR,"{");
 				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {<,%,=,:}
 					token = new Token(TipoToken.OP_COMPARACION,"<");
 					asterisco = true;
@@ -649,11 +652,12 @@ public class AnalizadorLexico {
 				break;
 			case 81:
 				if (preanalisis == '>') {
-					token = new Token(TipoToken.SEPARADOR,":>");
-					return token;
+					return new Token(TipoToken.SEPARADOR,"]");
+				} else if (preanalisis == ':') {
+					return new Token(TipoToken.SEPARADOR,"::");
 				} else {
-					token = new Token(TipoToken.ERROR,errorGenerico);
-					return token;
+					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					return new Token(TipoToken.ERROR,error);
 				}
 			case 83:
 				if (preanalisis == '|') {
@@ -807,9 +811,8 @@ public class AnalizadorLexico {
 		return preanalisis == 'f' || preanalisis == 'F'|| preanalisis == 'l'|| preanalisis == 'L'; 
 	}
 
-	private boolean esDelim() {
-	
-		if (preanalisis == ' ' || preanalisis == '\t'|| preanalisis == '\n'|| preanalisis == '\f' /*fin fichero*/ ||
+	private boolean esDelim() {	
+		if (preanalisis == ' ' || preanalisis == '\t'|| preanalisis == '\r'|| preanalisis == '\n'|| preanalisis == '\0' /*fin fichero*/ ||
 			preanalisis == '|' || preanalisis == ':' || preanalisis == '+' || preanalisis == '-' || preanalisis == '/' ||
 			preanalisis == '*' || preanalisis == '<' || preanalisis == '>' || preanalisis == '=' || preanalisis == '&' || 
 			preanalisis == '^' || preanalisis == '%' || preanalisis == '!' || preanalisis == '~' || preanalisis == '{' || 
@@ -869,12 +872,11 @@ public class AnalizadorLexico {
 	private char getChar() {
 		char caracter = 0;
 		try {
-			//si devuleve -1 es el EOF, si no, devuelve un int entre 0 y 255 (los codigos ASCII)
 			int c = entrada.read();
-			if(c != -1)
-				caracter = (char)c;
+			if(c == -1) // EOF
+				caracter = '\0';
 			else
-				eof = true;
+				caracter = (char)c;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

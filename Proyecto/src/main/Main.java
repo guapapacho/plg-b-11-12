@@ -11,10 +11,8 @@ import compilador.lexico.tokens.Token.TipoToken;
 public class Main {
 	
 	public static void main(String[] args) {
-		InputStream in;
-		
 		try {
-			in = new FileInputStream("Proyecto/src/main/entrada.txt");
+			InputStream in = new FileInputStream("Proyecto/src/main/entrada.txt");
 			
 			AnalizadorLexico analizador = new AnalizadorLexico(in);
 			Token token = analizador.scanner();

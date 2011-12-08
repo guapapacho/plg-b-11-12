@@ -22,6 +22,7 @@ public class Main {
 				System.out.println("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo());
 				token = analizador.scanner();
 			}
+			System.out.println("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}

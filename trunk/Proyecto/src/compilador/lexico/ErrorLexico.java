@@ -6,7 +6,6 @@ public class ErrorLexico {
 	private String mensaje;
 	
 	public ErrorLexico(int numLinea, int numColumna, String mensaje) {
-		super();
 		this.numLinea = numLinea;
 		this.numColumna = numColumna;
 		this.mensaje = mensaje;

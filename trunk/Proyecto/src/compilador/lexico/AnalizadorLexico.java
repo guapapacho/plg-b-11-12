@@ -123,7 +123,8 @@ public class AnalizadorLexico {
 					transita(52);
 				} else if (preanalisis == '#') {
 					transita(60);
-				} else if (preanalisis == '/') {
+				} else if (preanalisis == '/') { 
+				//else if (preanalisis == '!') {
 					transita(62);
 				} else if (preanalisis == '=') {
 					transita(64);
@@ -162,7 +163,11 @@ public class AnalizadorLexico {
 					lexema = lexema+preanalisis;
 					transita(97);
 				} else if (preanalisis == '\\') {
+				//else if (preanalisis == '/') {
 					transita(105);
+				} else {
+					token = new Token(TipoToken.ERROR,errorGenerico);
+					return token;
 				}
 				break;
 			case 1:
@@ -257,6 +262,7 @@ public class AnalizadorLexico {
 				} else {
 					asterisco = true;
 					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					//token = new Token(TipoToken.ERROR,errorGenerico+errorVI);
 					return token;
 				}
 				//break;
@@ -576,9 +582,11 @@ public class AnalizadorLexico {
 			case 62:
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_ASIGNACION,"/=");
+					//token = new Token(TipoToken.OP_COMPARACION,"!=");
 					return token;
 				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {=}
 					token = new Token(TipoToken.OP_ARITMETICO, "/");
+					//token = new Token(TipoToken.OP_LOGICO, "!");
 					asterisco = true;
 				} else {
 					token = new Token(TipoToken.ERROR,errorGenerico);
@@ -711,6 +719,7 @@ public class AnalizadorLexico {
 //						if (token == null) //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
 //							token = new Token(lexema, TablaSimbolos.Inserta(lexema)); 
 //					}	
+//					asterisco=true;
 //					return token;
 				}
 				//break;
@@ -723,6 +732,15 @@ public class AnalizadorLexico {
 				} else if(preanalisis == '"') {
 					return new Token(TipoToken.LIT_CADENA,lexema); // puntero a la TS
 				}
+				/*if(preanalisis == '"') {
+					return new Token(TipoToken.LIT_CADENA,lexema); // puntero a la TS
+				} else	if((preanalisis == '\\') || (preanalisis != '\n'))	{
+					token = new Token(TipoToken.ERROR,errorGenerico);
+					return token;
+				} else {	
+					lexema = lexema+preanalisis;
+					transita(99);
+				} */
 				//break;
 			case 100:
 			case 101:
@@ -733,7 +751,62 @@ public class AnalizadorLexico {
 				} else if(preanalisis == '\'') {
 					return new Token(TipoToken.LIT_CARACTER,lexema);
 				}
+				/*if(preanalisis == '\''){
+					return new Token(TipoToken.LIT_CARACTER,lexema);
+				} else if ((preanalisis == '\n') || (preanalisis == '\\')){
+					token = new Token(TipoToken.ERROR,errorGenerico);
+					return token;
+				} else {
+					lexema = lexema+preanalisis;
+					transita(102);
+				}*/
+				// Y este caso: no sería válido??
+				// char c = '\\'; 
 				//break;
+			case 105:
+				if(preanalisis=='='){
+					token = new Token(TipoToken.OP_ASIGNACION,"/=");
+					return token;
+				} else if(preanalisis=='*'){
+					transita(107);
+				} else if(preanalisis=='/'){
+					transita(110);
+				} else if(esDelim()){
+					token = new Token(TipoToken.OP_ARITMETICO,"/");
+					asterisco = true;
+					//return token;
+				} else {
+					token = new Token(TipoToken.ERROR,errorGenerico);
+					return token;
+				}
+				//break;
+			case 107:
+				if(preanalisis=='*'){
+					transita(108);
+				} else { //Cajon desastre....
+					if(preanalisis=='\n')
+						numlinea++;
+					lexema = lexema + preanalisis;
+					transita(107);
+				}
+				//break;
+			case 108:
+				if(preanalisis=='/'){	//TODO Implementar TablaSimbolos
+//					token = TablaSimbolos.Busca(lexema);
+//					if (token == null) //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
+//						token = new Token(TipoToken.COMENTARIO, TablaSimbolos.Inserta(lexema)); 
+				}
+				//break;
+			case 110:
+				if(preanalisis=='\n'){ //TODO Implementar TablaSimbolos
+//					token = TablaSimbolos.Busca(lexema);
+//					if (token == null) //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
+//						token = new Token(TipoToken.COMENTARIO, TablaSimbolos.Inserta(lexema));
+				}
+				else {
+					lexema = lexema + preanalisis;
+					transita(110);
+				}
 			} //switch
 		} //while
 		return token;

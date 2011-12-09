@@ -1,10 +1,11 @@
 package compilador.lexico;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 
-import compilador.lexico.tokens.*;
+import compilador.lexico.tokens.Token;
 import compilador.lexico.tokens.Token.TipoToken;
+import compilador.tablaSimbolos.TablaSimbolos;
+
 
 /**
  * 
@@ -31,23 +32,30 @@ public class AnalizadorLexico {
 	/**
 	 * Array de tokens que vamos formando desde el fichero de entrada
 	 */
-	private ArrayList<Token> arraytokens; 
+//	private ArrayList<Token> arraytokens; 
 	
 	/**
 	 * Atributo que indica el caracter actual que leemos de la entrada
 	 */
-	char preanalisis;
+	private char preanalisis;
 	
 	/**
 	 * Atributo que indica el estado del automata en el que nos encontramos
 	 */
-	int estado;
+	private int estado;
 	
 	/**
 	 * Atributo que indica si el estado final anterior tenia asterisco o no,
 	 * necesario para comprobar si tenemos que leer otro caracter, o procesar el ultimo
 	 */
-	boolean asterisco;
+	private boolean asterisco;
+	
+	/**
+	 * Atributo para poder buscar las palabras reservadas e identificadores en la Table de
+	 * simbolos, e insertar los nuevos identificadores
+	 */
+	private TablaSimbolos tablaSimbolos;
+	
 	
 	private String errorGenerico = "Error en linea "+numlinea+" y columna "+numcolumna; // Este es el mismo error tipo I
 	private final String errorVI = "se esperaba un digito hexadecimal.";
@@ -65,10 +73,11 @@ public class AnalizadorLexico {
 		this.preanalisis = ' ';
 		this.estado = 0; 
 		this.asterisco = false;
+		this.tablaSimbolos = new TablaSimbolos();
 	}
 
 	/**
-	 * Método que devuelve el siguiente token
+	 * Mï¿½todo que devuelve el siguiente token
 	 * @return el siguiente token
 	 */
 	public Token scanner(){
@@ -443,7 +452,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.ERROR,error);
 				}		
 				break;
-//			case 20:
+
 			case 21:
 				if(esDelim()){ 
 					asterisco=true;
@@ -452,7 +461,7 @@ public class AnalizadorLexico {
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
 					return new Token(TipoToken.ERROR,error);
 				}
-				//break;
+			
 //			case 22:	
 //			case 23:	
 //			case 24:	
@@ -487,7 +496,7 @@ public class AnalizadorLexico {
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
 				}
-				//break;
+		
 			case 45:
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_ASIGNACION,"-=");
@@ -505,7 +514,7 @@ public class AnalizadorLexico {
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
 				}
-				//break;
+		
 			case 49:
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_ASIGNACION,"*=");
@@ -563,7 +572,7 @@ public class AnalizadorLexico {
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
 				}
-//				break;
+
 			case 62:
 				if (preanalisis == '=') {
 					return token = new Token(TipoToken.OP_COMPARACION,"!=");
@@ -574,7 +583,7 @@ public class AnalizadorLexico {
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
 				}
-//				break;
+
 			case 64:
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_COMPARACION,"==");
@@ -586,7 +595,7 @@ public class AnalizadorLexico {
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
 				}
-//				break;
+				
 			case 68:
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_COMPARACION,">=");
@@ -611,7 +620,7 @@ public class AnalizadorLexico {
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
 				}
-//				break;
+
 			case 75:
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_COMPARACION,"<=");
@@ -640,7 +649,7 @@ public class AnalizadorLexico {
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
 				}
-//				break;
+
 			case 81:
 				if (preanalisis == '>') {
 					return new Token(TipoToken.SEPARADOR,"]");
@@ -662,7 +671,7 @@ public class AnalizadorLexico {
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
 				}
-//				break;
+
 			case 87:
 				if (preanalisis == '&') {
 					return new Token(TipoToken.OP_LOGICO,"&&");
@@ -675,7 +684,7 @@ public class AnalizadorLexico {
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
 				}
-//				break;
+
 			case 91:
 				if (preanalisis == '=') {
 					return new Token(TipoToken.OP_LOGICO,"^=");
@@ -686,24 +695,27 @@ public class AnalizadorLexico {
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
 				}
-//				break;
+
 			// RECONOCIMIENTO DE CADENAS, IDENTIFICADORES Y PALABRAS RESERVADAS
 			case 97:	
 				if (noDigito() || digito()) {
 					lexema = lexema+preanalisis;
 					transita(97);
-				} else if(esDelim()) { //TODO Implementar TablaSimbolos
-//					Token token = TablaSimbolos.getPalRes.Busca(lexema);
-//					if(token == null) {	
-//						token = TablaSimbolos.Busca(lexema);
-//						if (token == null) //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
-//							token = new Token(lexema, TablaSimbolos.Inserta(lexema)); 
-//					}	
-//					asterisco=true;
-//					return token;
-				}
-				break;
-//			case 98:
+				} else if(esDelim()) { 
+					 token = tablaSimbolos.BuscaPalRes(lexema);
+					 if(token == null )	
+					 {	 
+						token = tablaSimbolos.BuscaId(lexema);
+						if (token == null) //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
+						{
+							tablaSimbolos.insertaIdentificador(lexema);
+							token = new Token(TipoToken.IDENTIFICADOR,lexema);
+						}
+					 }	
+				}	
+				asterisco=true;
+				return token;
+				
 			case 99: //SI NO ES CAJON DESASTRE..
 				/*if((preanalisis != '"') && (preanalisis != '\\') && (preanalisis != '\n') )
 				{
@@ -740,7 +752,7 @@ public class AnalizadorLexico {
 					lexema = lexema+preanalisis;
 					transita(102);
 				}
-				// Y este caso: no sería válido??
+				// Y este caso: no serï¿½a vï¿½lido??
 				// char c = '\\'; 
 				break;
 			case 105:

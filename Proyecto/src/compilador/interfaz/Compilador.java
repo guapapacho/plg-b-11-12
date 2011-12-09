@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.PrintWriter;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 
 import javax.swing.JButton;
@@ -90,6 +91,23 @@ public class Compilador extends JFrame {
 		if (def==null){
 			def = new JMenuItem();
 			def.setText("Default");
+			def.addActionListener(
+					new ActionListener(){
+						public void actionPerformed(ActionEvent e) {
+							Scanner sc=null;
+							try{
+								sc=new Scanner (new File("Proyecto/src/main/entrada.txt"));
+								while(sc.hasNextLine()){
+									String linea=sc.nextLine();
+									ta1.append(linea);
+						        	ta1.append(System.getProperty("line.separator"));
+									
+								}
+							}catch(Exception e1){
+								e1.printStackTrace();
+							}
+						}
+					});
 		}
 		return def;
 	}

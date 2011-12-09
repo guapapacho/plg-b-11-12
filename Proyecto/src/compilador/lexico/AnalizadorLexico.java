@@ -61,6 +61,7 @@ public class AnalizadorLexico {
 	private final String errorVI = "se esperaba un digito hexadecimal.";
 	private final String errorV = "numero mal formado.";
 	private final String errorIII = "caracter no esperado.";
+	private final String errorIV = "fin de comentario esperado.";
 	
 	
 	/**
@@ -521,12 +522,12 @@ public class AnalizadorLexico {
 					return token;
 				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {=}
 					token = new Token(TipoToken.OP_ARITMETICO,"*");
-					asterisco = true;
+					asterisco = true; //Que pasa si ponemos * reifiriendonos a un puntero??
+					return token;
 				} else {
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
 				}
-				break;
 			case 52:
 				if (preanalisis == '>') {
 					token = new Token(TipoToken.SEPARADOR,"}");
@@ -712,9 +713,10 @@ public class AnalizadorLexico {
 							token = new Token(TipoToken.IDENTIFICADOR,lexema);
 						}
 					 }	
+					 asterisco=true;
+					 return token;
 				}	
-				asterisco=true;
-				return token;
+				break;
 				
 			case 99: 
 				if(preanalisis == '"') {
@@ -763,6 +765,9 @@ public class AnalizadorLexico {
 			case 107:
 				if(preanalisis=='*'){
 					transita(108);
+				} else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
+					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIV);
+					return new Token(TipoToken.ERROR,error);
 				} else {
 					if(preanalisis=='\n') 
 						numlinea++;
@@ -776,15 +781,18 @@ public class AnalizadorLexico {
 					//tablaSimbolos.inserta(lexema)
 					return new Token(TipoToken.COMENTARIO, lexema);//Aqui habria que almacenar algo como la linea y la columna donde esta el comentario?
 				}
-				else 
+				else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
+					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIV);
+					return new Token(TipoToken.ERROR,error);
+				}
+				else	
 					transita(107);
 				break;
 			case 110:
-				if(preanalisis=='\n'){  //Ya que es el comentario de linea (//) acaba cuando recibe un /r/n
+				if(preanalisis=='\n' || preanalisis=='\0'){  //Ya que es el comentario de linea (//) acaba cuando recibe un /r/n
 					//tablaSimbolos.inserta(lexema)
 					return new Token(TipoToken.COMENTARIO, lexema);//Aqui habria que almacenar algo como la linea y la columna donde esta el comentario?
-				}
-				else {
+				} else {
 					lexema = lexema + preanalisis;
 					transita(110);
 				}

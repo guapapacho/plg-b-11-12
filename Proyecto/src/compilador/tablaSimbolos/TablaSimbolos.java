@@ -38,6 +38,8 @@ public class TablaSimbolos {
 	public TablaSimbolos(){
 		bloque_actual = 0;
 		listaAmbitos = new ArrayList<Ambito>();
+		Ambito inicial = new Ambito();
+		listaAmbitos.add(inicial);
 		inicializaPalRes();
 		
 		

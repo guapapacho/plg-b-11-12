@@ -392,6 +392,7 @@ public class AnalizadorLexico {
 					transita(16);
 				} else if(esDelim2()){
 					token = new Token(TipoToken.SEPARADOR, ".");
+					asterisco = true;
 					return token;
 				} else{
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);

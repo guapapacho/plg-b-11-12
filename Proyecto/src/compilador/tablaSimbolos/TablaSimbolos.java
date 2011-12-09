@@ -144,7 +144,7 @@ public class TablaSimbolos {
 	public Token BuscaId(String lexema)
 	{
 		if(listaAmbitos.get(bloque_actual).getFilaAmbito().containsKey(lexema))	
-			return new Token(TipoToken.IDENTIFICADOR,listaAmbitos.get(bloque_actual).getFilaAmbito().get(lexema).get(Atributos.TIPO));
+			return new Token(TipoToken.IDENTIFICADOR,listaAmbitos.get(bloque_actual).getFilaAmbito().get(lexema).get(Atributos.LEXEMA));
 		return null;
 	}
 	

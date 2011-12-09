@@ -6,10 +6,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
+import java.io.StringBufferInputStream;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
@@ -20,10 +24,14 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextPane;
+
+import compilador.lexico.AnalizadorLexico;
+import compilador.lexico.tokens.Token;
+import compilador.lexico.tokens.Token.TipoToken;
 
 /**
  * @author Pilar
@@ -54,6 +62,7 @@ public class Compilador extends JFrame {
 	private File archivo=null;
 	private FileReader fr=null;
 	private BufferedReader br=null;
+	private InputStream in=null;
 	
 	public Compilador(){
 		super();
@@ -79,7 +88,7 @@ public class Compilador extends JFrame {
 	public JMenu getFicherosMenu() {
 		if (ficheroMenu==null){
 			ficheroMenu=new JMenu();
-			ficheroMenu.setText("Ficheros"); //getText
+			ficheroMenu.setText("Ficheros"); 
 			ficheroMenu.add(getLeerItem());
 			ficheroMenu.add(getGuardarItem());
 			ficheroMenu.add(getDefaultItem());
@@ -100,8 +109,7 @@ public class Compilador extends JFrame {
 								while(sc.hasNextLine()){
 									String linea=sc.nextLine();
 									ta1.append(linea);
-						        	ta1.append(System.getProperty("line.separator"));
-									
+						        	ta1.append(System.getProperty("line.separator"));	
 								}
 							}catch(Exception e1){
 								e1.printStackTrace();
@@ -208,20 +216,44 @@ public class Compilador extends JFrame {
 		sp2.setHorizontalScrollBarPolicy(sp2.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		sp2.getViewport().add(ta2);
 		
-		botonTokens=new JButton();
-		botonTokens.setBounds(575, 300, 120, 50);
-		botonTokens.setText("Lista Tokens");
-		
 		panelPrincipal.add(l0);
 		panelPrincipal.add(l1);
 		panelPrincipal.add(l2);
-		panelPrincipal.add(botonTokens);
+		panelPrincipal.add(getBotonTokens());
 		panelPrincipal.add(sp1);
 		panelPrincipal.add(sp2);
 		panelPrincipal.validate();
 		return panelPrincipal;
 	}
 	
+	public JButton getBotonTokens() {
+		botonTokens=new JButton();
+		botonTokens.setBounds(575, 300, 120, 50);
+		botonTokens.setText("Lista Tokens");
+		botonTokens.revalidate();
+		botonTokens.addActionListener(
+					new ActionListener(){
+						public void actionPerformed(ActionEvent e){
+							String contenido=null;
+							contenido=new String(ta1.getText());
+							if(contenido.equals("")){
+								JOptionPane.showMessageDialog(null,"Debe abrir un archivo o escribir un programa en c++ \n antes de proceder al analisis de tokens");
+							}
+							else{
+								in=new StringBufferInputStream(contenido);
+								AnalizadorLexico analizador = new AnalizadorLexico(in);
+								Token token = analizador.scanner();
+								while(token.getTipo() != TipoToken.EOF) {
+									ta2.append("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo()+"\n");
+									token = analizador.scanner();
+								}
+								ta2.append("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo()+"\n");
+							}
+						}
+					});
+		return botonTokens;
+	}
+
 	public static void main(String[] args) {
 		Compilador c = new Compilador();
 		c.setEnabled(true);

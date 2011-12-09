@@ -132,18 +132,22 @@ public class Compilador extends JFrame {
 					new ActionListener(){
 						public void actionPerformed(ActionEvent e) {
 							JFileChooser seleccion = new JFileChooser();
-							seleccion.showSaveDialog(Compilador.this);
-							String fichero = seleccion.getSelectedFile().getName();
+							int num=seleccion.showSaveDialog(Compilador.this);
 							try {
-								PrintWriter fichSal= new PrintWriter(new FileOutputStream(fichero));
-								String contenido=new String(ta1.getText());
-								StringTokenizer st=new StringTokenizer(contenido,"\n");
-								ta1.setText("");
-								while(st.hasMoreTokens()){
-									String linea=st.nextToken();
-									fichSal.print(linea+"\n");
+								if (num == seleccion.APPROVE_OPTION){
+									String fichero = seleccion.getSelectedFile().getName();
+									PrintWriter fichSal= new PrintWriter(new FileOutputStream(fichero));
+									String contenido=new String(ta1.getText());
+									StringTokenizer st=new StringTokenizer(contenido,"\n");
+									ta1.setText("");
+									while(st.hasMoreTokens()){
+										String linea=st.nextToken();
+										fichSal.print(linea+"\n");
+									}
+									fichSal.close();
+								}else{
+									seleccion.cancelSelection();
 								}
-								fichSal.close();
 							
 							} catch (FileNotFoundException e1) {
 								e1.printStackTrace();
@@ -161,22 +165,26 @@ public class Compilador extends JFrame {
 			abrir.setText("Abrir");
 			abrir.addActionListener(
 					new ActionListener(){
+						@SuppressWarnings("static-access")
 						public void actionPerformed(ActionEvent e){
 							JFileChooser seleccion = new JFileChooser();
 							int num = seleccion.showOpenDialog(Compilador.this);
 							try{
 								if (num == seleccion.APPROVE_OPTION){
 								   archivo = seleccion.getSelectedFile();
+								   fr = new FileReader (archivo);
+									br = new BufferedReader(fr);
+									String linea=br.readLine();
+							        while((linea)!=null){
+							        	ta1.append(linea);
+							        	ta1.append(System.getProperty("line.separator")); 
+							        	linea = br.readLine();
+							        }
+							        br.close();
+								}else{
+									seleccion.cancelSelection();
 								}
-								fr = new FileReader (archivo);
-								br = new BufferedReader(fr);
-								String linea=br.readLine();
-						        while((linea)!=null){
-						        	ta1.append(linea);
-						        	ta1.append(System.getProperty("line.separator")); 
-						        	linea = br.readLine();
-						        }
-						        br.close();
+								
 							}catch(Exception e1){
 								e1.printStackTrace();
 							}

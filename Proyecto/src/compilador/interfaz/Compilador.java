@@ -32,6 +32,7 @@ import javax.swing.JTextArea;
 import compilador.lexico.AnalizadorLexico;
 import compilador.lexico.tokens.Token;
 import compilador.lexico.tokens.Token.TipoToken;
+import java.awt.Button;
 
 /**
  * @author Pilar
@@ -45,6 +46,7 @@ public class Compilador extends JFrame {
 	 */
 	
 	private JPanel panelPrincipal=null;
+	private JPanel panelPrincipal_1;
 	private JMenuBar barraMenu=null;
 	private JMenu ficheroMenu=null;
 	private JMenuItem abrir=null;
@@ -70,7 +72,9 @@ public class Compilador extends JFrame {
 	}
 	
 	public void crearInterfaz() {
-		this.setSize(screenSize);
+		this.setSize(930, 630);
+		//this.setSize(screenSize);
+		this.setLocation(150, 100);
 		this.setJMenuBar(getBarraMenu());
 		this.setContentPane(getPanelPrincipal());
 		this.setTitle("Traductor C++ - Pascal");
@@ -184,52 +188,51 @@ public class Compilador extends JFrame {
 	}
 
 	private JPanel getPanelPrincipal(){
-		panelPrincipal=new JPanel();
-		panelPrincipal.setLayout(null);
+		panelPrincipal_1=new JPanel();
+		panelPrincipal_1.setLayout(null);
 		l0=new JLabel();
-		l0.setBounds(550, 10, 400, 70);
+		l0.setBounds(351, 11, 185, 34);
 		l0.setFont(new java.awt.Font("Verdana", Font.BOLD, 18));
 		l0.setText("Analizador léxico");
 		l1=new JLabel();
-		l1.setBounds(250, 40, 400, 70);
+		l1.setBounds(122, 26, 163, 34);
 		l1.setText("Código de entrada");
-		l1.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
+		l1.setFont(new java.awt.Font("Verdana", Font.PLAIN, 14));
 		l2=new JLabel();
-		l2.setBounds(925, 40, 400, 70);
-		l2.setText("Salida");
-		l2.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
-		
-		ta1=new JTextArea();
-		ta1.setBounds(100, 100, 450, 550);
+		l2.setBounds(627, 26, 146, 34);
+		l2.setText("Código de salida");
+		l2.setFont(new java.awt.Font("Verdana", Font.PLAIN, 14));
 		sp1=new JScrollPane();
-		sp1.setBounds(100, 100, 450, 550);
+		sp1.setBounds(39, 68, 350, 466);
 		sp1.setVerticalScrollBarPolicy(sp1.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp1.setHorizontalScrollBarPolicy(sp1.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		sp1.getViewport().add(ta1);
-		
-		ta2=new JTextArea();
-		ta2.setBounds(725, 100, 450, 550);
-		ta2.setEditable(false);
 		sp2=new JScrollPane();
-		sp2.setBounds(725, 100, 450, 550);
+		sp2.setBounds(525, 68, 350, 466);
 		sp2.setVerticalScrollBarPolicy(sp2.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp2.setHorizontalScrollBarPolicy(sp2.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		sp2.getViewport().add(ta2);
 		
-		panelPrincipal.add(l0);
-		panelPrincipal.add(l1);
-		panelPrincipal.add(l2);
-		panelPrincipal.add(getBotonTokens());
-		panelPrincipal.add(sp1);
-		panelPrincipal.add(sp2);
-		panelPrincipal.validate();
-		return panelPrincipal;
+		panelPrincipal_1.add(l0);
+		panelPrincipal_1.add(l1);
+		panelPrincipal_1.add(l2);
+		panelPrincipal_1.add(getBotonTokens());
+		panelPrincipal_1.add(sp1);
+		
+		ta1=new JTextArea();
+		sp1.setViewportView(ta1);
+		panelPrincipal_1.add(sp2);
+		
+		ta2=new JTextArea();
+		sp2.setViewportView(ta2);
+		ta2.setEditable(false);
+		panelPrincipal_1.validate();
+		return panelPrincipal_1;
 	}
 	
 	public JButton getBotonTokens() {
 		botonTokens=new JButton();
-		botonTokens.setBounds(575, 300, 120, 50);
+		botonTokens.setBounds(399, 275, 116, 50);
 		botonTokens.setText("Lista Tokens");
+		botonTokens.setFont(new java.awt.Font("Verdana", Font.PLAIN, 10));
 		botonTokens.revalidate();
 		botonTokens.addActionListener(
 					new ActionListener(){
@@ -259,5 +262,4 @@ public class Compilador extends JFrame {
 		c.setEnabled(true);
 		c.setVisible(true);
 	}
-
 }

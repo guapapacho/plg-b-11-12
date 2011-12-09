@@ -6,7 +6,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.PrintWriter;
+import java.util.StringTokenizer;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -94,6 +98,28 @@ public class Compilador extends JFrame {
 		if (guardar==null){
 			guardar = new JMenuItem();
 			guardar.setText("Guardar");
+			guardar.addActionListener(
+					new ActionListener(){
+						public void actionPerformed(ActionEvent e) {
+							JFileChooser seleccion = new JFileChooser();
+							seleccion.showSaveDialog(Compilador.this);
+							String fichero = seleccion.getSelectedFile().getName();
+							try {
+								PrintWriter fichSal= new PrintWriter(new FileOutputStream(fichero));
+								String contenido=new String(ta1.getText());
+								StringTokenizer st=new StringTokenizer(contenido,"\n");
+								ta1.setText("");
+								while(st.hasMoreTokens()){
+									String linea=st.nextToken();
+									fichSal.print(linea+"\n");
+								}
+								fichSal.close();
+							
+							} catch (FileNotFoundException e1) {
+								e1.printStackTrace();
+							}
+						}				
+					});
 		}
 		return guardar;
 	}
@@ -107,9 +133,7 @@ public class Compilador extends JFrame {
 					new ActionListener(){
 						public void actionPerformed(ActionEvent e){
 							JFileChooser seleccion = new JFileChooser();
-							int num = seleccion.showSaveDialog(Compilador.this);
-							//seleccion.showOpenDialog(ta1);//Compilador.this);
-							//String fichero = seleccion.getSelectedFile().getName();
+							int num = seleccion.showOpenDialog(Compilador.this);
 							try{
 								if (num == seleccion.APPROVE_OPTION){
 								   archivo = seleccion.getSelectedFile();

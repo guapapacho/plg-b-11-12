@@ -716,17 +716,11 @@ public class AnalizadorLexico {
 				asterisco=true;
 				return token;
 				
-			case 99: //SI NO ES CAJON DESASTRE..
-				/*if((preanalisis != '"') && (preanalisis != '\\') && (preanalisis != '\n') )
-				{
-					lexema = lexema+preanalisis;
-					transita(99);
-				} else if(preanalisis == '"') {
-					return new Token(TipoToken.LIT_CADENA,lexema); // puntero a la TS
-				}*/
+			case 99: 
 				if(preanalisis == '"') {
+					//tablaSimbolos.inserta(lexema);
 					return new Token(TipoToken.LIT_CADENA,lexema); //TODO puntero a la TS
-				} else	if((preanalisis == '\\') || (preanalisis != '\n'))	{
+				} else	if( !esCajonDesastre() || (preanalisis == '\\') || (preanalisis == '\n'))	{
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
 				} else {	
@@ -736,32 +730,27 @@ public class AnalizadorLexico {
 				break;
 			case 100:
 			case 101:
-			case 102://SI NO ES CAJON DESASTRE..
-				/*if((preanalisis != '\'') && (preanalisis != '\\') && (preanalisis != '\n') ) {
-					lexema = lexema+preanalisis;
-					transita(102);
-				} else if(preanalisis == '\'') {
-					return new Token(TipoToken.LIT_CARACTER,lexema);
-				}*/
+			case 102:
 				if(preanalisis == '\''){
+					//tablaSimbolos.inserta(lexema);
 					return new Token(TipoToken.LIT_CARACTER,lexema);
-				} else if ((preanalisis == '\n') || (preanalisis == '\\')){
+				} else if ( !esCajonDesastre() || (preanalisis == '\n') /*|| (preanalisis == '\\')*/){
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
 				} else {
 					lexema = lexema+preanalisis;
 					transita(102);
 				}
-				// Y este caso: no ser�a v�lido??
+				// Y este caso: no seria valido?? yo creo que si es valido.. (cris)
 				// char c = '\\'; 
 				break;
 			case 105:
 				if(preanalisis=='='){
 					token = new Token(TipoToken.OP_ASIGNACION,"/=");
 					return token;
-				} else if(preanalisis=='*'){
+				} else if(preanalisis=='*'){ // reconoce algo tipo Token Comentario, que puede estar seguido de / o de *
 					transita(107);
-				} else if(preanalisis=='/'){
+				} else if(preanalisis=='/'){ // reconoce algo tipo Token Comentario de linea
 					transita(110);
 				} else if(esDelim()){
 					asterisco = true;
@@ -774,25 +763,26 @@ public class AnalizadorLexico {
 			case 107:
 				if(preanalisis=='*'){
 					transita(108);
-				} else { //Cajon desastre....
-					if(preanalisis=='\n')
+				} else {
+					if(preanalisis=='\n') 
 						numlinea++;
 					lexema = lexema + preanalisis;
 					transita(107);
-				}
+				}	
+				
 				break;
 			case 108:
-				if(preanalisis=='/'){	//TODO Implementar TablaSimbolos
-//					token = TablaSimbolos.Busca(lexema);
-//					if (token == null) //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
-//						token = new Token(TipoToken.COMENTARIO, TablaSimbolos.Inserta(lexema)); 
+				if(preanalisis=='/'){
+					//tablaSimbolos.inserta(lexema)
+					return new Token(TipoToken.COMENTARIO, lexema);//Aqui habria que almacenar algo como la linea y la columna donde esta el comentario?
 				}
+				else 
+					transita(107);
 				break;
 			case 110:
-				if(preanalisis=='\n'){ //TODO Implementar TablaSimbolos
-//					token = TablaSimbolos.Busca(lexema);
-//					if (token == null) //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
-//						token = new Token(TipoToken.COMENTARIO, TablaSimbolos.Inserta(lexema));
+				if(preanalisis=='\n'){  //Ya que es el comentario de linea (//) acaba cuando recibe un /r/n
+					//tablaSimbolos.inserta(lexema)
+					return new Token(TipoToken.COMENTARIO, lexema);//Aqui habria que almacenar algo como la linea y la columna donde esta el comentario?
 				}
 				else {
 					lexema = lexema + preanalisis;
@@ -824,6 +814,21 @@ public class AnalizadorLexico {
 		if (esDelim() || digito() || noDigito())
 			return true;
 		return false;
+	}
+	
+	private boolean esCajonDesastre() {
+		
+		if(letra()	||	digito() ||	preanalisis == '_'	||	preanalisis == ',' ||  preanalisis == ' '||	preanalisis== '-'||
+			preanalisis=='*' ||	preanalisis=='+'||	preanalisis=='#' || preanalisis=='(' ||	preanalisis==')' ||	
+			preanalisis=='<' || preanalisis=='}'||	preanalisis=='>' || preanalisis=='{' ||	preanalisis=='!' ||					
+			preanalisis=='%' ||	preanalisis==':'||	preanalisis==';' ||	preanalisis=='.' ||	preanalisis== '?'||
+			preanalisis=='-' ||	preanalisis=='/'||	preanalisis=='^' ||	preanalisis=='&' ||	preanalisis=='|' ||	
+			preanalisis=='=' || preanalisis==','||  preanalisis=='\\'||	preanalisis=='"'||	preanalisis=='’' || 
+			preanalisis=='[' || preanalisis==']') 
+				return true;
+		return false;
+																														
+
 	}
 
 	private boolean letra() {

@@ -5,6 +5,7 @@ import java.util.Hashtable;
 
 public class Ambito {
 	
+
 	public enum Atributos {
 		LEXEMA,
 		TIPO, 
@@ -18,6 +19,11 @@ public class Ambito {
 
 	private Hashtable<String, EnumMap<Atributos, Object>> filaAmbito;
 	
+	
+	public Ambito() {
+		filaAmbito = new Hashtable<String, EnumMap<Atributos, Object>>();
+		continente=0;
+	}
 
 	public int getContinente() {
 		return continente;

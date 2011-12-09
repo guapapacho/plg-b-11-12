@@ -6,19 +6,18 @@ import java.util.Hashtable;
 public class Ambito {
 	
 	public enum Atributos {
+		LEXEMA,
 		TIPO, 
 		NUMARGS,
 		TIPOARGS,
 		PASOARGS,
 		RETORNO,
-		CONTENIDO
+		CONTENIDO,
 	}
 	private int continente;
 
 	private Hashtable<String, EnumMap<Atributos, Object>> filaAmbito;
 	
-//	private Hashtable<String, ArrayList<Object>> filaAmbito2;
-
 
 	public int getContinente() {
 		return continente;

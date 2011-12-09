@@ -2,6 +2,8 @@ package compilador.tablaSimbolos;
 
 import java.util.*;
 
+import compilador.lexico.tokens.Token;
+import compilador.lexico.tokens.Token.TipoToken;
 import compilador.tablaSimbolos.Ambito.Atributos;
 
 /**
@@ -29,11 +31,6 @@ public class TablaSimbolos {
 	/** Puntero al ambito actual */
 	private int bloque_actual;
 	
-	
-	/**
-	 * ??
-	 */
-	private Hashtable<Integer,TablaSimbolos> global;	//No se como ponerlo... :S
 	
 	/**
 	 * Constructora de la clase
@@ -120,17 +117,33 @@ public class TablaSimbolos {
 	 * Busca a ver si esta el identificador en el ambito actual, si no esta lo inserta y devuelve cierto
 	 * si esta o es una palabra reservada no lo inserta y devuelve falso
 	 */
-	public boolean insertaIdentificador(String id){
+	public boolean insertaIdentificador(String lexema){
 		
-		if (esReservada(id)){
+		if (esReservada(lexema)){
 			return false;
 		}
 
-		if(listaAmbitos.get(bloque_actual).getFilaAmbito().containsKey(id))
+		if(listaAmbitos.get(bloque_actual).getFilaAmbito().containsKey(lexema))
 			return false;
 		
-		listaAmbitos.get(bloque_actual).getFilaAmbito().put(id, new EnumMap<Atributos, Object>(Ambito.Atributos.class));
+		EnumMap<Atributos, Object> filaAmbito = new EnumMap<Atributos, Object>(Ambito.Atributos.class);
+		filaAmbito.put(Atributos.LEXEMA, lexema);
+		listaAmbitos.get(bloque_actual).getFilaAmbito().put(lexema, filaAmbito);
 		return true;
+	}
+	
+	public Token BuscaPalRes(String lexema)
+	{
+		if(esReservada(lexema))
+			return new Token(TipoToken.PAL_RESERVADA,palRes.get(lexema));
+		return null;
+	}
+	
+	public Token BuscaId(String lexema)
+	{
+		if(listaAmbitos.get(bloque_actual).getFilaAmbito().containsKey(lexema))	
+			return new Token(TipoToken.IDENTIFICADOR,listaAmbitos.get(bloque_actual).getFilaAmbito().get(lexema).get(Atributos.TIPO));
+		return null;
 	}
 	
 

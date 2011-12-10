@@ -62,7 +62,7 @@ public class AnalizadorLexico {
 	private final String errorV = "numero mal formado.";
 	private final String errorIII = "caracter no esperado.";
 	private final String errorIV = "fin de comentario esperado.";
-	
+	private final String errorI = "caracter no permitido.";
 	
 	/**
 	 * Constructora de la clase
@@ -721,7 +721,10 @@ public class AnalizadorLexico {
 					 }
 					 asterisco=true;
 					 return token;
-				}	
+				} else {
+					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorI);
+					return new Token(TipoToken.ERROR,error);
+				}
 				break;
 				
 			case 99: 

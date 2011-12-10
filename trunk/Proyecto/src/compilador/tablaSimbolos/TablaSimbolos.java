@@ -2,8 +2,6 @@ package compilador.tablaSimbolos;
 
 import java.util.*;
 
-import compilador.lexico.tokens.Token;
-import compilador.lexico.tokens.Token.TipoToken;
 import compilador.tablaSimbolos.Ambito.Atributos;
 
 /**
@@ -134,17 +132,17 @@ public class TablaSimbolos {
 		return true;
 	}
 	
-	public Token BuscaPalRes(String lexema)
+	public Integer BuscaPalRes(String lexema)
 	{
 		if(esReservada(lexema))
-			return new Token(TipoToken.PAL_RESERVADA,palRes.get(lexema));
+			return palRes.get(lexema);
 		return null;
 	}
 	
-	public Token BuscaId(String lexema)
+	public String BuscaId(String lexema)
 	{
 		if(listaAmbitos.get(bloque_actual).getFilaAmbito().containsKey(lexema))	
-			return new Token(TipoToken.IDENTIFICADOR,listaAmbitos.get(bloque_actual).getFilaAmbito().get(lexema).get(Atributos.LEXEMA));
+			return (String) listaAmbitos.get(bloque_actual).getFilaAmbito().get(lexema).get(Atributos.LEXEMA);
 		return null;
 	}
 	

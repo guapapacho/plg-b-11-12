@@ -704,16 +704,21 @@ public class AnalizadorLexico {
 					lexema = lexema+preanalisis;
 					transita(97);
 				} else if(esDelim()) { 
-					 token = tablaSimbolos.BuscaPalRes(lexema);
-					 if(token == null )	
+					 Integer puntTS = tablaSimbolos.BuscaPalRes(lexema);
+					 if(puntTS == null ) // es un identificador	
 					 {	 
-						token = tablaSimbolos.BuscaId(lexema);
-						if (token == null) //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
-						{
+						String lex = tablaSimbolos.BuscaId(lexema);
+						if (lex == null) { //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
 							tablaSimbolos.insertaIdentificador(lexema);
 							token = new Token(TipoToken.IDENTIFICADOR,lexema);
 						}
+						else {
+							token = new Token(TipoToken.IDENTIFICADOR,lex);
+						}
 					 }	
+					 else { // es una palabra reservada
+						 token = new Token(TipoToken.PAL_RESERVADA,puntTS);
+					 }
 					 asterisco=true;
 					 return token;
 				}	

@@ -6,12 +6,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.io.StringBufferInputStream;
 import java.util.Scanner;
@@ -66,14 +64,20 @@ public class Compilador extends JFrame {
 	private BufferedReader br=null;
 	private InputStream in=null;
 	
+	
+	/**
+	 * Constructora de la clase
+	 */
 	public Compilador(){
 		super();
 		crearInterfaz();
 	}
 	
+	/**
+	 * Metodo que configura la interfaz de usuario
+	 */
 	public void crearInterfaz() {
 		this.setSize(930, 630);
-		//this.setSize(screenSize);
 		this.setLocation(150, 100);
 		this.setJMenuBar(getBarraMenu());
 		this.setContentPane(getPanelPrincipal());
@@ -81,6 +85,10 @@ public class Compilador extends JFrame {
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);	
 	}
 
+	/**
+	 * Metodo que configura la barra de menu de la interfaz de usuario
+	 * @return Objeto de tipo JMenuBar
+	 */
 	public JMenuBar getBarraMenu(){
 		if (barraMenu==null){
 			barraMenu=new JMenuBar();
@@ -89,6 +97,10 @@ public class Compilador extends JFrame {
 		return barraMenu;
 	}
 	
+	/**
+	 * Metodo que implementa el submenu "Ficheros"
+	 * @return Objeto de tipo JMenu
+	 */
 	public JMenu getFicherosMenu() {
 		if (ficheroMenu==null){
 			ficheroMenu=new JMenu();
@@ -100,6 +112,10 @@ public class Compilador extends JFrame {
 		return ficheroMenu;
 	}
 
+	/**
+	 * Metodo que implementa el item "Default" dentro del submenu "Ficheros"
+	 * @return Objeto de tipo JMenuItem
+	 */
 	private JMenuItem getDefaultItem() {
 		if (def==null){
 			def = new JMenuItem();
@@ -124,6 +140,10 @@ public class Compilador extends JFrame {
 		return def;
 	}
 
+	/**
+	 * Metodo que implementa el item "Guardar" dentro del submenu "Ficheros"
+	 * @return Objeto de tipo JMenuItem
+	 */
 	private JMenuItem getGuardarItem() {
 		if (guardar==null){
 			guardar = new JMenuItem();
@@ -158,6 +178,10 @@ public class Compilador extends JFrame {
 		return guardar;
 	}
 
+	/**
+	 * Metodo que implementa el item "Abrir" dentro del submenu "Ficheros"
+	 * @return Objeto de tipo JMenuItem
+	 */
 	private JMenuItem getLeerItem() {
 		
 		if (abrir==null){
@@ -195,21 +219,25 @@ public class Compilador extends JFrame {
 		return abrir;
 	}
 
+	/**
+	 * Metodo que configura el panel contenido dentro del Frame principal
+	 * @return Objeto de tipo JPanel
+	 */
 	private JPanel getPanelPrincipal(){
 		panelPrincipal_1=new JPanel();
 		panelPrincipal_1.setLayout(null);
 		l0=new JLabel();
-		l0.setBounds(351, 11, 185, 34);
+		l0.setBounds(370, 11, 185, 34);
 		l0.setFont(new java.awt.Font("Verdana", Font.BOLD, 18));
-		l0.setText("Analizador léxico");
+		l0.setText("Analizador lÃ©xico");
 		l1=new JLabel();
-		l1.setBounds(122, 26, 163, 34);
-		l1.setText("Código de entrada");
-		l1.setFont(new java.awt.Font("Verdana", Font.PLAIN, 14));
+		l1.setBounds(145, 26, 163, 34);
+		l1.setText("CÃ³digo de entrada");
+		l1.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
 		l2=new JLabel();
-		l2.setBounds(627, 26, 146, 34);
-		l2.setText("Código de salida");
-		l2.setFont(new java.awt.Font("Verdana", Font.PLAIN, 14));
+		l2.setBounds(640, 26, 146, 34);
+		l2.setText("CÃ³digo de salida");
+		l2.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
 		sp1=new JScrollPane();
 		sp1.setBounds(39, 68, 350, 466);
 		sp1.setVerticalScrollBarPolicy(sp1.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -226,21 +254,27 @@ public class Compilador extends JFrame {
 		panelPrincipal_1.add(sp1);
 		
 		ta1=new JTextArea();
+		ta1.setFont(new java.awt.Font("Verdana", Font.BOLD, 12));
 		sp1.setViewportView(ta1);
 		panelPrincipal_1.add(sp2);
 		
 		ta2=new JTextArea();
+		ta2.setFont(new java.awt.Font("Verdana", Font.BOLD, 12));
 		sp2.setViewportView(ta2);
 		ta2.setEditable(false);
 		panelPrincipal_1.validate();
 		return panelPrincipal_1;
 	}
 	
+	/**
+	 * Metodo que implementa el boton "Lista Tokens"
+	 * @return Objeto de tipo JButton
+	 */
 	public JButton getBotonTokens() {
 		botonTokens=new JButton();
 		botonTokens.setBounds(399, 275, 116, 50);
 		botonTokens.setText("Lista Tokens");
-		botonTokens.setFont(new java.awt.Font("Verdana", Font.PLAIN, 10));
+		botonTokens.setFont(new java.awt.Font("Verdana", Font.BOLD, 11));
 		botonTokens.revalidate();
 		botonTokens.addActionListener(
 					new ActionListener(){

@@ -156,14 +156,15 @@ public class Compilador extends JFrame {
 							int num=seleccion.showSaveDialog(Compilador.this);
 							try {
 								if (num == seleccion.APPROVE_OPTION){
-									String fichero = seleccion.getSelectedFile().getName();
-									PrintWriter fichSal= new PrintWriter(new FileOutputStream(fichero));
+									archivo = seleccion.getSelectedFile();
+									PrintWriter fichSal= new PrintWriter(new FileOutputStream(archivo));
 									String contenido=new String(ta1.getText());
 									StringTokenizer st=new StringTokenizer(contenido,"\n");
 									while(st.hasMoreTokens()){
 										String linea=st.nextToken();
 										fichSal.print(linea+"\n");
 									}
+									ta1.setText(null);
 									fichSal.close();
 								}else{
 									seleccion.cancelSelection();

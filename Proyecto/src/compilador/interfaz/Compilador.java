@@ -126,6 +126,7 @@ public class Compilador extends JFrame {
 							Scanner sc=null;
 							try{
 								sc=new Scanner (new File("Proyecto/src/main/entrada.txt"));
+								ta1.setText("");
 								while(sc.hasNextLine()){
 									String linea=sc.nextLine();
 									ta1.append(linea);
@@ -159,7 +160,6 @@ public class Compilador extends JFrame {
 									PrintWriter fichSal= new PrintWriter(new FileOutputStream(fichero));
 									String contenido=new String(ta1.getText());
 									StringTokenizer st=new StringTokenizer(contenido,"\n");
-									ta1.setText("");
 									while(st.hasMoreTokens()){
 										String linea=st.nextToken();
 										fichSal.print(linea+"\n");
@@ -199,6 +199,7 @@ public class Compilador extends JFrame {
 								   fr = new FileReader (archivo);
 									br = new BufferedReader(fr);
 									String linea=br.readLine();
+									ta1.setText("");
 							        while((linea)!=null){
 							        	ta1.append(linea);
 							        	ta1.append(System.getProperty("line.separator")); 
@@ -288,6 +289,7 @@ public class Compilador extends JFrame {
 								in=new StringBufferInputStream(contenido);
 								AnalizadorLexico analizador = new AnalizadorLexico(in);
 								Token token = analizador.scanner();
+								ta2.setText("");
 								while(token.getTipo() != TipoToken.EOF) {
 									ta2.append("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo()+"\n");
 									token = analizador.scanner();

@@ -229,14 +229,14 @@ public class Compilador extends JFrame {
 		l0=new JLabel();
 		l0.setBounds(370, 11, 185, 34);
 		l0.setFont(new java.awt.Font("Verdana", Font.BOLD, 18));
-		l0.setText("Analizador léxico");
+		l0.setText("Analizador lexico");
 		l1=new JLabel();
 		l1.setBounds(145, 26, 163, 34);
-		l1.setText("Código de entrada");
+		l1.setText("Codigo de entrada");
 		l1.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
 		l2=new JLabel();
 		l2.setBounds(640, 26, 146, 34);
-		l2.setText("Código de salida");
+		l2.setText("Codigo de salida");
 		l2.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
 		sp1=new JScrollPane();
 		sp1.setBounds(39, 68, 350, 466);

@@ -729,8 +729,7 @@ public class AnalizadorLexico {
 				
 			case 99: 
 				if(preanalisis == '"') {
-					//tablaSimbolos.inserta(lexema);
-					return new Token(TipoToken.LIT_CADENA,lexema); //TODO puntero a la TS
+					return new Token(TipoToken.LIT_CADENA,lexema);
 				} else	if( !esCajonDesastre() || (preanalisis == '\\') || (preanalisis == '\n'))	{
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
 					return new Token(TipoToken.ERROR,error);
@@ -743,7 +742,6 @@ public class AnalizadorLexico {
 			case 101:
 			case 102:
 				if(preanalisis == '\''){
-					//tablaSimbolos.inserta(lexema);
 					return new Token(TipoToken.LIT_CARACTER,lexema);
 				} else if ( !esCajonDesastre() || (preanalisis == '\n') /*|| (preanalisis == '\\')*/){
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
@@ -788,7 +786,9 @@ public class AnalizadorLexico {
 			case 108:
 				if(preanalisis=='/'){
 					//tablaSimbolos.inserta(lexema)
-					return new Token(TipoToken.COMENTARIO, lexema);//Aqui habria que almacenar algo como la linea y la columna donde esta el comentario?
+					return new Token(TipoToken.COMENT_LARGO, lexema);
+					// Aqui habria que almacenar algo como la linea y la columna donde esta el comentario?
+					// Tomás: Yo no creo, por parte del sintáctico, se tratará igual que los demás tokens, no? 
 				}
 				else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIV);
@@ -800,7 +800,7 @@ public class AnalizadorLexico {
 			case 110:
 				if(preanalisis=='\n' || preanalisis=='\0'){  //Ya que es el comentario de linea (//) acaba cuando recibe un /r/n
 					//tablaSimbolos.inserta(lexema)
-					return new Token(TipoToken.COMENTARIO, lexema);//Aqui habria que almacenar algo como la linea y la columna donde esta el comentario?
+					return new Token(TipoToken.COMENT_LINEA, lexema);//Aqui habria que almacenar algo como la linea y la columna donde esta el comentario?
 				} else {
 					lexema = lexema + preanalisis;
 					transita(110);

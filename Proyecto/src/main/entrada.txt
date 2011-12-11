@@ -1,4 +1,5 @@
 123 012 +0x1A 12lL 12uLL 12lu
+ ;
 12.123 .123  - 12.12l 12.f
 .12e+2 ::) 100.E2 12.12E-1
 "literal cadena" 'u' '\t' 
@@ -6,4 +7,4 @@ sss //comentario corto...
 12345 /* comentario
 largo
 ... */
-; ; ;
+x.entrada

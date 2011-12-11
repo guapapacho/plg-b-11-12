@@ -50,6 +50,10 @@ public class AnalizadorLexico {
 	 */
 	private boolean asterisco;
 	
+	//private boolean asterisco2;
+	//private Token token2;
+	
+	
 	/**
 	 * Atributo para poder buscar las palabras reservadas e identificadores en la Table de
 	 * simbolos, e insertar los nuevos identificadores
@@ -74,6 +78,7 @@ public class AnalizadorLexico {
 		this.preanalisis = ' ';
 		this.estado = 0; 
 		this.asterisco = false;
+		//this.asterisco2 = false;
 		this.tablaSimbolos = new TablaSimbolos();
 	}
 
@@ -86,6 +91,10 @@ public class AnalizadorLexico {
 		Token token = null;
 		boolean fin = false; // parece que no lo usamos
 		String lexema = "";
+		/*if(asterisco2){
+			return token2;
+		}
+		asterisco2 = false;*/
 		if(!asterisco)
 			preanalisis = getChar();
 		asterisco = false;
@@ -633,6 +642,9 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.SEPARADOR,"[");
 				} else if (preanalisis == '%') {
 					return new Token(TipoToken.SEPARADOR,"{");
+				/*} else if (preanalisis != '\\' && preanalisis != '\n'){
+					lexema = lexema+preanalisis;
+					transita(111);*/
 				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {<,%,=,:}
 					asterisco = true;
 					return new Token(TipoToken.OP_COMPARACION,"<");
@@ -788,7 +800,7 @@ public class AnalizadorLexico {
 					//tablaSimbolos.inserta(lexema)
 					return new Token(TipoToken.COMENT_LARGO, lexema);
 					// Aqui habria que almacenar algo como la linea y la columna donde esta el comentario?
-					// Tomás: Yo no creo, por parte del sintáctico, se tratará igual que los demás tokens, no? 
+					// Tomï¿½s: Yo no creo, por parte del sintï¿½ctico, se tratarï¿½ igual que los demï¿½s tokens, no? 
 				}
 				else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
 					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIV);
@@ -804,7 +816,37 @@ public class AnalizadorLexico {
 				} else {
 					lexema = lexema + preanalisis;
 					transita(110);
-				}
+				}/*
+				break;
+			case 111: 
+				if(preanalisis == '>') {
+					return new Token(TipoToken.NOM_LIBRERIA,lexema);
+				} else if(esDelim()){ 
+					 Integer puntTS = tablaSimbolos.BuscaPalRes(lexema);
+					 if(puntTS == null ) // es un identificador	
+					 {	 
+						String lex = tablaSimbolos.BuscaId(lexema);
+						if (lex == null) { //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
+							tablaSimbolos.insertaIdentificador(lexema);
+							token2 = new Token(TipoToken.IDENTIFICADOR,lexema);
+						}
+						else {
+							token2 = new Token(TipoToken.IDENTIFICADOR,lex);
+						}
+					 }	
+					 else { // es una palabra reservada
+						 token2 = new Token(TipoToken.PAL_RESERVADA,puntTS);
+					 }
+					 asterisco2 = true;
+					 asterisco = true;
+					 return new Token(TipoToken.OP_COMPARACION,"<");
+				} else if( !esCajonDesastre() || (preanalisis == '\\') || (preanalisis == '\n'))	{
+					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					return new Token(TipoToken.ERROR,error);
+				} else {	
+					lexema = lexema+preanalisis;
+					transita(111);
+				}*/
 			} //switch
 		} //while
 		return token;

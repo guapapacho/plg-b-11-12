@@ -132,13 +132,13 @@ public class AnalizadorLexico {
 				} else if (preanalisis == ' ') {
 					preanalisis = getChar();
 				} else if (preanalisis == '}') {
-					token = new Token(TipoToken.SEPARADOR,'}');
+					token = new Token(TipoToken.SEPARADOR,"}");
 					return token;
 				} else if (preanalisis == '~') {
-					token = new Token(TipoToken.OP_LOGICO,'~');
+					token = new Token(TipoToken.OP_LOGICO,"~");
 					return token;
 				} else if (preanalisis == ';') {
-					token = new Token(TipoToken.SEPARADOR, ';');
+					token = new Token(TipoToken.SEPARADOR, ";");
 					return token;
 				} else if (preanalisis == '+') {
 					transita(41);
@@ -157,17 +157,17 @@ public class AnalizadorLexico {
 				} else if (preanalisis == '>') {
 					transita(68);
 				} else if (preanalisis == '[') {
-					token = new Token(TipoToken.SEPARADOR,'[');
+					token = new Token(TipoToken.SEPARADOR,"[");
 					return token;
 				} else if (preanalisis == '{') {
-					token = new Token(TipoToken.SEPARADOR, '{');
+					token = new Token(TipoToken.SEPARADOR, "{");
 					return token;
 				} else if (preanalisis == '<') {
 					transita(75);
 				} else if (preanalisis == ':') {
 					transita(81);
 				} else if (preanalisis == ']') {
-					token = new Token(TipoToken.SEPARADOR, ']');
+					token = new Token(TipoToken.SEPARADOR, "]");
 					return token;
 				} else if (preanalisis == '|') {
 					transita(83);					
@@ -176,10 +176,10 @@ public class AnalizadorLexico {
 				} else if (preanalisis == '^') {
 					transita(91);
 				} else if (preanalisis == '(') {
-					token = new Token(TipoToken.SEPARADOR,'(');
+					token = new Token(TipoToken.SEPARADOR,"(");
 					return token;
 				} else if (preanalisis == ')') {
-					token = new Token(TipoToken.SEPARADOR, ')');
+					token = new Token(TipoToken.SEPARADOR, ")");
 					return token;
 				} else if (preanalisis == '\'') {
 					transita(102);
@@ -191,7 +191,9 @@ public class AnalizadorLexico {
 				} else if (preanalisis == '/') {
 					transita(105);
 				} else {
-					return new Token(TipoToken.ERROR,errorGenerico);
+					token = new Token(TipoToken.ERROR,null);
+					//insertar en G.E.
+					return token;
 				}
 				break;
 			case 1:
@@ -209,11 +211,14 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else if(letra()){
-					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
-					return new Token(TipoToken.ERROR, error);
+					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					token = new Token(TipoToken.ERROR, null);
+					//insertar en G.E.
+					return token;
 				} else {
 					asterisco = true;
-					return new Token(TipoToken.NUM_ENTERO, parteEntera);
+					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					return token;
 				}
 				break;
 			case 2:	
@@ -234,11 +239,14 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else if(letra()){
-					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
-					return new Token(TipoToken.ERROR,error);
+					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					token = new Token(TipoToken.ERROR,null);
+					//insertar en G.E.
+					return token;
 				} else {
 					asterisco = true;
-					return new Token(TipoToken.NUM_ENTERO, parteEntera);
+					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
+					return token;
 				}
 				break;
 			case 3:	
@@ -262,8 +270,10 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else if(letra()) {
-					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
-					return new Token(TipoToken.ERROR,error);
+					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					token = new Token(TipoToken.ERROR,null);
+					//insertar en G.E.
+					return token;
 				} else {
 					asterisco = true;
 					return new Token(TipoToken.NUM_ENTERO, parteEntera);
@@ -275,8 +285,10 @@ public class AnalizadorLexico {
 					parteEntera = parteEntera*16 + hex;
 					transita(7);
 				} else {
-					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorVI);
-					return new Token(TipoToken.ERROR,error);
+					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorVI);
+					token = new Token(TipoToken.ERROR,null);
+					//insertar en G.E.
+					return token;
 				}
 				break;
 			case 5:	

@@ -1,4 +1,4 @@
-package compilador.lexico;
+package compilador.gestionErrores;
 
 public class ErrorLexico {
 	private int numLinea;

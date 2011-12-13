@@ -1,7 +1,0 @@
-include<iostream.h>
-for(i=9;i<5;i++)
-{
-	cout<< "hola";
-}
-// hoolaaa
-/* holaaaa!! ***/

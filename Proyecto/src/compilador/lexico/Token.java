@@ -1,4 +1,4 @@
-package compilador.lexico.tokens;
+package compilador.lexico;
 
 /**
  * 

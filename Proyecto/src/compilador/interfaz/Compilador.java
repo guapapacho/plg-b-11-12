@@ -28,12 +28,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import compilador.lexico.AnalizadorLexico;
-import compilador.lexico.tokens.Token;
-import compilador.lexico.tokens.Token.TipoToken;
+import compilador.lexico.Token;
+import compilador.lexico.Token.TipoToken;
 import java.awt.Button;
 
 /**
- * @author Pilar
+ * @author Grupo 1
  *
  */
 @SuppressWarnings("serial")
@@ -125,7 +125,7 @@ public class Compilador extends JFrame {
 						public void actionPerformed(ActionEvent e) {
 							Scanner sc=null;
 							try{
-								sc=new Scanner (new File("Proyecto/src/main/entrada.txt"));
+								sc=new Scanner (new File("Proyecto/src/ejemplos/entrada.txt"));
 								ta1.setText("");
 								while(sc.hasNextLine()){
 									String linea=sc.nextLine();

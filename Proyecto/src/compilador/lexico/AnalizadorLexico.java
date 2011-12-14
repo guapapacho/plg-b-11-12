@@ -704,7 +704,7 @@ public class AnalizadorLexico {
 			case 102:
 				if(preanalisis == '\''){
 					return new Token(TipoToken.LIT_CARACTER,lexema);
-				} else if ( !esCajonDesastre() || (preanalisis == '\n') /*|| (preanalisis == '\\')*/){
+				} else if ( !esCajonDesastre() || (preanalisis == '\n')){
 					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				} else {

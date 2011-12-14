@@ -49,8 +49,8 @@ public class Token {
      * Operadores logicos
      */
     public enum OpLogico {
-    	Y, O, NO, Y_BIT, O_BIT, SOBRERO, CIRCUNFLEJO, DOS_MENORES, DOS_MAYORES,			//Revisar!!!! no se si se podrian poner menos porque
-    	AND, ANDEQ, BIT_AND, BIT_OR, COMPL, NOT, NOT_EQ, OR, OR_EQ, XOR, XOR_EQ			//sea el mismo significado...
+    	Y, O, NO, Y_BIT, O_BIT, SOBRERO, CIRCUNFLEJO, DOS_MENORES, DOS_MAYORES,			
+    	AND, ANDEQ, BIT_AND, BIT_OR, COMPL, NOT, NOT_EQ, OR, OR_EQ, XOR, XOR_EQ			
     }
     
     /**

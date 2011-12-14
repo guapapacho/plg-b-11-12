@@ -958,7 +958,7 @@ public class AnalizadorLexico {
 		return caracter;
 	}
 	
-	public void transita(int est){
+	private void transita(int est){
 		preanalisis = getChar();
 		estado = est;
 	}

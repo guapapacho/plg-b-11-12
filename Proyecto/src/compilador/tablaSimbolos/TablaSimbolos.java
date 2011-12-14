@@ -180,8 +180,6 @@ public class TablaSimbolos {
 		palRes.put("false", 27);
 		palRes.put("float", 28);
 		palRes.put("for", 29);
-		/*palRes.put("dynamic_cast", 30);
-		palRes.put("dynamic_cast", 31);*/
 		palRes.put("friend",30);
 		palRes.put("goto",31);
 		palRes.put("if",32);
@@ -225,6 +223,9 @@ public class TablaSimbolos {
 		palRes.put("volatile",70);
 		palRes.put("wchar_t",71);
 		palRes.put("while", 72);
+		palRes.put("String", 73);
+		palRes.put("cin", 74);
+		palRes.put("cout", 75);
 
 	}	
 	

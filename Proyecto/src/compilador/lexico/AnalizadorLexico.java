@@ -30,11 +30,6 @@ public class AnalizadorLexico {
 	private int numcolumna;
 	
 	/**
-	 * Array de tokens que vamos formando desde el fichero de entrada
-	 */
-//	private ArrayList<Token> arraytokens; 
-	
-	/**
 	 * Atributo que indica el caracter actual que leemos de la entrada
 	 */
 	private char preanalisis;
@@ -50,23 +45,13 @@ public class AnalizadorLexico {
 	 */
 	private boolean asterisco;
 	
-	//private boolean asterisco2;
-	//private Token token2;
-	
-	
 	/**
 	 * Atributo para poder buscar las palabras reservadas e identificadores en la Table de
 	 * simbolos, e insertar los nuevos identificadores
 	 */
 	private TablaSimbolos tablaSimbolos;
 	
-	
-//	private String errorGenerico = "Error en linea "+numlinea+" y columna "+numcolumna; // Este es el mismo error tipo I
-//	private final String errorVI = "se esperaba un digito hexadecimal.";
-//	private final String errorV = "numero mal formado.";
-//	private final String errorIII = "caracter no esperado.";
-//	private final String errorIV = "fin de comentario esperado.";
-//	private final String errorI = "caracter no permitido.";
+
 	
 	/**
 	 * Constructora de la clase
@@ -78,23 +63,18 @@ public class AnalizadorLexico {
 		this.preanalisis = ' ';
 		this.estado = 0; 
 		this.asterisco = false;
-		//this.asterisco2 = false;
 		this.tablaSimbolos = new TablaSimbolos();
 	}
 
 	/**
-	 * M�todo que devuelve el siguiente token
-	 * @return el siguiente token
+	 * Metodo que devuelve el siguiente token
+	 * @return token
 	 */
 	public Token scanner(){
 		estado = 0;
 		Token token = null;
-		boolean fin = false; // parece que no lo usamos
 		String lexema = "";
-		/*if(asterisco2){
-			return token2;
-		}
-		asterisco2 = false;*/
+
 		if(!asterisco)
 			preanalisis = getChar();
 		asterisco = false;
@@ -106,7 +86,7 @@ public class AnalizadorLexico {
 		int parteExponencial = 0;
 		int signo = 1;
 		
-		while (! fin) {
+		while (true) {
 			digito = preanalisis -'0';
 			
 			switch(estado) {
@@ -191,9 +171,8 @@ public class AnalizadorLexico {
 				} else if (preanalisis == '/') {
 					transita(105);
 				} else {
-					token = new Token(TipoToken.ERROR,null);
 					//insertar en G.E.
-					return token;
+					return new Token(TipoToken.ERROR,null);					
 				}
 				break;
 			case 1:
@@ -211,14 +190,11 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else if(letra()){
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
-					token = new Token(TipoToken.ERROR, null);
 					//insertar en G.E.
-					return token;
+					return new Token(TipoToken.ERROR, null);
 				} else {
 					asterisco = true;
-					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
-					return token;
+					return new Token(TipoToken.NUM_ENTERO, parteEntera);
 				}
 				break;
 			case 2:	
@@ -239,14 +215,11 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else if(letra()){
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
-					token = new Token(TipoToken.ERROR,null);
 					//insertar en G.E.
-					return token;
+					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
-					token = new Token(TipoToken.NUM_ENTERO, parteEntera);
-					return token;
+					return new Token(TipoToken.NUM_ENTERO, parteEntera);
 				}
 				break;
 			case 3:	
@@ -270,10 +243,8 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else if(letra()) {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
-					token = new Token(TipoToken.ERROR,null);
 					//insertar en G.E.
-					return token;
+					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
 					return new Token(TipoToken.NUM_ENTERO, parteEntera);
@@ -285,10 +256,8 @@ public class AnalizadorLexico {
 					parteEntera = parteEntera*16 + hex;
 					transita(7);
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorVI);
-					token = new Token(TipoToken.ERROR,null);
 					//insertar en G.E.
-					return token;
+					return new Token(TipoToken.ERROR,null);
 				}
 				break;
 			case 5:	
@@ -297,7 +266,7 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(11);
 				} else if(digito() || letra()) {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -310,7 +279,7 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'L') {
 					transita(10);					
 				} else if(digito() || letra()) {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -329,7 +298,7 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else if(digito() || letra()) {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -342,19 +311,18 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(11);	
 				} else if(digito() || letra()) {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
 					return new Token(TipoToken.NUM_ENTERO, parteEntera);
 				}
-				break;
-//			case 9:	
+				break;	
 			case 10:
 				if(preanalisis == 'L') {
 					transita(11);	
 				} else if(digito() || letra()) {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -363,18 +331,17 @@ public class AnalizadorLexico {
 				break;
 			case 11:
 				if(digito() || letra()) {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
 					return new Token(TipoToken.NUM_ENTERO, parteEntera);
 				}
-				//break;
 			case 12:	
 				if(preanalisis == 'l') {
 					transita(11);	
 				} else if(digito() || letra()) {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -385,7 +352,7 @@ public class AnalizadorLexico {
 				if(preanalisis == 'u' || preanalisis == 'U') {
 						transita(11);	
 				} else if(digito() || letra()) {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -402,7 +369,7 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'e' || preanalisis == 'E') {
 					transita(17);
 				} else{
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -416,7 +383,7 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return token;
 				} else{
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);				
 				}
 				break;
@@ -433,7 +400,7 @@ public class AnalizadorLexico {
 					asterisco=true;
 					return new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial));
 				} else{
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}	
 				break;
@@ -448,7 +415,7 @@ public class AnalizadorLexico {
 					signo = 1;
 					transita(18); 
 				} else{
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}	
 				break;
@@ -457,7 +424,7 @@ public class AnalizadorLexico {
 					parteExponencial = parteExponencial*10 + digito;
 					transita(19);
 				} else{
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}	
 				break;
@@ -471,7 +438,7 @@ public class AnalizadorLexico {
 					asterisco=true;
 					return new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial)); 
 				} else{
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}		
 				break;
@@ -481,28 +448,9 @@ public class AnalizadorLexico {
 					asterisco=true;
 					return new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial)); 
 				} else{
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
-			
-//			case 22:	
-//			case 23:	
-//			case 24:	
-//			case 25:	
-//			case 26:	
-//			case 27:	
-//			case 28:	
-//			case 29:	
-//			case 30:	
-//			case 31:	
-//			case 32:	
-//			case 33:	
-//			case 34:	
-//			case 35:	
-//			case 36:	
-//			case 37:	
-//			case 38:	
-//			case 39:
 			//OPERADORES
 			case 41:
 				if (preanalisis == '=') {
@@ -516,7 +464,7 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_ARITMETICO,"+");
 					return token;
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 		
@@ -534,7 +482,7 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_ARITMETICO,"-");		
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 		
@@ -547,7 +495,7 @@ public class AnalizadorLexico {
 					asterisco = true; //Que pasa si ponemos * reifiriendonos a un puntero??
 					return token;
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 52:
@@ -563,7 +511,7 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_ARITMETICO, "%");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -574,7 +522,7 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.SEPARADOR, "#");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -582,7 +530,7 @@ public class AnalizadorLexico {
 				if (preanalisis == ':') {
 					return new Token(TipoToken.SEPARADOR,"##");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 60:	
@@ -592,7 +540,7 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.SEPARADOR,"#");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 
@@ -603,7 +551,7 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return token = new Token(TipoToken.OP_LOGICO, "!");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 
@@ -615,7 +563,7 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_ASIGNACION,"=");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 				
@@ -629,7 +577,7 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_COMPARACION,">");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -640,10 +588,9 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_LOGICO, ">>");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
-
 			case 75:
 				if (preanalisis == '=') {
 					token = new Token(TipoToken.OP_COMPARACION,"<=");
@@ -654,14 +601,11 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.SEPARADOR,"[");
 				} else if (preanalisis == '%') {
 					return new Token(TipoToken.SEPARADOR,"{");
-				/*} else if (preanalisis != '\\' && preanalisis != '\n'){
-					lexema = lexema+preanalisis;
-					transita(111);*/
 				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {<,%,=,:}
 					asterisco = true;
 					return new Token(TipoToken.OP_COMPARACION,"<");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -672,17 +616,16 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_LOGICO,"<<");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
-
 			case 81:
 				if (preanalisis == '>') {
 					return new Token(TipoToken.SEPARADOR,"]");
 				} else if (preanalisis == ':') {
 					return new Token(TipoToken.SEPARADOR,"::");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 83:
@@ -694,10 +637,9 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_LOGICO,"|");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
-
 			case 87:
 				if (preanalisis == '&') {
 					return new Token(TipoToken.OP_LOGICO,"&&");
@@ -707,10 +649,9 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_LOGICO,"&");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
-
 			case 91:
 				if (preanalisis == '=') {
 					return new Token(TipoToken.OP_LOGICO,"^=");
@@ -718,10 +659,9 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_LOGICO,"^");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
-
 			// RECONOCIMIENTO DE CADENAS, IDENTIFICADORES Y PALABRAS RESERVADAS
 			case 97:	
 				if (noDigito() || digito()) {
@@ -746,29 +686,26 @@ public class AnalizadorLexico {
 					 asterisco=true;
 					 return token;
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorI);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
-				
 			case 99: 
 				if(preanalisis == '"') {
 					return new Token(TipoToken.LIT_CADENA,lexema);
 				} else	if( !esCajonDesastre() || (preanalisis == '\\') || (preanalisis == '\n'))	{
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				} else {	
 					lexema = lexema+preanalisis;
 					transita(99);
 				} 
 				break;
-			case 100:
-			case 101:
 			case 102:
 				if(preanalisis == '\''){
 					return new Token(TipoToken.LIT_CARACTER,lexema);
 				} else if ( !esCajonDesastre() || (preanalisis == '\n') /*|| (preanalisis == '\\')*/){
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					lexema = lexema+preanalisis;
@@ -789,7 +726,7 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_ARITMETICO,"/");
 				} else {
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -797,7 +734,7 @@ public class AnalizadorLexico {
 				if(preanalisis=='*'){
 					transita(108);
 				} else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					if(preanalisis=='\n') 
@@ -815,7 +752,7 @@ public class AnalizadorLexico {
 					// Tomas: Yo no creo, por parte del sintactico, se trataria igual que los demas tokens, no? 
 				}
 				else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
-					//ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIV);
+					//insertar en G.E.
 					return new Token(TipoToken.ERROR,null);
 				}
 				else	
@@ -861,7 +798,6 @@ public class AnalizadorLexico {
 				}*/
 			} //switch
 		} //while
-		return token;
 	}
 	
 
@@ -951,7 +887,6 @@ public class AnalizadorLexico {
 			else
 				caracter = (char)c;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		numcolumna++;

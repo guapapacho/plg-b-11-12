@@ -711,8 +711,6 @@ public class AnalizadorLexico {
 					lexema = lexema+preanalisis;
 					transita(102);
 				}
-				// Y este caso: no seria valido?? yo creo que si es valido.. (cris)
-				// char c = '\\'; 
 				break;
 			case 105:
 				if(preanalisis=='='){
@@ -747,9 +745,7 @@ public class AnalizadorLexico {
 			case 108:
 				if(preanalisis=='/'){
 					//tablaSimbolos.inserta(lexema)
-					return new Token(TipoToken.COMENT_LARGO, lexema);
-					// Aqui habria que almacenar algo como la linea y la columna donde esta el comentario?
-					// Tomas: Yo no creo, por parte del sintactico, se trataria igual que los demas tokens, no? 
+					return new Token(TipoToken.COMENT_LARGO, lexema); 
 				}
 				else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
 					//insertar en G.E.
@@ -760,42 +756,11 @@ public class AnalizadorLexico {
 				break;
 			case 110:
 				if(preanalisis=='\n' || preanalisis=='\0'){  //Ya que es el comentario de linea (//) acaba cuando recibe un /r/n
-					//tablaSimbolos.inserta(lexema)
-					return new Token(TipoToken.COMENT_LINEA, lexema);//Aqui habria que almacenar algo como la linea y la columna donde esta el comentario?
+					return new Token(TipoToken.COMENT_LINEA, lexema);
 				} else {
 					lexema = lexema + preanalisis;
 					transita(110);
-				}/*
-				break;
-			case 111: 
-				if(preanalisis == '>') {
-					return new Token(TipoToken.NOM_LIBRERIA,lexema);
-				} else if(esDelim()){ 
-					 Integer puntTS = tablaSimbolos.BuscaPalRes(lexema);
-					 if(puntTS == null ) // es un identificador	
-					 {	 
-						String lex = tablaSimbolos.BuscaId(lexema);
-						if (lex == null) { //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
-							tablaSimbolos.insertaIdentificador(lexema);
-							token2 = new Token(TipoToken.IDENTIFICADOR,lexema);
-						}
-						else {
-							token2 = new Token(TipoToken.IDENTIFICADOR,lex);
-						}
-					 }	
-					 else { // es una palabra reservada
-						 token2 = new Token(TipoToken.PAL_RESERVADA,puntTS);
-					 }
-					 asterisco2 = true;
-					 asterisco = true;
-					 return new Token(TipoToken.OP_COMPARACION,"<");
-				} else if( !esCajonDesastre() || (preanalisis == '\\') || (preanalisis == '\n'))	{
-					ErrorLexico error = new ErrorLexico(numlinea, numcolumna, errorIII);
-					return new Token(TipoToken.ERROR,error);
-				} else {	
-					lexema = lexema+preanalisis;
-					transita(111);
-				}*/
+				}
 			} //switch
 		} //while
 	}

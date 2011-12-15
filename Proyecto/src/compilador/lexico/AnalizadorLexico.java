@@ -179,6 +179,8 @@ public class AnalizadorLexico {
 					transita(97);
 				} else if (preanalisis == '/') {
 					transita(105);
+				} else if (preanalisis == ',') {
+					return new Token(TipoToken.SEPARADOR,",");
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
@@ -842,7 +844,7 @@ public class AnalizadorLexico {
 	
 	private boolean esCajonDesastre() {
 		
-		if(letra()	||	digito() ||	preanalisis == '_'	||	preanalisis == ',' ||  preanalisis == ' '||	preanalisis== '-'||
+		if(letra()	||	digito() ||	preanalisis == '_'	||	preanalisis == ' '||	preanalisis== '-'||
 			preanalisis=='*' ||	preanalisis=='+'||	preanalisis=='#' || preanalisis=='(' ||	preanalisis==')' ||	
 			preanalisis=='<' || preanalisis=='}'||	preanalisis=='>' || preanalisis=='{' ||	preanalisis=='!' ||					
 			preanalisis=='%' ||	preanalisis==':'||	preanalisis==';' ||	preanalisis=='.' ||	preanalisis== '?'||

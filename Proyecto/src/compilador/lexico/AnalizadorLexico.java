@@ -1,7 +1,10 @@
 package compilador.lexico;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
+import compilador.gestionErrores.*;
+import compilador.gestionErrores.GestorErrores.TError;
 import compilador.lexico.Token;
 import compilador.lexico.Token.TipoToken;
 import compilador.tablaSimbolos.TablaSimbolos;
@@ -13,6 +16,13 @@ import compilador.tablaSimbolos.TablaSimbolos;
  *
  */
 public class AnalizadorLexico {
+
+
+	/*
+	* Gestor de errores
+	*/
+
+	private GestorErrores gestor = new GestorErrores();
 
 	/**
 	 * Atributo que identifica el fichero con el codigo de entrada
@@ -171,6 +181,7 @@ public class AnalizadorLexico {
 					transita(105);
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);					
 				}
 				break;
@@ -190,6 +201,7 @@ public class AnalizadorLexico {
 					transita(6);
 				} else if(letra()){
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR, null);
 				} else {
 					asterisco = true;
@@ -215,6 +227,7 @@ public class AnalizadorLexico {
 					transita(6);
 				} else if(letra()){
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -243,6 +256,7 @@ public class AnalizadorLexico {
 					transita(6);
 				} else if(letra()) {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -266,6 +280,7 @@ public class AnalizadorLexico {
 					transita(11);
 				} else if(digito() || letra()) {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -279,6 +294,7 @@ public class AnalizadorLexico {
 					transita(10);					
 				} else if(digito() || letra()) {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -298,6 +314,7 @@ public class AnalizadorLexico {
 					transita(6);
 				} else if(digito() || letra()) {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -311,6 +328,7 @@ public class AnalizadorLexico {
 					transita(11);	
 				} else if(digito() || letra()) {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -322,6 +340,7 @@ public class AnalizadorLexico {
 					transita(11);	
 				} else if(digito() || letra()) {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -331,6 +350,7 @@ public class AnalizadorLexico {
 			case 11:
 				if(digito() || letra()) {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -341,6 +361,7 @@ public class AnalizadorLexico {
 					transita(11);	
 				} else if(digito() || letra()) {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -352,6 +373,7 @@ public class AnalizadorLexico {
 						transita(11);	
 				} else if(digito() || letra()) {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					asterisco = true;
@@ -369,6 +391,7 @@ public class AnalizadorLexico {
 					transita(17);
 				} else{
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -383,6 +406,7 @@ public class AnalizadorLexico {
 					return token;
 				} else{
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);				
 				}
 				break;
@@ -400,6 +424,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial));
 				} else{
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}	
 				break;
@@ -415,6 +440,7 @@ public class AnalizadorLexico {
 					transita(18); 
 				} else{
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}	
 				break;
@@ -424,6 +450,7 @@ public class AnalizadorLexico {
 					transita(19);
 				} else{
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}	
 				break;
@@ -438,6 +465,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial)); 
 				} else{
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}		
 				break;
@@ -448,6 +476,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial)); 
 				} else{
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			//OPERADORES
@@ -464,6 +493,7 @@ public class AnalizadorLexico {
 					return token;
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 		
@@ -482,6 +512,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.OP_ARITMETICO,"-");		
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 		
@@ -495,6 +526,7 @@ public class AnalizadorLexico {
 					return token;
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 52:
@@ -511,6 +543,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.OP_ARITMETICO, "%");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -522,6 +555,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.SEPARADOR, "#");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -530,6 +564,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.SEPARADOR,"##");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 60:	
@@ -540,6 +575,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.SEPARADOR,"#");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 
@@ -551,6 +587,7 @@ public class AnalizadorLexico {
 					return token = new Token(TipoToken.OP_LOGICO, "!");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 
@@ -563,6 +600,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.OP_ASIGNACION,"=");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 				
@@ -577,6 +615,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.OP_COMPARACION,">");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -588,6 +627,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.OP_LOGICO, ">>");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 75:
@@ -605,6 +645,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.OP_COMPARACION,"<");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -616,6 +657,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.OP_LOGICO,"<<");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 81:
@@ -625,6 +667,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.SEPARADOR,"::");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 83:
@@ -637,6 +680,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.OP_LOGICO,"|");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 87:
@@ -649,6 +693,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.OP_LOGICO,"&");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 91:
@@ -659,6 +704,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.OP_LOGICO,"^");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			// RECONOCIMIENTO DE CADENAS, IDENTIFICADORES Y PALABRAS RESERVADAS
@@ -686,6 +732,7 @@ public class AnalizadorLexico {
 					 return token;
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -694,6 +741,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.LIT_CADENA,lexema);
 				} else	if( !esCajonDesastre() || (preanalisis == '\\') || (preanalisis == '\n'))	{
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {	
 					lexema = lexema+preanalisis;
@@ -705,6 +753,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.LIT_CARACTER,lexema);
 				} else if ( !esCajonDesastre() || (preanalisis == '\n')){
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					lexema = lexema+preanalisis;
@@ -724,6 +773,7 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.OP_ARITMETICO,"/");
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -732,6 +782,7 @@ public class AnalizadorLexico {
 					transita(108);
 				} else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					if(preanalisis=='\n') 
@@ -748,6 +799,7 @@ public class AnalizadorLexico {
 				}
 				else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 				else	
@@ -857,7 +909,10 @@ public class AnalizadorLexico {
 		numcolumna++;
 		return caracter;
 	}
-	
+	public ArrayList<TError> devuelveErrorLex(){
+		return gestor.devuelveErrores();
+		
+	}
 	private void transita(int est){
 		preanalisis = getChar();
 		estado = est;

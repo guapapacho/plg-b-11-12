@@ -1,9 +1,7 @@
-package compilador.gestor;
-
-
-
+package compilador.gestionErrores;
 
 import java.util.ArrayList;
+
 
 
 public class GestorErrores {
@@ -14,8 +12,8 @@ public class GestorErrores {
 	public void listaerrores(){
 	lista = new ArrayList<String>();
 	lista.add("elemento del léxico ya insertado");
-	lista.add("caracter no valido");
 	lista.add("error de entrada salida");
+	lista.add("caracter no valido");
 	lista.add("Imposible emparejar el terminal con el token");
 	lista.add("token de entrada invalido");
 	lista.add("pila vacia no esperada");
@@ -105,3 +103,4 @@ public class GestorErrores {
     		
     	  }
     }
+

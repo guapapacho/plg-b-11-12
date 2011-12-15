@@ -100,12 +100,6 @@ public class GestorErrores {
     			salida=salida+lista.get(err2.getError())+" en: \n la linea "+err2.getLinea()+" y la columna "+err2.getColumna()+" \n";
     			
     		}
-    		
-    	//	salida=salida+"Hubo: "+cuenta+" errores\n";
-    		//for (int i=0; i<cuenta+1; i++){
-    	//	salida=salida+"Error: "+lista.get(errors.get(i).error);
-    		//+lista.get(errors.get(i).error)+" En la linea"+errors.get(i).getLinea()+" Y la columna"+errors.get(i).getColumna()+"\n";
-    	//	}
     		return salida;
     		}
     		 

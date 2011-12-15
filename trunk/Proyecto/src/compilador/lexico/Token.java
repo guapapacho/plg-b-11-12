@@ -22,7 +22,7 @@ public class Token {
      * Separadores
      */
     public enum Separadores {
-    	PUNTO("."),PUNTO_COMA(";"), ABRE_LLAVE("{"), CIERRA_LLAVE("}"), ABRE_CORCHETE("["),
+    	PUNTO("."),DOS_PUNTOS(":"),PUNTO_COMA(";"), ABRE_LLAVE("{"), CIERRA_LLAVE("}"), ABRE_CORCHETE("["),
     	CIERRA_CORCHETE("]"), ALMOHADILLA("#"), DOBLE_ALMOHADILLA("##"), ABRE_PARENTESIS("("),
     	CIERRA_PARENTESIS(")"), DOBLE_DOSPUNTOS("::"), COMA(",");
     	

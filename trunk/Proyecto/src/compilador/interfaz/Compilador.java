@@ -1,6 +1,5 @@
 package compilador.interfaz;
 
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,7 +11,6 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringBufferInputStream;
-import java.util.Scanner;
 import java.util.StringTokenizer;
 
 import javax.swing.JButton;
@@ -31,31 +29,27 @@ import compilador.gestionErrores.GestorErrores;
 import compilador.lexico.AnalizadorLexico;
 import compilador.lexico.Token;
 import compilador.lexico.Token.TipoToken;
-import java.awt.Button;
 
 /**
  * @author Grupo 1
  *
  */
-@SuppressWarnings("serial")
+@SuppressWarnings({ "serial", "deprecation" })
 public class Compilador extends JFrame {
 
 	/**
 	 * @param args
 	 */
 	
-	private JPanel panelPrincipal=null;
 	private JPanel panelPrincipal_1;
 	private JMenuBar barraMenu=null;
 	private JMenu ficheroMenu=null;
 	private JMenuItem abrir=null;
 	private JMenuItem guardar=null;
-	private JMenuItem def=null;
 	private JTextArea ta1=null;
 	private JTextArea ta2=null;
 	private JScrollPane sp1 =null;
 	private JScrollPane sp2 =null;
-	private Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
 	private JLabel l0=null;
 	private JLabel l1=null;
 	private JLabel l2=null;
@@ -108,38 +102,8 @@ public class Compilador extends JFrame {
 			ficheroMenu.setText("Ficheros"); 
 			ficheroMenu.add(getLeerItem());
 			ficheroMenu.add(getGuardarItem());
-			ficheroMenu.add(getDefaultItem());
 		}
 		return ficheroMenu;
-	}
-
-	/**
-	 * Metodo que implementa el item "Default" dentro del submenu "Ficheros"
-	 * @return Objeto de tipo JMenuItem
-	 */
-	private JMenuItem getDefaultItem() {
-		if (def==null){
-			def = new JMenuItem();
-			def.setText("Default");
-			def.addActionListener(
-					new ActionListener(){
-						public void actionPerformed(ActionEvent e) {
-							Scanner sc=null;
-							try{
-								sc=new Scanner (new File("Proyecto/src/ejemplos/entrada.txt"));
-								ta1.setText("");
-								while(sc.hasNextLine()){
-									String linea=sc.nextLine();
-									ta1.append(linea);
-						        	ta1.append(System.getProperty("line.separator"));	
-								}
-							}catch(Exception e1){
-								e1.printStackTrace();
-							}
-						}
-					});
-		}
-		return def;
 	}
 
 	/**
@@ -152,6 +116,7 @@ public class Compilador extends JFrame {
 			guardar.setText("Guardar");
 			guardar.addActionListener(
 					new ActionListener(){
+						@SuppressWarnings("static-access")
 						public void actionPerformed(ActionEvent e) {
 							JFileChooser seleccion = new JFileChooser();
 							int num=seleccion.showSaveDialog(Compilador.this);
@@ -226,6 +191,7 @@ public class Compilador extends JFrame {
 	 * Metodo que configura el panel contenido dentro del Frame principal
 	 * @return Objeto de tipo JPanel
 	 */
+	@SuppressWarnings("static-access")
 	private JPanel getPanelPrincipal(){
 		panelPrincipal_1=new JPanel();
 		panelPrincipal_1.setLayout(null);

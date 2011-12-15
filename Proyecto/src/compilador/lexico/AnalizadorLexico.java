@@ -828,7 +828,7 @@ public class AnalizadorLexico {
 			preanalisis == '*' || preanalisis == '<' || preanalisis == '>' || preanalisis == '=' || preanalisis == '&' || 
 			preanalisis == '^' || preanalisis == '%' || preanalisis == '!' || preanalisis == '~' || preanalisis == '{' || 
 			preanalisis == '}' || preanalisis == '[' || preanalisis == ']' || preanalisis == '(' || preanalisis == ')' ||
-			preanalisis == '#' || preanalisis == ';' || preanalisis == '.')
+			preanalisis == '#' || preanalisis == ';' || preanalisis == '.' || preanalisis == ',')
 			return true;
 		return false;
 	}  

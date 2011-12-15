@@ -1,0 +1,4 @@
+compilador.gestionErrores
+compilador.interfaz
+compilador.lexico
+compilador.tablaSimbolos

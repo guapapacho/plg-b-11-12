@@ -60,7 +60,7 @@ public class GestorErrores {
     	lista = new ArrayList<String>();
     	lista.add("elemento del léxico ya insertado");
     	lista.add("error de entrada salida");
-    	lista.add("caracter no valido");
+    	lista.add("caracter no valido para formar token");
     	lista.add("Imposible emparejar el terminal con el token");
     	lista.add("token de entrada invalido");
     	lista.add("pila vacia no esperada");

@@ -1,24 +1,14 @@
 package compilador.gestionErrores;
 
 import java.util.ArrayList;
-
+import java.util.Iterator;
 
 
 public class GestorErrores {
 	/**
 	 * lista de los distintos errores existentes
 	 */
-	private ArrayList<String> lista;
-	public void listaerrores(){
-	lista = new ArrayList<String>();
-	lista.add("elemento del léxico ya insertado");
-	lista.add("error de entrada salida");
-	lista.add("caracter no valido");
-	lista.add("Imposible emparejar el terminal con el token");
-	lista.add("token de entrada invalido");
-	lista.add("pila vacia no esperada");
-}
-	
+	private ArrayList<String> lista ;
 	/*
 	 * triplete sencillo con el que insertamos errores
 	 */
@@ -67,6 +57,13 @@ public class GestorErrores {
     private ArrayList<TError> errors;
     private int cuenta;
     public GestorErrores() {
+    	lista = new ArrayList<String>();
+    	lista.add("elemento del léxico ya insertado");
+    	lista.add("error de entrada salida");
+    	lista.add("caracter no valido");
+    	lista.add("Imposible emparejar el terminal con el token");
+    	lista.add("token de entrada invalido");
+    	lista.add("pila vacia no esperada");
         errors = new ArrayList<TError>();
         cuenta=0;
     }
@@ -96,9 +93,19 @@ public class GestorErrores {
     		   	}
     	else {
     		salida=salida+"Hubo: "+cuenta+" errores\n";
-    		for (int i=0; i<cuenta+1; i++){
-    			salida=salida+"Error: "+lista.get(errors.get(i).error)+" En la linea"+errors.get(i).getLinea()+" Y la columna"+errors.get(i).getColumna()+"\n";
+    		Iterator<TError> iterator = errors.iterator();
+    		while (iterator.hasNext()){
+    			TError err2;
+    			err2=iterator.next();
+    			salida=salida+lista.get(err2.getError())+" en: \n la linea "+err2.getLinea()+" y la columna "+err2.getColumna()+" \n";
+    			
     		}
+    		
+    	//	salida=salida+"Hubo: "+cuenta+" errores\n";
+    		//for (int i=0; i<cuenta+1; i++){
+    	//	salida=salida+"Error: "+lista.get(errors.get(i).error);
+    		//+lista.get(errors.get(i).error)+" En la linea"+errors.get(i).getLinea()+" Y la columna"+errors.get(i).getColumna()+"\n";
+    	//	}
     		return salida;
     		}
     		 

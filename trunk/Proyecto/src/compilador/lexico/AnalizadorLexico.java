@@ -51,7 +51,6 @@ public class AnalizadorLexico {
 	 */
 	private TablaSimbolos tablaSimbolos;
 	
-
 	
 	/**
 	 * Constructora de la clase
@@ -669,10 +668,10 @@ public class AnalizadorLexico {
 					transita(97);
 				} else if(esDelim()) { 
 					 Integer puntTS = tablaSimbolos.BuscaPalRes(lexema);
-					 if(puntTS == null ) // es un identificador	
+					 if(puntTS == null ) //si es un identificador	
 					 {	 
 						String lex = tablaSimbolos.BuscaId(lexema);
-						if (lex == null) { //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
+						if (lex == null) {//si no esta en la T.S. 
 							//insertar en T.S.
 							token = new Token(TipoToken.IDENTIFICADOR,lexema);
 						}
@@ -744,6 +743,7 @@ public class AnalizadorLexico {
 				break;
 			case 108:
 				if(preanalisis=='/'){
+					//insertar en T.S.
 					return new Token(TipoToken.COMENT_LARGO, lexema); 
 				}
 				else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
@@ -755,6 +755,7 @@ public class AnalizadorLexico {
 				break;
 			case 110:
 				if(preanalisis=='\n' || preanalisis=='\0'){  //Ya que es el comentario de linea (//) acaba cuando recibe un /r/n
+					//insertar en T.S.
 					return new Token(TipoToken.COMENT_LINEA, lexema);
 				} else {
 					lexema = lexema + preanalisis;
@@ -770,12 +771,12 @@ public class AnalizadorLexico {
 	}
 
 	private boolean esDelim() {	
-		if (preanalisis == ' ' || preanalisis == '\t'|| preanalisis == '\r'|| preanalisis == '\n'|| preanalisis == '\0' /*fin fichero*/ ||
+		if (preanalisis == ' ' || preanalisis == '\t'|| preanalisis == '\r'|| preanalisis == '\n'|| preanalisis == '\0'|| /*fin fichero*/ 
 			preanalisis == '|' || preanalisis == ':' || preanalisis == '+' || preanalisis == '-' || preanalisis == '/' ||
 			preanalisis == '*' || preanalisis == '<' || preanalisis == '>' || preanalisis == '=' || preanalisis == '&' || 
 			preanalisis == '^' || preanalisis == '%' || preanalisis == '!' || preanalisis == '~' || preanalisis == '{' || 
 			preanalisis == '}' || preanalisis == '[' || preanalisis == ']' || preanalisis == '(' || preanalisis == ')' ||
-			preanalisis == '#' || preanalisis == ';' || preanalisis == '.' /*Este char esta en SEPARADORES pero en DELIM no ¿Por qué?*/	)
+			preanalisis == '#' || preanalisis == ';' || preanalisis == '.')
 			return true;
 		return false;
 	}  

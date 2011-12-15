@@ -126,6 +126,9 @@ public class AnalizadorLexico {
 				} else if (preanalisis == '~') {
 					token = new Token(TipoToken.OP_LOGICO,"~");
 					return token;
+				} else if (preanalisis == ':') {
+					token = new Token(TipoToken.SEPARADOR, ":");
+					return token;
 				} else if (preanalisis == ';') {
 					token = new Token(TipoToken.SEPARADOR, ";");
 					return token;

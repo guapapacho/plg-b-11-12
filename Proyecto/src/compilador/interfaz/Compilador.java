@@ -27,6 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import compilador.gestionErrores.GestorErrores;
 import compilador.lexico.AnalizadorLexico;
 import compilador.lexico.Token;
 import compilador.lexico.Token.TipoToken;
@@ -288,6 +289,7 @@ public class Compilador extends JFrame {
 							}
 							else{
 								in=new StringBufferInputStream(contenido);
+								GestorErrores gestor = new GestorErrores();
 								AnalizadorLexico analizador = new AnalizadorLexico(in);
 								Token token = analizador.scanner();
 								ta2.setText("");
@@ -296,6 +298,8 @@ public class Compilador extends JFrame {
 									token = analizador.scanner();
 								}
 								ta2.append("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo()+"\n");
+								gestor.setErrores(analizador.devuelveErrorLex());
+								int a=gestor.muestraListaErrores();
 							}
 						}
 					});

@@ -87,17 +87,19 @@ public class GestorErrores {
     /*
      * Imprime los errores que han ocurrido y devuelve el numero que hubo
      */
-    public int muestraListaErrores(){
+    public String muestraListaErrores(){
+    	String salida;
+    	salida= " ";
     	if (cuenta==0){
-    	System.out.println("No hubo errores\n");
-    	return 0;
+    	salida=salida+"No hubo errores\n";
+    	return salida;
     		   	}
     	else {
-    		System.out.println("Hubo: "+cuenta+" errores\n" );
+    		salida=salida+"Hubo: "+cuenta+" errores\n";
     		for (int i=0; i<cuenta+1; i++){
-    			System.out.println("Error: "+lista.get(errors.get(i).error)+" En la linea"+errors.get(i).getLinea()+" Y la columna"+errors.get(i).getColumna());
+    			salida=salida+"Error: "+lista.get(errors.get(i).error)+" En la linea"+errors.get(i).getLinea()+" Y la columna"+errors.get(i).getColumna()+"\n";
     		}
-    		return cuenta;
+    		return salida;
     		}
     		 
     		

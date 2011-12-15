@@ -46,7 +46,7 @@ public class AnalizadorLexico {
 	private boolean asterisco;
 	
 	/**
-	 * Atributo para poder buscar las palabras reservadas e identificadores en la Table de
+	 * Atributo para poder buscar las palabras reservadas e identificadores en la Tabla de
 	 * simbolos, e insertar los nuevos identificadores
 	 */
 	private TablaSimbolos tablaSimbolos;
@@ -673,7 +673,7 @@ public class AnalizadorLexico {
 					 {	 
 						String lex = tablaSimbolos.BuscaId(lexema);
 						if (lex == null) { //crea un token, compuesto de Identificador y un puntero a la tabla de simbolos
-							tablaSimbolos.insertaIdentificador(lexema);
+							//insertar en T.S.
 							token = new Token(TipoToken.IDENTIFICADOR,lexema);
 						}
 						else {
@@ -744,7 +744,6 @@ public class AnalizadorLexico {
 				break;
 			case 108:
 				if(preanalisis=='/'){
-					//tablaSimbolos.inserta(lexema)
 					return new Token(TipoToken.COMENT_LARGO, lexema); 
 				}
 				else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra

@@ -298,8 +298,8 @@ public class Compilador extends JFrame {
 									token = analizador.scanner();
 								}
 								ta2.append("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo()+"\n");
-								gestor.setErrores(analizador.devuelveErrorLex());
-								int a=gestor.muestraListaErrores();
+								gestor.setErrores((1,1,2));
+								ta2.append(gestor.muestraListaErrores());
 							}
 						}
 					});

@@ -668,6 +668,7 @@ public class AnalizadorLexico {
 				} else if (preanalisis == ':') {
 					return new Token(TipoToken.SEPARADOR,"::");
 				} else {
+					asterisco = true;
 					return new Token(TipoToken.SEPARADOR,':');
 				}
 			case 83:

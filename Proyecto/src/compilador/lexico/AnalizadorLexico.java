@@ -5,8 +5,7 @@ import java.util.ArrayList;
 
 import compilador.gestionErrores.*;
 import compilador.gestionErrores.GestorErrores.TError;
-import compilador.lexico.Token;
-import compilador.lexico.Token.TipoToken;
+import compilador.lexico.Token.*;
 import compilador.tablaSimbolos.TablaSimbolos;
 
 
@@ -17,12 +16,10 @@ import compilador.tablaSimbolos.TablaSimbolos;
  */
 public class AnalizadorLexico {
 
-
-	/*
-	* Gestor de errores
-	*/
-
-	private GestorErrores gestor = new GestorErrores();
+	/**
+	 * Gestor de errores
+	 */
+	private GestorErrores gestor;
 
 	/**
 	 * Atributo que identifica el fichero con el codigo de entrada
@@ -73,6 +70,7 @@ public class AnalizadorLexico {
 		this.estado = 0; 
 		this.asterisco = false;
 		this.tablaSimbolos = new TablaSimbolos();
+		this.gestor = new GestorErrores();
 	}
 
 	/**
@@ -121,13 +119,13 @@ public class AnalizadorLexico {
 				} else if (preanalisis == ' ') {
 					preanalisis = getChar();
 				} else if (preanalisis == '}') {
-					token = new Token(TipoToken.SEPARADOR,"}");
+					token = new Token(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE);
 					return token;
 				} else if (preanalisis == '~') {
-					token = new Token(TipoToken.OP_LOGICO,"~");
+					token = new Token(TipoToken.OP_LOGICO, OpLogico.SOBRERO);
 					return token;
 				} else if (preanalisis == ';') {
-					token = new Token(TipoToken.SEPARADOR, ";");
+					token = new Token(TipoToken.SEPARADOR, Separadores.PUNTO_COMA);
 					return token;
 				} else if (preanalisis == '+') {
 					transita(41);
@@ -146,17 +144,17 @@ public class AnalizadorLexico {
 				} else if (preanalisis == '>') {
 					transita(68);
 				} else if (preanalisis == '[') {
-					token = new Token(TipoToken.SEPARADOR,"[");
+					token = new Token(TipoToken.SEPARADOR, Separadores.ABRE_CORCHETE);
 					return token;
 				} else if (preanalisis == '{') {
-					token = new Token(TipoToken.SEPARADOR, "{");
+					token = new Token(TipoToken.SEPARADOR, Separadores.ABRE_LLAVE);
 					return token;
 				} else if (preanalisis == '<') {
 					transita(75);
 				} else if (preanalisis == ':') {
 					transita(81);
 				} else if (preanalisis == ']') {
-					token = new Token(TipoToken.SEPARADOR, "]");
+					token = new Token(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE);
 					return token;
 				} else if (preanalisis == '|') {
 					transita(83);					
@@ -165,10 +163,10 @@ public class AnalizadorLexico {
 				} else if (preanalisis == '^') {
 					transita(91);
 				} else if (preanalisis == '(') {
-					token = new Token(TipoToken.SEPARADOR,"(");
+					token = new Token(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS);
 					return token;
 				} else if (preanalisis == ')') {
-					token = new Token(TipoToken.SEPARADOR, ")");
+					token = new Token(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS);
 					return token;
 				} else if (preanalisis == '\'') {
 					transita(102);
@@ -180,7 +178,7 @@ public class AnalizadorLexico {
 				} else if (preanalisis == '/') {
 					transita(105);
 				} else if (preanalisis == ',') {
-					return new Token(TipoToken.SEPARADOR,",");
+					return new Token(TipoToken.SEPARADOR, Separadores.COMA);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
@@ -272,6 +270,7 @@ public class AnalizadorLexico {
 					transita(7);
 				} else {
 					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
@@ -403,7 +402,7 @@ public class AnalizadorLexico {
 					pesoDecimal = pesoDecimal/10;
 					transita(16);
 				} else if(esDelim2()){
-					token = new Token(TipoToken.SEPARADOR, ".");
+					token = new Token(TipoToken.SEPARADOR, Separadores.PUNTO);
 					asterisco = true;
 					return token;
 				} else{
@@ -483,15 +482,15 @@ public class AnalizadorLexico {
 				}
 			//OPERADORES
 			case 41:
-				if (preanalisis == '=') {
-					token = new Token(TipoToken.OP_ASIGNACION,"+=");
+				if (preanalisis == '=') { 			// +=
+					token = new Token(TipoToken.OP_ASIGNACION,OpAsignacion.MAS_IGUAL);
 					return token;
-				} else if (preanalisis == '+') {					
-					token = new Token(TipoToken.OP_ARITMETICO,"++");
+				} else if (preanalisis == '+') { 	// ++					
+					token = new Token(TipoToken.OP_ARITMETICO,OpAritmetico.INCREMENTO);
 					return token;
-				} else if (esDelim2()) {					//valores al preanalisis DELIM2 - {+,=}
+				} else if (esDelim2()) { 			// + //valores al preanalisis DELIM2 - {+,=}
 					asterisco = true;	
-					token = new Token(TipoToken.OP_ARITMETICO,"+");
+					token = new Token(TipoToken.OP_ARITMETICO,OpAritmetico.SUMA);
 					return token;
 				} else {
 					//insertar en G.E.
@@ -500,18 +499,18 @@ public class AnalizadorLexico {
 				}
 		
 			case 45:
-				if (preanalisis == '=') {
-					token = new Token(TipoToken.OP_ASIGNACION,"-=");
+				if (preanalisis == '=') { 			// -=
+					token = new Token(TipoToken.OP_ASIGNACION,OpAsignacion.MENOS_IGUAL);
 					return token;
-				} else if (preanalisis == '-') {					
-					token = new Token(TipoToken.OP_ARITMETICO,"--");
+				} else if (preanalisis == '-') { 	// --					
+					token = new Token(TipoToken.OP_ARITMETICO,OpAritmetico.DECREMENTO);
 					return token;
-				} else if (preanalisis == '>') {					
-					token = new Token(TipoToken.OP_ASIGNACION,"->");
+				} else if (preanalisis == '>') { 	// ->					
+					token = new Token(TipoToken.OP_ASIGNACION,OpAsignacion.PUNTERO);
 					return token;
-				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {-,=}
+				} else if (esDelim2()) { 			// - //valores al preanalisis DELIM2 - {-,=}
 					asterisco = true;
-					return new Token(TipoToken.OP_ARITMETICO,"-");		
+					return new Token(TipoToken.OP_ARITMETICO,OpAritmetico.RESTA);		
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
@@ -519,12 +518,12 @@ public class AnalizadorLexico {
 				}
 		
 			case 49:
-				if (preanalisis == '=') {
-					token = new Token(TipoToken.OP_ASIGNACION,"*=");
+				if (preanalisis == '=') { 			// *=
+					token = new Token(TipoToken.OP_ASIGNACION,OpAsignacion.POR_IGUAL);
 					return token;
-				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {=}
-					token = new Token(TipoToken.OP_ARITMETICO,"*");
-					asterisco = true; //Que pasa si ponemos * reifiriendonos a un puntero??
+				} else if (esDelim2()) { 			// * //valores al preanalisis DELIM2 - {=}
+					token = new Token(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION);
+					asterisco = true;
 					return token;
 				} else {
 					//insertar en G.E.
@@ -532,17 +531,17 @@ public class AnalizadorLexico {
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 52:
-				if (preanalisis == '>') {
-					token = new Token(TipoToken.SEPARADOR,"}");
+				if (preanalisis == '>') { 			// %> equivalente a }
+					token = new Token(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE);
 					return token;
-				} else if (preanalisis == '=') {
-					token = new Token(TipoToken.OP_ASIGNACION,"%=");
+				} else if (preanalisis == '=') { 	// %=
+					token = new Token(TipoToken.OP_ASIGNACION,OpAsignacion.PORCENTAJE_IGUAL);
 					return token;
-				} else if (preanalisis == ':') {
+				} else if (preanalisis == ':') {	// %:
 					transita(56);
-				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {>,=,:}
+				} else if (esDelim2()) { 			// % //valores al preanalisis DELIM2 - {>,=,:}
 					asterisco = true;
-					return new Token(TipoToken.OP_ARITMETICO, "%");
+					return new Token(TipoToken.OP_ARITMETICO, OpAritmetico.PORCENTAJE);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
@@ -550,11 +549,11 @@ public class AnalizadorLexico {
 				}
 				break;
 			case 56:
-				if (preanalisis == '%') {
+				if (preanalisis == '%') {			// %:%
 					transita(57);
-				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {%}
+				} else if (esDelim2()) { 			// %: equivalente a #
 					asterisco = true;
-					return new Token(TipoToken.SEPARADOR, "#");
+					return new Token(TipoToken.SEPARADOR, Separadores.ALMOHADILLA);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
@@ -562,19 +561,19 @@ public class AnalizadorLexico {
 				}
 				break;
 			case 57:
-				if (preanalisis == ':') {
-					return new Token(TipoToken.SEPARADOR,"##");
+				if (preanalisis == ':') {			// %:%: equivalente a ##
+					return new Token(TipoToken.SEPARADOR, Separadores.DOBLE_ALMOHADILLA);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 60:	
-				if (preanalisis == '#') {
-					return new Token(TipoToken.SEPARADOR,"##");
-				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {#}
+				if (preanalisis == '#') {			// ##
+					return new Token(TipoToken.SEPARADOR, Separadores.DOBLE_ALMOHADILLA);
+				} else if (esDelim2()) { 			// # //valores al preanalisis DELIM2 - {#}
 					asterisco = true;
-					return new Token(TipoToken.SEPARADOR,"#");
+					return new Token(TipoToken.SEPARADOR, Separadores.ALMOHADILLA);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
@@ -582,11 +581,11 @@ public class AnalizadorLexico {
 				}
 
 			case 62:
-				if (preanalisis == '=') {
-					return token = new Token(TipoToken.OP_COMPARACION,"!=");
-				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {=}
+				if (preanalisis == '=') {			// !=
+					return token = new Token(TipoToken.OP_COMPARACION, OpComparacion.DISTINTO);
+				} else if (esDelim2()) { 			// ! //valores al preanalisis DELIM2 - {=}
 					asterisco = true;
-					return token = new Token(TipoToken.OP_LOGICO, "!");
+					return token = new Token(TipoToken.OP_LOGICO, OpLogico.NOT);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
@@ -594,12 +593,12 @@ public class AnalizadorLexico {
 				}
 
 			case 64:
-				if (preanalisis == '=') {
-					token = new Token(TipoToken.OP_COMPARACION,"==");
+				if (preanalisis == '=') {			// ==
+					token = new Token(TipoToken.OP_COMPARACION, OpComparacion.IGUALDAD);
 					return token;
-				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {=}
+				} else if (esDelim2()) {			// = //valores al preanalisis DELIM2 - {=}
 					asterisco = true;
-					return new Token(TipoToken.OP_ASIGNACION,"=");
+					return new Token(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
@@ -607,14 +606,14 @@ public class AnalizadorLexico {
 				}
 				
 			case 68:
-				if (preanalisis == '=') {
-					token = new Token(TipoToken.OP_COMPARACION,">=");
+				if (preanalisis == '=') {			// >=
+					token = new Token(TipoToken.OP_COMPARACION,OpComparacion.MAYOR_IGUAL);
 					return token;
-				} else if (preanalisis == '>') {
+				} else if (preanalisis == '>') {	// >>
 					transita(69);
-				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {>,=}
+				} else if (esDelim2()) {			// > //valores al preanalisis DELIM2 - {>,=}
 					asterisco = true;
-					return new Token(TipoToken.OP_COMPARACION,">");
+					return new Token(TipoToken.OP_COMPARACION,OpComparacion.MAYOR);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
@@ -622,29 +621,29 @@ public class AnalizadorLexico {
 				}
 				break;
 			case 69:
-				if (preanalisis == '=') {
-					return new Token(TipoToken.OP_ASIGNACION,">>=");
-				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {=}
+				if (preanalisis == '=') {			// >>=
+					return new Token(TipoToken.OP_ASIGNACION,OpAsignacion.MAYOR_MAYOR_IGUAL);
+				} else if (esDelim2()) {			// >> //valores al preanalisis DELIM2 - {=}
 					asterisco = true;
-					return new Token(TipoToken.OP_LOGICO, ">>");
+					return new Token(TipoToken.OP_LOGICO, OpLogico.DOS_MAYORES);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 75:
-				if (preanalisis == '=') {
-					token = new Token(TipoToken.OP_COMPARACION,"<=");
+				if (preanalisis == '=') {			// <=
+					token = new Token(TipoToken.OP_COMPARACION,OpComparacion.MENOR_IGUAL);
 					return token;
-				} else if (preanalisis == '<') {
+				} else if (preanalisis == '<') {	// <<
 					transita(78);
-				} else if (preanalisis == ':') {
-					return new Token(TipoToken.SEPARADOR,"[");
-				} else if (preanalisis == '%') {
-					return new Token(TipoToken.SEPARADOR,"{");
-				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {<,%,=,:}
+				} else if (preanalisis == ':') {	// <: equivalente a [
+					return new Token(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE);
+				} else if (preanalisis == '%') {	// <% equivalente a {
+					return new Token(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE);
+				} else if (esDelim2()) {			// < //valores al preanalisis DELIM2 - {<,%,=,:}
 					asterisco = true;
-					return new Token(TipoToken.OP_COMPARACION,"<");
+					return new Token(TipoToken.OP_COMPARACION,OpComparacion.MENOR);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
@@ -652,57 +651,61 @@ public class AnalizadorLexico {
 				}
 				break;
 			case 78:
-				if (preanalisis == '=') {
-					return new Token(TipoToken.OP_ASIGNACION,"<<=");
-				} else if (esDelim2()) {						//valores al preanalisis DELIM2 - {=}
+				if (preanalisis == '=') {			// <<=
+					return new Token(TipoToken.OP_ASIGNACION,OpAsignacion.MENOR_MENOR_IGUAL);
+				} else if (esDelim2()) {			// << //valores al preanalisis DELIM2 - {=}
 					asterisco = true;
-					return new Token(TipoToken.OP_LOGICO,"<<");
+					return new Token(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 81:
-				if (preanalisis == '>') {
-					return new Token(TipoToken.SEPARADOR,"]");
-				} else if (preanalisis == ':') {
-					return new Token(TipoToken.SEPARADOR,"::");
-				} else {
+				if (preanalisis == '>') {			// :> equivalente a ]
+					return new Token(TipoToken.SEPARADOR,Separadores.CIERRA_CORCHETE);
+				} else if (preanalisis == ':') {	// ::
+					return new Token(TipoToken.SEPARADOR,Separadores.DOBLE_DOSPUNTOS);
+				} else if (esDelim2()) {			// :
 					asterisco = true;
-					return new Token(TipoToken.SEPARADOR,':');
+					return new Token(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS);
+				} else {
+					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
+					return new Token(TipoToken.ERROR,null);
 				}
 			case 83:
-				if (preanalisis == '|') {
-					return new Token(TipoToken.OP_LOGICO,"||");
-				} else if (preanalisis == '=') {
-					return new Token(TipoToken.OP_ASIGNACION,"|=");
-				} else if (esDelim()) {					//valores al preanalisis DELIM - {|,=}
+				if (preanalisis == '|') {			// ||
+					return new Token(TipoToken.OP_LOGICO,OpLogico.OR);
+				} else if (preanalisis == '=') {	// |=
+					return new Token(TipoToken.OP_ASIGNACION,OpAsignacion.OR_IGUAL);
+				} else if (esDelim2()) {			// | //valores al preanalisis DELIM - {|,=}
 					asterisco = true;
-					return new Token(TipoToken.OP_LOGICO,"|");
+					return new Token(TipoToken.OP_LOGICO,OpLogico.BIT_OR);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 87:
-				if (preanalisis == '&') {
-					return new Token(TipoToken.OP_LOGICO,"&&");
-				} else if (preanalisis == '=') {
-					return new Token(TipoToken.OP_ASIGNACION,"&=");
-				} else if (esDelim()) {					//valores al preanalisis DELIM - {&,=}
+				if (preanalisis == '&') {			// &&
+					return new Token(TipoToken.OP_LOGICO,OpLogico.AND);
+				} else if (preanalisis == '=') {	// &=
+					return new Token(TipoToken.OP_ASIGNACION,OpAsignacion.AND_IGUAL);
+				} else if (esDelim2()) {			// & //valores al preanalisis DELIM - {&,=}
 					asterisco = true;
-					return new Token(TipoToken.OP_LOGICO,"&");
+					return new Token(TipoToken.OP_LOGICO,OpLogico.BIT_AND);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 			case 91:
-				if (preanalisis == '=') {
-					return new Token(TipoToken.OP_LOGICO,"^=");
-				} else if (esDelim()) {					//valores al preanalisis DELIM - {=}
+				if (preanalisis == '=') {			// ^=
+					return new Token(TipoToken.OP_ASIGNACION,OpAsignacion.CIRCUNFLEJO_IGUAL);
+				} else if (esDelim2()) {			// ^ //valores al preanalisis DELIM - {=}
 					asterisco = true;
-					return new Token(TipoToken.OP_LOGICO,"^");
+					return new Token(TipoToken.OP_LOGICO,OpLogico.CIRCUNFLEJO);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
@@ -718,7 +721,7 @@ public class AnalizadorLexico {
 					 if(puntTS == null ) //si es un identificador	
 					 {	 
 						String lex = tablaSimbolos.BuscaId(lexema);
-						if (lex == null) {//si no esta en la T.S. 
+						if (lex == null) { //si no esta en la T.S. 
 							//insertar en T.S.
 							token = new Token(TipoToken.IDENTIFICADOR,lexema);
 						}
@@ -762,23 +765,23 @@ public class AnalizadorLexico {
 				}
 				break;
 			case 105:
-				if(preanalisis=='='){
-					token = new Token(TipoToken.OP_ASIGNACION,"/=");
+				if(preanalisis=='='){			// /=
+					token = new Token(TipoToken.OP_ASIGNACION,OpAsignacion.DIV_IGUAL);
 					return token;
-				} else if(preanalisis=='*'){ // reconoce algo tipo Token Comentario, que puede estar seguido de / o de *
+				} else if(preanalisis=='*'){ 	// /* // empieza un comentario de varias lineas
 					transita(107);
-				} else if(preanalisis=='/'){ // reconoce algo tipo Token Comentario de linea
+				} else if(preanalisis=='/'){	// // // empieza un comentario de una linea
 					transita(110);
-				} else if(esDelim()){
+				} else if(esDelim()){			// /
 					asterisco = true;
-					return new Token(TipoToken.OP_ARITMETICO,"/");
+					return new Token(TipoToken.OP_ARITMETICO,OpAritmetico.DIVISION);
 				} else {
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}
 				break;
-			case 107:
+			case 107:	// lee contenido de un comentario de varias lineas
 				if(preanalisis=='*'){
 					transita(108);
 				} else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
@@ -795,7 +798,7 @@ public class AnalizadorLexico {
 				break;
 			case 108:
 				if(preanalisis=='/'){
-					//insertar en T.S.
+					//TODO insertar en T.S.
 					return new Token(TipoToken.COMENT_LARGO, lexema); 
 				}
 				else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
@@ -807,8 +810,8 @@ public class AnalizadorLexico {
 					transita(107);
 				break;
 			case 110:
-				if(preanalisis=='\n' || preanalisis=='\0'){  //Ya que es el comentario de linea (//) acaba cuando recibe un /r/n
-					//insertar en T.S.
+				if(preanalisis=='\n' || preanalisis=='\0'){  //Ya que es el comentario de linea (//) acaba cuando recibe un \r\n
+					//TODO insertar en T.S.
 					return new Token(TipoToken.COMENT_LINEA, lexema);
 				} else {
 					lexema = lexema + preanalisis;

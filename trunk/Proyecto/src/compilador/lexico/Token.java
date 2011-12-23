@@ -42,14 +42,14 @@ public class Token {
      * Operadores de comparacion
      */
     public enum OpComparacion {
-    	IGUAL, DISTINTO, MENOR, MAYOR, MENOR_IGUAL, MAYOR_IGUAL
+    	IGUALDAD, DISTINTO, MENOR, MAYOR, MENOR_IGUAL, MAYOR_IGUAL
     }
     
     /**
      * Operadores logicos
      */
     public enum OpLogico {
-    	Y, O, NO, Y_BIT, O_BIT, SOBRERO, CIRCUNFLEJO, DOS_MENORES, DOS_MAYORES,			
+    	SOBRERO, CIRCUNFLEJO, DOS_MENORES, DOS_MAYORES,			
     	AND, ANDEQ, BIT_AND, BIT_OR, COMPL, NOT, NOT_EQ, OR, OR_EQ, XOR, XOR_EQ			
     }
     

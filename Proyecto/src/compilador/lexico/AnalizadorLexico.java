@@ -753,15 +753,31 @@ public class AnalizadorLexico {
 				} 
 				break;
 			case 102:
-				if(preanalisis == '\''){
+				if (preanalisis == '\\') { // barra de escape
+					lexema = lexema+preanalisis;
+					transita(116);
+				} else if ( !esCajonDesastre() || (preanalisis == '\n') || (preanalisis == '\'')){
+					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
+					return new Token(TipoToken.ERROR,null);
+				} else {
+					lexema = lexema+preanalisis;
+					transita(103);
+				}
+				break;
+			case 103:
+				if(preanalisis == '\''){ // fin de literal caaracter
 					return new Token(TipoToken.LIT_CARACTER,lexema);
+				} else if (preanalisis == '\\') { // barra de escape
+					lexema = lexema+preanalisis;
+					transita(116);
 				} else if ( !esCajonDesastre() || (preanalisis == '\n')){
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				} else {
 					lexema = lexema+preanalisis;
-					transita(102);
+					transita(103);
 				}
 				break;
 			case 105:
@@ -817,6 +833,17 @@ public class AnalizadorLexico {
 					lexema = lexema + preanalisis;
 					transita(110);
 				}
+				break;
+			case 116:
+				if(esSecuenciaEscapeSimple()) {
+					lexema = lexema + preanalisis;
+					transita(103);
+				} else { // secuencia de escape simple no válida
+					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
+					return new Token(TipoToken.ERROR,null);
+				}
+				break;
 			} //switch
 		} //while
 	}
@@ -856,7 +883,16 @@ public class AnalizadorLexico {
 				return true;
 		return false;
 																														
-
+	}
+	
+	private boolean esSecuenciaEscapeSimple() {
+	
+		if(preanalisis == '\''	||	preanalisis == '"'||	preanalisis== '?'||
+				preanalisis=='\\' ||	preanalisis=='a'||	preanalisis=='b' || preanalisis=='f' ||
+				preanalisis=='n' || preanalisis=='r'||	preanalisis=='t' || preanalisis=='v') 
+					return true;
+			return false;
+		
 	}
 
 	private boolean letra() {

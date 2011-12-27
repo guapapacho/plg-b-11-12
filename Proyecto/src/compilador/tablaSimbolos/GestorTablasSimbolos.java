@@ -9,27 +9,14 @@ import java.util.Hashtable;
  */
 public class GestorTablasSimbolos {
 	
-	/**
-	 * Tabla de palabras reservadas
-	 */
+	/** Tabla de palabras reservadas */
 	private Hashtable<String, Integer> palRes;
 	
-	/**
-	 * Hashtable de las Tablas de Simbolos
-	 */
+	/** Hashtable de las Tablas de Simbolos */
 	private Hashtable<Integer, TablaSimbolos> bloques;
 	
+	/** Atributo que lleva el contador de los ámbitos */
 	private static Integer cont;
-	
-//	/**
-//	 * Una lista de ambitos
-//	 * Cada ambito tiene un atributo para continente y una tabla hash
-//	 * (Hashtable<String, EnumMap<Atributos, Object>>) con un campo clave, que seria el identificador del
-//	 * procedimiento, variable o constante
-//	 * y un campo valor que sera una tabla con todos sus atributos (Tipo, numArgs, tipoArgs, pasoArgs, retorno, contenido..)
-//	 * No se si os parece bien esta forma de implementarlo, si veis alguna otra forma mejor comentarlo
-//	 */
-//	private ArrayList<TablaSimbolos> listaAmbitos;
 	
 	/** Puntero al ambito actual */
 	private TablaSimbolos bloque_actual;
@@ -44,12 +31,6 @@ public class GestorTablasSimbolos {
 		bloques.put(cont++, bloque_actual);
 		inicializaPalRes();
 	}
-	
-	/**
-	 * Busca una palabra dada en el ambito actual y en sus predecesores. 
-	 * Devuelve el numero de ambito donde se encuentra el identificador
-	 * o -1 si no la ha encontrado.
-	 */
 	
 	/**
 	 * Añade un nuevo ambito a la lista y modifica los parametros que haga falta
@@ -84,10 +65,14 @@ public class GestorTablasSimbolos {
 		if (esReservada(lexema) || bloque_actual.contiene(lexema)){
 			return -1;
 		}
-		
 		return bloque_actual.inserta(lexema);
 	}
 	
+	/**
+	 * Busca una palabra dada en el ambito actual y en sus predecesores. 
+	 * Devuelve el numero de ambito donde se encuentra el identificador
+	 * o -1 si no la ha encontrado.
+	 */
 	public Integer buscaIdGeneral(String lexema){
 		TablaSimbolos ambito = bloque_actual;
 		
@@ -97,11 +82,9 @@ public class GestorTablasSimbolos {
 				return ambito.getId();
 			else { // Vuelve al ámbito padre
 				ambito = ambito.getContinente(); // Actualiza al ámbito padre
-				if (ambito == null) // No hay más ámbitos padre
-					return -1;
 			}
 		}
-		return -1;
+		return -1; // No hay más ámbitos padre
 	}
 	
 	/**
@@ -121,9 +104,7 @@ public class GestorTablasSimbolos {
 	 * @return numero identificativo o null si no es una palabra reservada
 	 */
 	public Integer buscaPalRes(String lexema) {
-		if(esReservada(lexema))
-			return palRes.get(lexema);
-		return null;
+		return palRes.get(lexema);
 	}
 	
 	/**

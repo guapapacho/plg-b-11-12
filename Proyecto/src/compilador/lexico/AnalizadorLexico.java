@@ -127,6 +127,9 @@ public class AnalizadorLexico {
 				} else if (preanalisis == ';') {
 					token = new Token(TipoToken.SEPARADOR, Separadores.PUNTO_COMA);
 					return token;
+				} else if (preanalisis == '?') {
+					token = new Token(TipoToken.SEPARADOR, Separadores.INTEROGACION);
+					return token;
 				} else if (preanalisis == '+') {
 					transita(41);
 				} else if (preanalisis == '-') {
@@ -460,21 +463,31 @@ public class AnalizadorLexico {
 					parteExponencial = parteExponencial*10 + digito;
 					transita(19);
 				} else if(sufReal()) {
-					transita(21);
+					transita(23);
 				} else if(esDelim()){ 
 					asterisco=true;
-					return new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial)); 
+					String s = (signo > 0) ? "+" : "-";
+					return new Token(TipoToken.NUM_REAL_EXPO, parteEntera+parteDecimal+"E"+s+parteExponencial);  
 				} else{
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);
 				}		
 				break;
-
 			case 21:
 				if(esDelim()){ 
 					asterisco=true;
 					return new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial)); 
+				} else{
+					//insertar en G.E.
+					gestor.insertaError(2,numlinea, numcolumna);
+					return new Token(TipoToken.ERROR,null);
+				}
+			case 23:
+				if(esDelim()){ 
+					asterisco=true;
+					String s = (signo > 0) ? "+" : "-";
+					return new Token(TipoToken.NUM_REAL_EXPO, parteEntera+parteDecimal+"E"+s+parteExponencial); 
 				} else{
 					//insertar en G.E.
 					gestor.insertaError(2,numlinea, numcolumna);
@@ -859,7 +872,7 @@ public class AnalizadorLexico {
 			preanalisis == '*' || preanalisis == '<' || preanalisis == '>' || preanalisis == '=' || preanalisis == '&' || 
 			preanalisis == '^' || preanalisis == '%' || preanalisis == '!' || preanalisis == '~' || preanalisis == '{' || 
 			preanalisis == '}' || preanalisis == '[' || preanalisis == ']' || preanalisis == '(' || preanalisis == ')' ||
-			preanalisis == '#' || preanalisis == ';' || preanalisis == '.' || preanalisis == ',')
+			preanalisis == '#' || preanalisis == ';' || preanalisis == '.' || preanalisis == ',' || preanalisis == '?')
 			return true;
 		return false;
 	}  
@@ -887,9 +900,9 @@ public class AnalizadorLexico {
 	
 	private boolean esSecuenciaEscapeSimple() {
 	
-		if(preanalisis == '\''	||	preanalisis == '"'||	preanalisis== '?'||
-				preanalisis=='\\' ||	preanalisis=='a'||	preanalisis=='b' || preanalisis=='f' ||
-				preanalisis=='n' || preanalisis=='r'||	preanalisis=='t' || preanalisis=='v') 
+		if(preanalisis == '\''	  || preanalisis == '"'|| preanalisis== '?'||
+				preanalisis=='\\' || preanalisis=='a'  || preanalisis=='b' || preanalisis=='f' ||
+				preanalisis=='n'  || preanalisis=='r'  || preanalisis=='t' || preanalisis=='v') 
 					return true;
 			return false;
 		

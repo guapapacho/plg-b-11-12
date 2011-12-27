@@ -13,7 +13,7 @@ public class Token {
      */
 	public enum TipoToken {
         EOF, LIT_CARACTER, LIT_CADENA, PAL_RESERVADA, 
-        IDENTIFICADOR, NUM_REAL, NUM_ENTERO, SEPARADOR, 
+        IDENTIFICADOR, NUM_REAL, NUM_REAL_EXPO, NUM_ENTERO, SEPARADOR, 
         OP_ARITMETICO, OP_LOGICO, OP_COMPARACION, OP_ASIGNACION,
         COMENT_LINEA, COMENT_LARGO, ERROR
     }
@@ -24,7 +24,7 @@ public class Token {
     public enum Separadores {
     	PUNTO("."),DOS_PUNTOS(":"),PUNTO_COMA(";"), ABRE_LLAVE("{"), CIERRA_LLAVE("}"), ABRE_CORCHETE("["),
     	CIERRA_CORCHETE("]"), ALMOHADILLA("#"), DOBLE_ALMOHADILLA("##"), ABRE_PARENTESIS("("),
-    	CIERRA_PARENTESIS(")"), DOBLE_DOSPUNTOS("::"), COMA(",");
+    	CIERRA_PARENTESIS(")"), DOBLE_DOSPUNTOS("::"), COMA(","), INTEROGACION("?");
     	
     	private String description;
     	private Separadores(String desc) { description = desc; };

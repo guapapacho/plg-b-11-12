@@ -48,9 +48,9 @@ public class Pila <Object>{
 
     
     /**
-	 * Metodo quita elementos de la pila.
+	 * Metodo devuelve el elemento de la cima de la pila sin eliminarlo.
 	 */
-    public Object desapilar () {
+    public Object cima() {
 
         try {
             if(pilaVacia())
@@ -61,6 +61,22 @@ public class Pila <Object>{
         } catch(ErrorPilaVacia error) {
             System.out.println("ERROR: la pila esta vacía");
             return null;
+        }
+    }
+    
+    /**
+	 * Metodo quita elementos de la pila.
+	 */
+    public void desapilar(){
+    	try {
+            if(pilaVacia())
+                throw new ErrorPilaVacia();
+            else {
+            	elementos.remove(cima());
+            	size--;
+            }
+        } catch(ErrorPilaVacia error) {
+            System.out.println("ERROR: la pila esta vacía");
         }
     }
 

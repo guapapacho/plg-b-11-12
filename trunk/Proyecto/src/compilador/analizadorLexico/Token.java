@@ -99,4 +99,11 @@ public class Token {
 		return atributo;
 	}
 	
+	public boolean esIgual(TipoToken t, Object ob) {
+		return tipo.equals(t) && atributo.equals(ob);		
+	}
+	public boolean esIgual(TipoToken t) {
+		return tipo.equals(t);		
+	}
+	
 }

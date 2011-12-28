@@ -257,11 +257,11 @@ public class Compilador extends JFrame {
 								in=new StringBufferInputStream(contenido);
 								GestorErrores gestor = new GestorErrores();
 								AnalizadorLexico analizador = new AnalizadorLexico(in);
-								Token token = analizador.scanner();
+								Token token = analizador.scan();
 								ta2.setText("");
 								while(token.getTipo() != TipoToken.EOF) {
 									ta2.append("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo()+"\n");
-									token = analizador.scanner();
+									token = analizador.scan();
 								}
 								ta2.append("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo()+"\n");
 								gestor.setErrores(analizador.devuelveErrorLex());

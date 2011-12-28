@@ -77,7 +77,7 @@ public class AnalizadorLexico {
 	 * Metodo que devuelve el siguiente token
 	 * @return token
 	 */
-	public Token scanner(){
+	public Token scan(){
 		estado = 0;
 		Token token = null;
 		String lexema = "";

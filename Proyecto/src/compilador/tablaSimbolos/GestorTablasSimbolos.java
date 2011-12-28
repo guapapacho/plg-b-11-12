@@ -28,6 +28,7 @@ public class GestorTablasSimbolos {
 	public GestorTablasSimbolos(){
 		cont = 0;
 		bloque_actual = new TablaSimbolos(cont, null);
+		bloques = new Hashtable<Integer, TablaSimbolos>();
 		bloques.put(cont++, bloque_actual);
 		inicializaPalRes();
 	}

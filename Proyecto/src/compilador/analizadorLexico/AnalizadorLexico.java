@@ -1,11 +1,11 @@
-package compilador.lexico;
+package compilador.analizadorLexico;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+import compilador.analizadorLexico.Token.*;
 import compilador.gestionErrores.*;
 import compilador.gestionErrores.GestorErrores.TError;
-import compilador.lexico.Token.*;
 import compilador.tablaSimbolos.GestorTablasSimbolos;
 
 

@@ -25,10 +25,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import compilador.analizadorLexico.AnalizadorLexico;
+import compilador.analizadorLexico.Token;
+import compilador.analizadorLexico.Token.TipoToken;
 import compilador.gestionErrores.GestorErrores;
-import compilador.lexico.AnalizadorLexico;
-import compilador.lexico.Token;
-import compilador.lexico.Token.TipoToken;
 
 /**
  * @author Grupo 1

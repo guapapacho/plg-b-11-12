@@ -70,7 +70,7 @@ public class AnalizadorLexico {
 		this.preanalisis = ' ';
 		this.estado = 0; 
 		this.asterisco = false;
-		this.gestorTS = new GestorTablasSimbolos();
+		this.gestorTS = GestorTablasSimbolos.getGestorTS();
 		this.gestorErrores = new GestorErrores();
 	}
 
@@ -851,7 +851,7 @@ public class AnalizadorLexico {
 				if(esSecuenciaEscapeSimple()) {
 					lexema = lexema + preanalisis;
 					transita(103);
-				} else { // secuencia de escape simple no válida
+				} else { // secuencia de escape simple no valida
 					//insertar en G.E.
 					gestorErrores.insertaError(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null);

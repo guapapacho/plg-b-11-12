@@ -71,7 +71,6 @@ public class AnalizadorLexico {
 		this.estado = 0; 
 		this.asterisco = false;
 		this.gestorTS = GestorTablasSimbolos.getGestorTS();
-		this.gestorErrores = new GestorErrores();
 	}
 
 	/**

@@ -20,25 +20,33 @@ public class EntradaTS {
 	private String lexema;
 	/** Tipo del identificador */
 	private Tipo tipo;
+	/** Si es constante o no */
+	private boolean constante;
 	/** Argumentos del identificador si es una funcion, si no, un array vacio */
 	private Vector<Argumento> args;
 	/** Tipo de retorno */
 	private TipoArg retorno;
 
 	public EntradaTS(String lexema) {
-		this.lexema = lexema;
-		this.tipo = null;
-		this.args = new Vector<Argumento>();
-		this.retorno = null;
+		this(lexema, null, new Vector<Argumento>(), null, false);
 	}
 	
-	public EntradaTS(String lexema, Tipo tipo, Vector<Argumento> args, TipoArg retorno) {
+	public EntradaTS(String lexema, Tipo tipo, Vector<Argumento> args, TipoArg retorno, boolean constante) {
 		this.lexema = lexema;
 		this.tipo = tipo;
 		this.args = args;
 		this.retorno = retorno;
+		this.constante = constante;
 	}
 	
+	public boolean isConstante() {
+		return constante;
+	}
+
+	public void setConstante(boolean constante) {
+		this.constante = constante;
+	}
+
 	public Tipo getTipo() {
 		return tipo;
 	}

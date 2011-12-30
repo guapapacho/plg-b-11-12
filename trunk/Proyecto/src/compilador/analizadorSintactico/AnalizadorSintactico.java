@@ -35,6 +35,8 @@ public class AnalizadorSintactico {
 		parse = new Vector<Integer>();
 		token = lexico.scan();
 		gestorTS = GestorTablasSimbolos.getGestorTS();
+		tipo = null;
+		entradaTS = null;
 		programa();
 	}
 	
@@ -123,28 +125,90 @@ public class AnalizadorSintactico {
 	}
 
 	/**
-	 * 5. COSAS → TIPO ID COSAS2 COSAS
-	 * 6. COSAS → ℷ
+	 * 17. COSAS → const TIPO ID = valor INIC_CONST ;
+	 *  5. COSAS → TIPO ID COSAS2 COSAS
+	 *  6. COSAS → ℷ
 	 */
 	private void cosas() {
 		if(!token.esIgual(TipoToken.EOF)) {
-			tipo();
-			if(true) {//TODO tipo correcto
-				parse.add(5);
-				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-					id();
-					cosas2();	
-					cosas();			
-				} else {
-					// error sintáctico
-					System.err.print(" error 5 ");
+			if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 9 /*const*/) {
+				// 17. COSAS → const TIPO ID = valor INIC_CONST ;
+				parse.add(17);
+				token = lexico.scan();
+				tipo();
+				if(true) {//TODO tipo correcto
+					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+						idConst(); // ID = valor
+						inic_const();
+						if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
+							//error
+							System.err.print(" error 17 ");
+						} else {
+							token = lexico.scan();
+						}
+					}
 				}
 			} else {
-				parse.add(6);
+				tipo();
+				if(true) {//TODO tipo correcto
+					// 5. COSAS → TIPO ID COSAS2 COSAS
+					parse.add(5);
+					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+						id();
+						cosas2();	
+						cosas();			
+					} else {
+						// error sintáctico
+						System.err.print(" error 5 ");
+					}
+				} else {
+					// 6. COSAS → ℷ
+					parse.add(6);
+				}
 			}
 		}
 	}
 	
+	/**
+	 * 18. INIC_CONST → , ID = valor INIC_CONST
+	 * 19. INIC_CONST → ℷ
+	 */
+	private void inic_const() {
+		System.out.println("declaracion constante " + entradaTS.getLexema());
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
+			parse.add(18);
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+				idConst();
+				inic_const();
+			} else {
+				// error
+				System.err.print(" error 18 ");
+			}		
+		} else {
+			parse.add(19);
+		}
+		
+	}
+
+
+	private void idConst() {
+		entradaTS = (EntradaTS)token.getAtributo();
+		entradaTS.setTipo(tipo);
+		entradaTS.setConstante(true);
+		token = lexico.scan();
+		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
+			token = lexico.scan();
+			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+			System.out.println("inicializacion constante " + entradaTS.getLexema() + " con " + valor);
+			token = lexico.scan();
+		} else {
+			//error
+			System.err.print(" error const ");
+		}
+	}
+
+
 	/**
 	 * 7. TIPO → ID
 	 * 8. TIPO → TIPO_SIMPLE | VOID // pal reservada
@@ -153,6 +217,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(7);
 			tipo = null;//((EntradaTS)token.getAtributo()).getLexema();//TOFIX obtener enumerado tipo de la variable declarada
+			token = lexico.scan();
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA)){
 			parse.add(8);
 			switch((Integer)token.getAtributo()){
@@ -161,7 +226,7 @@ public class AnalizadorSintactico {
 			token = lexico.scan();
 		} else {
 			// error
-			System.err.print(" error 5 ");
+			System.err.print(" error 8 ");
 		}
 	}
 	
@@ -287,7 +352,7 @@ public class AnalizadorSintactico {
 	public static void main(String args[])
 	{
 		String entrada = "#include <Alina.h> \n  #include \"cris.h\" " +
-				"int a=2,b,c; int f(); " +
+				"int a=2,b,c; const bool i=3, k=true; int f(); " +
 				"float g=3; double h(){}";
 		AnalizadorLexico a = new AnalizadorLexico(new StringBufferInputStream(entrada));
 		AnalizadorSintactico s = new AnalizadorSintactico(a);

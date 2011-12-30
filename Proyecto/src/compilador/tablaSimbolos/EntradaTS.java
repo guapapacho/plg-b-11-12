@@ -13,7 +13,7 @@ public class EntradaTS {
 	 * Enumerado para el tipo de un identificador
 	 */
 	public enum Tipo {
-		PROGRAMA, FUNCION, ENTERO, REAL, BOOL; // TODO añadir el resto de tipos
+		PROGRAMA, PROCEDIMIENTO, FUNCION, ENTERO, REAL, BOOL; // TODO añadir el resto de tipos
 	}
 
 	/** Lexema del identificador */

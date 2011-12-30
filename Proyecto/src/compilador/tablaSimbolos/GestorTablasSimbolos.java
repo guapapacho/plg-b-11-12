@@ -10,15 +10,26 @@ public class GestorTablasSimbolos {
 	
 	/** Tabla de palabras reservadas */
 	private Hashtable<String, Integer> palRes;
-	
 	/** Puntero al ambito actual */
 	private TablaSimbolos bloque_actual;
-	
+	/** Instancia única de la clase */
+	private static GestorTablasSimbolos instance= null;
 	
 	/**
-	 * Constructora de la clase
+	 * Método que devuelve el gestor de TS
+	 * @return instancia del gestor de TS
 	 */
-	public GestorTablasSimbolos(){
+	public static GestorTablasSimbolos getGestorTS() {
+		if(instance == null) {
+			instance = new GestorTablasSimbolos();
+		}
+		return instance;			
+	}
+	
+	/**
+	 * Constructora privada de la clase (singleton)
+	 */
+	private GestorTablasSimbolos(){
 		bloque_actual = new TablaSimbolos(null);
 		inicializaPalRes();
 	}
@@ -67,7 +78,7 @@ public class GestorTablasSimbolos {
 		TablaSimbolos ambito = bloque_actual;
 		EntradaTS entrada = null;
 		// Busca por el ámbito actual y los padres hasta dar con la solución
-		while (ambito != null){
+		while (ambito != null && entrada == null){
 			entrada = ambito.getEntrada(lexema);
 			if (entrada == null) { // Si no está
 				ambito = ambito.getContinente(); // Actualiza al ámbito padre

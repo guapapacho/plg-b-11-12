@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import compilador.analizadorLexico.Token.*;
 import compilador.gestionErrores.*;
 import compilador.gestionErrores.GestorErrores.TError;
+import compilador.tablaSimbolos.EntradaTS;
 import compilador.tablaSimbolos.GestorTablasSimbolos;
 
 
@@ -730,19 +731,19 @@ public class AnalizadorLexico {
 					lexema = lexema+preanalisis;
 					transita(97);
 				} else if(esDelim()) { 
-					 Integer puntTS = gestorTS.buscaPalRes(lexema);
-					 if(puntTS == null ) //si es un identificador	
+					 Integer indice = gestorTS.buscaPalRes(lexema);
+					 if(indice == null ) //si es un identificador	
 					 {	 
-						puntTS = gestorTS.buscaIdGeneral(lexema);
-						if (puntTS == -1) { //si no esta en la T.S. se inserta
+						EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
+						if (puntero == null) { //si no esta en la T.S. se inserta
 							token = new Token(TipoToken.IDENTIFICADOR,gestorTS.insertaIdentificador(lexema));
 						}
 						else {
-							token = new Token(TipoToken.IDENTIFICADOR,puntTS);
+							token = new Token(TipoToken.IDENTIFICADOR,puntero);
 						}
 					 }	
 					 else { // es una palabra reservada
-						 token = new Token(TipoToken.PAL_RESERVADA,puntTS);
+						 token = new Token(TipoToken.PAL_RESERVADA,indice);
 					 }
 					 asterisco=true;
 					 return token;

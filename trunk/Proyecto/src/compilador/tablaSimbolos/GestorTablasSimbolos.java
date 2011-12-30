@@ -3,20 +3,13 @@ package compilador.tablaSimbolos;
 import java.util.Hashtable;
 
 /**
- * 
+ * Gestor de las Tablas de Simbolos
  * @author Grupo 1
- *
  */
 public class GestorTablasSimbolos {
 	
 	/** Tabla de palabras reservadas */
 	private Hashtable<String, Integer> palRes;
-	
-	/** Hashtable de las Tablas de Simbolos */
-	private Hashtable<Integer, TablaSimbolos> bloques;
-	
-	/** Atributo que lleva el contador de los ámbitos */
-	private static Integer cont;
 	
 	/** Puntero al ambito actual */
 	private TablaSimbolos bloque_actual;
@@ -26,21 +19,18 @@ public class GestorTablasSimbolos {
 	 * Constructora de la clase
 	 */
 	public GestorTablasSimbolos(){
-		cont = 0;
-		bloque_actual = new TablaSimbolos(cont, null);
-		bloques = new Hashtable<Integer, TablaSimbolos>();
-		bloques.put(cont++, bloque_actual);
+		bloque_actual = new TablaSimbolos(null);
 		inicializaPalRes();
 	}
 	
 	/**
 	 * Añade un nuevo ambito a la lista y modifica los parametros que haga falta
-	 * campo lexema es el id del lexema (procedimiento, bucle, if, switch,..) al que se le añade un nuevo ambito
+	 * campo lexema es el id del lexema (procedimiento, bucle, if, switch,..) 
+	 * al que se le añade un nuevo ambito
 	 */
 	public void abreBloque(){
 		//Crea un ambito, actualiza continente y lo añade a la lista de ambitos
-		TablaSimbolos bloque = new TablaSimbolos(cont, bloque_actual);
-		bloques.put(cont++, bloque);
+		TablaSimbolos bloque = new TablaSimbolos(bloque_actual);
 		
 		//Actualiza contenido del ambito anterior
 		bloque_actual.addContenido(bloque);
@@ -58,45 +48,41 @@ public class GestorTablasSimbolos {
 	
 	/**
 	 * Busca a ver si esta el identificador en el ambito actual, si no esta lo inserta y devuelve 
-	 * el identificador de la tabla de simbolos y
-	 * si esta o es una palabra reservada no lo inserta y devuelve -1
+	 * el puntero a la entrada de la tabla de simbolos correspondiente. 
+	 * Si ya esta o es una palabra reservada no lo inserta y devuelve null
 	 */
-	public Integer insertaIdentificador(String lexema){
-		
+	public EntradaTS insertaIdentificador(String lexema){
 		if (esReservada(lexema) || bloque_actual.contiene(lexema)){
-			return -1;
+			return null;
 		}
 		return bloque_actual.inserta(lexema);
 	}
 	
 	/**
 	 * Busca una palabra dada en el ambito actual y en sus predecesores. 
-	 * Devuelve el numero de ambito donde se encuentra el identificador
-	 * o -1 si no la ha encontrado.
+	 * Devuelve un puntero a la entrada de la tabla de simbolos
+	 * donde se encuentra el identificador o null si no lo ha encontrado.
 	 */
-	public Integer buscaIdGeneral(String lexema){
+	public EntradaTS buscaIdGeneral(String lexema){
 		TablaSimbolos ambito = bloque_actual;
-		
+		EntradaTS entrada = null;
 		// Busca por el ámbito actual y los padres hasta dar con la solución
 		while (ambito != null){
-			if (ambito.contiene(lexema))
-				return ambito.getId();
-			else { // Vuelve al ámbito padre
+			entrada = ambito.getEntrada(lexema);
+			if (entrada == null) { // Si no está
 				ambito = ambito.getContinente(); // Actualiza al ámbito padre
 			}
 		}
-		return -1; // No hay más ámbitos padre
+		return entrada;
 	}
 	
 	/**
 	 * Busca una palabra dada en el ambito actual. 
-	 * Devuelve el numero de ambito actual
-	 * o -1 si no la ha encontrado.
+	 * Devuelve un puntero a la entrada de la TS del identificador
+	 * o null si no la ha encontrado.
 	 */
-	public Integer buscaIdBloqueActual(String lexema) {
-		if(bloque_actual.contiene(lexema))	
-			return bloque_actual.getId();
-		return -1;
+	public EntradaTS buscaIdBloqueActual(String lexema) {
+		return bloque_actual.getEntrada(lexema);
 	}
 	
 	/**
@@ -115,6 +101,9 @@ public class GestorTablasSimbolos {
 		return palRes.containsKey(palabra);
 	}
 	
+	/**
+	 * Inicializa la tabla de palabras reservadas
+	 */
 	private void inicializaPalRes()	{
 		palRes = new Hashtable<String,Integer>();
 		palRes.put("alignas", 0);

@@ -1,6 +1,5 @@
 package compilador.tablaSimbolos;
 
-import java.util.EnumMap;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -13,21 +12,6 @@ import java.util.Vector;
  */
 public class TablaSimbolos {
 	
-	/**
-	 * Enumerado con los atributos de los identificadores 
-	 */
-	public enum Atributos {
-		LEXEMA,
-		TIPO, 
-		NUMARGS,
-		TIPOARGS,
-		PASOARGS,
-		RETORNO,
-	}
-	
-	/** Atributo que identifica el ambito en el gestor de tablas de simbolos */
-	private Integer id;
-	
 	/** Atributo que guarda el continente de este ambito */
 	private TablaSimbolos continente;
 	
@@ -35,7 +19,7 @@ public class TablaSimbolos {
 	private Vector<TablaSimbolos> contenidos;
 	
 	/** Atributo que guarda la informacion de los identificadores de este ambito */
-	private Hashtable<String, EnumMap<Atributos, Object>> filasTS;
+	private Hashtable<String, EntradaTS> entradasTS;
 	
 	
 	/**
@@ -43,11 +27,10 @@ public class TablaSimbolos {
 	 * @param id - el identificador de la tabla
 	 * @param continente - el continente del ambito o null si es el global
 	 */
-	public TablaSimbolos(Integer id, TablaSimbolos continente) {
-		this.id = id;
+	public TablaSimbolos(TablaSimbolos continente) {
 		this.continente = continente;
 		contenidos = new Vector<TablaSimbolos>();
-		filasTS = new Hashtable<String, EnumMap<Atributos, Object>>();
+		entradasTS = new Hashtable<String, EntradaTS>();
 	}
 
 	public TablaSimbolos getContinente() {
@@ -59,21 +42,22 @@ public class TablaSimbolos {
 	}
 
 	public boolean contiene(String lexema) {
-		return filasTS.containsKey(lexema);
+		return entradasTS.containsKey(lexema);
 	}
-
-	public Integer getId() {
-		return id;
+	
+	public EntradaTS getEntrada(String lexema) {
+		return entradasTS.get(lexema);
 	}
 
 	/**
 	 * Metodo que inserta un identificador en la tabla de simbolos
 	 * @param lexema
-	 * @return id de la tabla
+	 * @return entrada puntero a la entrada de la TS
 	 */
-	public Integer inserta(String lexema) {
-		filasTS.put(lexema, new EnumMap<Atributos,Object>(Atributos.class));
-		return id;
+	public EntradaTS inserta(String lexema) {
+		EntradaTS entrada = new EntradaTS(lexema);
+		entradasTS.put(lexema, entrada);
+		return entrada;
 	}
 	
 }

@@ -40,8 +40,7 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * Regla numero 1. 
-	 * PROGRAMA → LIBRERIA COSAS MAIN COSAS
+	 * 1. PROGRAMA → LIBRERIA COSAS MAIN COSAS
 	 */
 	private void programa() {
 		parse.add(1);
@@ -52,8 +51,7 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * Regla numero 2 
-	 * LIBRERIA → #include RESTO_LIBRERIA
+	 * 2. LIBRERIA → #include RESTO_LIBRERIA
 	 */
 	private void libreria() {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ALMOHADILLA))
@@ -72,8 +70,8 @@ public class AnalizadorSintactico {
 	}
 
 	/**
-	 * Regla numero 3
-	 * RESTO_LIBRERIA → LIT_CADENA LIBRERIA | <ID.ID> LIBRERIA
+	 * 3. RESTO_LIBRERIA → LIT_CADENA LIBRERIA
+	 * 4. RESTO_LIBRERIA → <ID.ID> LIBRERIA
 	 */
 	private void resto_libreria() {
 		
@@ -98,7 +96,7 @@ public class AnalizadorSintactico {
 						
 						if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR)) {
 							token = lexico.scan();
-							parse.add(3);
+							parse.add(4);
 							System.out.println("libreria con angulos");
 							libreria();
 						}	
@@ -115,7 +113,7 @@ public class AnalizadorSintactico {
 			{}	
 		}
 		else //error
-		{System.err.print(" error 3 ");}	
+		{System.err.print(" error 3 libreria ");}	
 		
 	}
 	
@@ -125,41 +123,46 @@ public class AnalizadorSintactico {
 	}
 
 	/**
-	 * Regla numero 4
-	 * COSAS → TIPO ID COSAS2 COSAS | ℷ
+	 * 5. COSAS → TIPO ID COSAS2 COSAS
+	 * 6. COSAS → ℷ
 	 */
 	private void cosas() {
-		parse.add(4);
 		if(!token.esIgual(TipoToken.EOF)) {
 			tipo();
-			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-				id();
-				cosas2();	
-				cosas();			
+			if(true) {//TODO tipo correcto
+				parse.add(5);
+				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+					id();
+					cosas2();	
+					cosas();			
+				} else {
+					// error sintáctico
+					System.err.print(" error 5 ");
+				}
 			} else {
-				// error sintáctico
-				System.err.print(" error 4 ");
+				parse.add(6);
 			}
 		}
 	}
 	
 	/**
-	 * Regla numero 5
-	 * TIPO → ID | TIPO_SIMPLE | VOID
+	 * 7. TIPO → ID
+	 * 8. TIPO → TIPO_SIMPLE | VOID // pal reservada
 	 */
 	private void tipo() {
-		parse.add(5);
-		if(token.esIgual(TipoToken.IDENTIFICADOR))
+		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+			parse.add(7);
 			tipo = null;//((EntradaTS)token.getAtributo()).getLexema();//TOFIX obtener enumerado tipo de la variable declarada
-		else if(token.esIgual(TipoToken.PAL_RESERVADA)){
+		} else if(token.esIgual(TipoToken.PAL_RESERVADA)){
+			parse.add(8);
 			switch((Integer)token.getAtributo()){
 			//TODO no se si hace falta mirar si es un tipo valido
 			}
+			token = lexico.scan();
 		} else {
 			// error
 			System.err.print(" error 5 ");
 		}
-		token = lexico.scan();
 	}
 	
 	private void id() {
@@ -169,13 +172,13 @@ public class AnalizadorSintactico {
 	}
 
 	/**
-	 * Regla numero 6
-	 * COSAS2 → ( LISTA_PARAM ) COSAS3 | INICIALIZACION  DECLARACIONES ;
+	 *  9. COSAS2 → ( LISTA_PARAM ) COSAS3
+	 * 10. COSAS2 → INICIALIZACION  DECLARACIONES ;
 	 */
 	private void cosas2() {
-		parse.add(6);
 		// COSAS2 → ( LISTA_PARAM ) COSAS3
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
+			parse.add(9);
 			token = lexico.scan();
 			lista_param();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
@@ -183,28 +186,29 @@ public class AnalizadorSintactico {
 				cosas3();
 			} else {
 				//error
-				System.err.print(" error 6a ");
+				System.err.print(" error 9 ");
 			}
 		} else {
 			// COSAS2 → INICIALIZACION  DECLARACIONES ;
+			parse.add(10);
 			inicializacion();
 			declaraciones();		
 			if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				//error
-				System.err.print(" error 6b ");
+				System.err.print(" error 10 ");
 			}
 			token = lexico.scan();
 		}
 	}
 
 	/**
-	 * Regla numero 7
-	 * DECLARACIONES → , ID INICIALIZACION DECLARACIONES | ℷ
+	 * 11. DECLARACIONES → , ID INICIALIZACION DECLARACIONES
+	 * 12. DECLARACIONES → ℷ
 	 */
 	private void declaraciones() {
-		parse.add(7);
 		System.out.println("declaracion variable " + entradaTS.getLexema());
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
+			parse.add(11);
 			token = lexico.scan();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 				id();
@@ -212,44 +216,52 @@ public class AnalizadorSintactico {
 				declaraciones();
 			} else {
 				// error
-				System.err.print(" error 7 ");
+				System.err.print(" error 11 ");
 			}		
-		}		
+		} else {
+			parse.add(12);
+		}
 	}
 
 	/**
-	 * Regla numero 8
-	 * INICIALIZACION → = valor | ℷ
+	 * 13. INICIALIZACION → = valor
+	 * 14. INICIALIZACION → ℷ
 	 */
 	private void inicializacion() {
-		parse.add(8);
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
+			parse.add(13);
 			token = lexico.scan();
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("inicializacion variable " + entradaTS.getLexema() + " con " + valor);
 			token = lexico.scan();
-		}		
+		} else {
+			parse.add(14);
+		}
 	}
 
 	/**
-	 * Regla numero 9
-	 * COSAS3 → ; | { CUERPO2 }
+	 * 15. COSAS3 → ; 
+	 * 16. COSAS3 → { CUERPO2 }
 	 */
 	private void cosas3() {
-		parse.add(9);
+		
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
-			//cabecera funcion
+			parse.add(15);
+			token = lexico.scan();
 			System.out.println("cabecera funcion " + entradaTS.getLexema());
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
+			parse.add(16);
 			token = lexico.scan();
 			cuerpo2();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 				System.out.println("funcion con cuerpo " + entradaTS.getLexema());
+				token = lexico.scan();
 			} else {
 				// error
+				System.err.print(" error 16 ");
 			}
 		}
-		token = lexico.scan();
+		
 	}
 
 

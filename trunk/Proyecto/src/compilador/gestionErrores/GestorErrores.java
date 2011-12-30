@@ -5,12 +5,14 @@ import java.util.Iterator;
 
 
 public class GestorErrores {
-	/**
-	 * lista de los distintos errores existentes
-	 */
+	
+	/** Lista de los distintos errores existentes */
 	private ArrayList<String> lista ;
-	/*
-	 * triplete sencillo con el que insertamos errores
+	/** Instancia unica del gestor de errores */
+	private static GestorErrores instance;
+	
+	/**
+	 * Triplete sencillo con el que insertamos errores
 	 */
 		public class TError{
 			private int error;
@@ -51,12 +53,19 @@ public class GestorErrores {
 				
 			}
 			}
- /*
-  * Array que contiene la lista de errores
-  */
+	/**
+	 * Array que contiene la lista de errores
+	 */
     private ArrayList<TError> errors;
     private int cuenta;
-    public GestorErrores() {
+    
+    public static GestorErrores getGestorErrores() {
+    	if(instance == null)
+    		instance = new GestorErrores();
+    	return instance;
+    }
+    
+    private GestorErrores() {
     	lista = new ArrayList<String>();
     	lista.add("elemento del léxico ya insertado");
     	lista.add("error de entrada salida");

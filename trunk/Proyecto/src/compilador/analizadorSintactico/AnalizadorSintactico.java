@@ -67,6 +67,7 @@ public class AnalizadorSintactico {
 			}
 			else {
 			//error sintactico
+				
 			}
 		}
 	}

@@ -128,7 +128,7 @@ public class AnalizadorSintactico {
 	/**
 	 * 17. COSAS → const TIPO ID = valor INIC_CONST ;
 	 *  5. COSAS → TIPO ID COSAS2 COSAS
-	 *  6. COSAS → ℷ
+	 *  6. COSAS → lambda
 	 */
 	private void cosas() {
 		if(!token.esIgual(TipoToken.EOF)) {
@@ -163,7 +163,7 @@ public class AnalizadorSintactico {
 						System.err.print(" error 5 ");
 					}
 				} else {
-					// 6. COSAS → ℷ
+					// 6. COSAS → lambda
 					parse.add(6);
 				}
 			}
@@ -172,7 +172,7 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 18. INIC_CONST → , ID = valor INIC_CONST
-	 * 19. INIC_CONST → ℷ
+	 * 19. INIC_CONST → lambda
 	 */
 	private void inic_const() {
 		System.out.println("declaracion constante " + entradaTS.getLexema());
@@ -269,7 +269,7 @@ public class AnalizadorSintactico {
 
 	/**
 	 * 11. DECLARACIONES → , ID INICIALIZACION DECLARACIONES
-	 * 12. DECLARACIONES → ℷ
+	 * 12. DECLARACIONES → lambda
 	 */
 	private void declaraciones() {
 		System.out.println("declaracion variable " + entradaTS.getLexema());
@@ -291,7 +291,7 @@ public class AnalizadorSintactico {
 
 	/**
 	 * 13. INICIALIZACION → = valor
-	 * 14. INICIALIZACION → ℷ
+	 * 14. INICIALIZACION → lambda
 	 */
 	private void inicializacion() {
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
@@ -342,6 +342,134 @@ public class AnalizadorSintactico {
 		
 	}
 
+	/**
+	 * 23. INSTRUCCION → INS_FUNCION |INS_REGISTRO | INS_LECTURA | INS_ESCRITURA | INS_ASIGNACION |  ;
+	 */
+	private void instruccion() {
+		parse.add(23);
+		ins_fun();
+		ins_reg();
+		ins_lect(); 
+		ins_esc();
+		ins_asig();
+		ins_vacia();
+	}
+	
+	
+	/**
+	 * 24. INS_FUNCION → ID (LISTA_ATB);
+	 */
+	private void ins_fun() {
+		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+			parse.add(24);
+			tipo = null;//((EntradaTS)token.getAtributo()).getLexema();//TOFIX obtener enumerado tipo de la variable declarada
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
+				parse.add(24);
+				token = lexico.scan();
+				lista_atb();
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
+					System.out.println("llamada a funcion " + entradaTS.getLexema());
+					token = lexico.scan();
+				} else {
+					// error
+					System.err.print(" error 24 ");
+				}
+			}
+		} else {
+			// error
+			System.err.print(" error 24 ");
+		}
+		
+	}
+	
+	/**
+	 * 25. LISTA_ATB → ATRIBUTO RESTO_ATB
+	 * 26. LISTA_ATB → lambda
+	 */
+	private void lista_atb() {
+		if(!token.esIgual(TipoToken.EOF)) {
+			parse.add(25);
+			atributo();
+			resto_atb();
+		} else {
+			// 26. LISTA_ATB → lambda 
+			parse.add(26);
+		}
+	}
+	
+	/**
+	 * 27. RESTO_ATB → , ATRIBUTO RESTO_ATB
+	 * 28. RESTO_ATB → lambda
+	 */
+	private void resto_atb() {
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
+			parse.add(27);
+			token = lexico.scan();
+			atributo();
+			resto_atb();
+		} else {
+			parse.add(28);
+		}
+	}
+	
+	/**
+	 * 29. ATRIBUTO → LITERAL
+	 * 30. ATRIBUTO → ID
+	 */
+	private void atributo() {
+		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+			parse.add(30);
+			tipo = null;//((EntradaTS)token.getAtributo()).getLexema();//TOFIX obtener enumerado tipo de la variable declarada
+			token = lexico.scan();
+		} else if(token.esIgual(TipoToken.LIT_CADENA)){ //NO SERIA ESTE!!!!! HABRIA QUE VER QUE PONER...
+			parse.add(29);
+			//no se si hay que hacer algo mas...
+			token = lexico.scan();
+		} else {
+			// error
+			System.err.print(" error 29 ");
+		}
+	}
+	
+	
+	
+	/**
+	 * 
+	 */
+	private void ins_reg() {
+		
+	}
+	
+	/**
+	 * 
+	 */
+	private void ins_lect() {
+		
+	}
+	
+	/**
+	 * 
+	 */
+	private void ins_esc() {
+		
+	}
+	
+	/**
+	 * 
+	 */
+	private void ins_asig() {
+		
+	}
+	
+	
+	/**
+	 * 
+	 */
+	private void ins_vacia() {
+		
+	}
+	
 
 	public Vector<Integer> getParse() {
 		return parse;

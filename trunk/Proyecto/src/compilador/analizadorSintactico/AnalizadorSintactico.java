@@ -343,7 +343,13 @@ public class AnalizadorSintactico {
 	}
 
 	/**
-	 * 23. INSTRUCCION → INS_FUNCION |INS_REGISTRO | INS_LECTURA | INS_ESCRITURA | INS_ASIGNACION |  ;
+	 * 20. INSTRUCCION → INS_FUNCION
+	 * 21. INSTRUCIION → INS_REGISTRO
+	 * 22. INSTRUCCION → INS_LECTURA
+	 * 23. INSTRUCCION → INS_ESCRITURA
+	 * 24. INSTRUCCION → INS_ASIGNACION
+	 * 25. INSTRUCCION → INS_DECLARACION
+	 * 26. INSTRUCCION → ;
 	 */
 	private void instruccion() {
 		parse.add(23);
@@ -352,12 +358,13 @@ public class AnalizadorSintactico {
 		ins_lect(); 
 		ins_esc();
 		ins_asig();
+		ins_decl();
 		ins_vacia();
 	}
 	
 	
 	/**
-	 * 24. INS_FUNCION → ID (LISTA_ATB);
+	 * 27. INS_FUNCION → ID (LISTA_ATB);
 	 */
 	private void ins_fun() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
@@ -384,8 +391,8 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * 25. LISTA_ATB → ATRIBUTO RESTO_ATB
-	 * 26. LISTA_ATB → lambda
+	 * 28. LISTA_ATB → ATRIBUTO RESTO_ATB
+	 * 29. LISTA_ATB → lambda
 	 */
 	private void lista_atb() {
 		if(!token.esIgual(TipoToken.EOF)) {
@@ -399,8 +406,8 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * 27. RESTO_ATB → , ATRIBUTO RESTO_ATB
-	 * 28. RESTO_ATB → lambda
+	 * 30. RESTO_ATB → , ATRIBUTO RESTO_ATB
+	 * 44. RESTO_ATB → lambda
 	 */
 	private void resto_atb() {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
@@ -414,8 +421,8 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * 29. ATRIBUTO → LITERAL
-	 * 30. ATRIBUTO → ID
+	 * 45. ATRIBUTO → LITERAL
+	 * 46. ATRIBUTO → ID
 	 */
 	private void atributo() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
@@ -459,6 +466,13 @@ public class AnalizadorSintactico {
 	 * 
 	 */
 	private void ins_asig() {
+		
+	}
+	
+	/**
+	 * 
+	 */
+	private void ins_decl() {
 		
 	}
 	

@@ -145,39 +145,42 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 Metodo que devuelve el LITERAL
+	 Metodo que devuelve el LITERAL y lee el siguiente token
 	 */
-	private void literal() {
+	private boolean literal() {
 		entradaTS = (EntradaTS)token.getAtributo();
 		entradaTS.setTipo(tipo);
 		entradaTS.setConstante(false);
-		//token = lexico.scan();
+		
 		if(token.esIgual(TipoToken.LIT_CADENA)) {
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("LITERAL CADENA: " + valor);
 			token = lexico.scan();
+			return true;
 		}
 		else if(token.esIgual(TipoToken.LIT_CARACTER)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("LITERAL CARACTER: " + valor);
 			token = lexico.scan();
+			return true;
 		} 
 		else if (token.esIgual(TipoToken.NUM_ENTERO)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("NUMERO ENTERO: " + valor);
 			token = lexico.scan();
+			return true;
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("NUMERO REAL: " + valor);
 			token = lexico.scan();
+			return true;
 		}
 		else {
 			//error
 			System.err.print(" error const ");
-		}
-		
-		
+			return false;
+		}		
 	}
 	
 	private void principal() {
@@ -192,6 +195,8 @@ public class AnalizadorSintactico {
 		
 	 	*/
 	private void cosas() {
+		boolean esLiteral=false;
+		
 		if(!token.esIgual(TipoToken.EOF)) {
 			if (!token.esIgual(null)){
 				// 8. COSAS → const TIPO ID = LITERAL INIC_CONST ;
@@ -204,8 +209,9 @@ public class AnalizadorSintactico {
 						//idConst(); // ID = valor
 						id();
 						if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
-							literal();  // ID = LITERAL
-							inic_const();
+							if(esLiteral=literal()){  // ID = LITERAL
+								inic_const();
+							}
 						}else{
 							System.err.print("Regla 8");
 						}
@@ -254,11 +260,8 @@ public class AnalizadorSintactico {
 		}
 	}
 	
-	/**
-	 * 12. COSAS2 → ( LISTA_PARAM ) COSAS3
-	 * 14. COSAS2 → INICIALIZACION  DECLARACIONES ;
-	 */
-	/*	12. COSAS2 → ( LISTA_PARAM ) COSAS3
+
+	/**	12. COSAS2 → ( LISTA_PARAM ) COSAS3
 		13. COSAS2 → [NUM_ENTERO] DIMENSION INIC_DIM
 		14. COSAS2 → INICIALIZACION  DECLARACIONES ;
 	*/
@@ -275,7 +278,26 @@ public class AnalizadorSintactico {
 				//error
 				System.err.print(" error 12 ");
 			}
-		} else {
+		} 
+		else if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_CORCHETE)){
+			parse.add(13);
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.NUM_ENTERO )){
+				token = lexico.scan();
+				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)){
+					token = lexico.scan();
+					dimension();
+					inicDim();
+				}
+				else{
+					System.err.print("Regla 13");
+				}
+			}
+			else{
+				System.err.print("Regla 13");
+			}
+		}
+		else {
 			// COSAS2 → INICIALIZACION  DECLARACIONES ;
 			parse.add(14);
 			inicializacion();
@@ -288,11 +310,8 @@ public class AnalizadorSintactico {
 		}
 	}
 	
-	/**
-	 * 15. COSAS3 → ; 
-	 * 16. COSAS3 → { CUERPO2 }
-	 */
-	/*	15. COSAS3 → ;
+
+	/**	15. COSAS3 → ;
 		16. COSAS3 → { CUERPO }
 	*/
 	private void cosas3() {
@@ -304,7 +323,7 @@ public class AnalizadorSintactico {
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(16);
 			token = lexico.scan();
-			cuerpo2();
+			cuerpo();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 				System.out.println("funcion con cuerpo " + entradaTS.getLexema());
 				token = lexico.scan();
@@ -315,7 +334,179 @@ public class AnalizadorSintactico {
 		}
 		
 	}
+
+	/**	17. LISTA_PARAM → TIPO ID RESTO_LISTA 
+	 * 	18. LISTA_PARAM → lambda
+	 */
+	private void lista_param() {
+		if(!token.esIgual(null)){
+			parse.add(17);
+			tipo();
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+				id();
+				token = lexico.scan();
+				restoLista();
+			}
+		}
+		else{
+			parse.add(18);
+		}
+	} 
+
 	
+	/** 19. RESTO_LISTA → , LISTA_PARAM 
+	 	20. RESTO_LISTA → lambda
+	 */
+	private void restoLista() {
+		if(!token.esIgual(null)){
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
+				parse.add(19);
+				token = lexico.scan();
+				lista_param();
+			}
+			else{
+				System.err.print("REegla 19");
+			}
+		}
+		else{
+			parse.add(20);
+		}
+	}
+
+
+	/**	21. DIMENSION → [ NUM_ENTERO ] DIMENSION
+		22. DIMENSION → lambda
+	 */
+	private void dimension() {
+		if(!token.esIgual(null)){
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
+				parse.add(21);
+				token = lexico.scan();
+				if(token.esIgual(TipoToken.NUM_ENTERO)){
+					token = lexico.scan();
+					if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)){
+						token = lexico.scan();
+						dimension();
+					}
+				}
+			}
+			else{
+				System.err.print("Regla 21");
+			}
+		}
+		else{
+			parse.add(22);
+		}
+		
+	}
+
+	/**	23. INIC_DIM → = INIC_DIM2 
+		24. INIC_DIM → lambda
+	 */
+	private void inicDim() {
+		if(!token.esIgual(null)){
+			if(token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
+				parse.add(23);
+				token = lexico.scan();
+				inicDim2();
+			}
+			else{
+				System.err.print("Regla 24");
+			}
+		}
+		else{
+			parse.add(24);
+		}
+	}
+
+
+	/**	25. INIC_DIM2 → { INIC_DIM3 }
+	 */
+	private void inicDim2() {
+		if(!token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_LLAVE)){
+			System.err.print("Regla 25");
+		}
+		else{
+			parse.add(25);
+			token = lexico.scan();
+			inicDim3();
+			//token = lexico.scan();
+			if(!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)){
+				System.err.print("Regla 25");
+			}
+			else{
+				token = lexico.scan();
+			}
+		}
+	}
+
+	/**	26. INIC_DIM3 → LITERAL INIC_DIM4 
+		27. INIC_DIM3 → INIC_DIM2 INIC_DIM5
+	 */
+	private void inicDim3() {
+		boolean esLiteral=false;
+		
+		if(!token.esIgual(TipoToken.EOF)){
+			if(esLiteral=literal()){ // El metodo literal() lee el siguiente token
+				parse.add(26);
+				inicDim4();
+			}
+			else{
+				parse.add(27);
+				inicDim2();
+				inicDim5();
+			}
+		}
+		
+	}
+
+	/**	28. INIC_DIM4 → , LITERAL INIC_DIM4 
+		29. INIC_DIM4 → lambda
+	 */
+	private void inicDim4() {
+		boolean esLiteral = false;
+		if(!token.esIgual(null)){
+			if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
+				parse.add(28);
+				token = lexico.scan();
+				if(!(esLiteral=literal())){
+					System.err.print("Regla 28");
+				}
+				else{
+					inicDim4();
+				}
+			}
+			else{
+				System.err.print("Regla 28");
+			}
+		}
+		else{
+			parse.add(29);
+		}
+		
+	}
+	
+	/**	30. INIC_DIM5 → , INIC_DIM2 INIC_DIM5
+		31. INIC_DIM5 → lambda 
+	 */
+	private void inicDim5() {
+		if(!token.esIgual(null)){
+			if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
+				parse.add(30);
+				token = lexico.scan();
+				inicDim2();
+				inicDim5();
+			}
+			else{
+				System.err.print("Regla 28");
+			}
+		}
+		else{
+			parse.add(31);
+		}
+	}
+
 	/**
 	 Hay que cambiar valor por LITERAL
 	 * 30. INIC_CONST → , ID = LITERAL INIC_CONST
@@ -414,16 +605,15 @@ public class AnalizadorSintactico {
 	}
 
 
+	private void cuerpo() {
+		// TODO Auto-generated method stub
+		
+	}
 	private void cuerpo2() {
 		// TODO Auto-generated method stub
 		
 	}
 
-
-	private void lista_param() {
-		// TODO Auto-generated method stub
-		
-	}
 
 	/**
 	 * 37. INSTRUCCION → INS_FUNCION

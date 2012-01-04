@@ -615,17 +615,6 @@ public class AnalizadorSintactico {
 		}
 	}
 
-
-	private void cuerpo() {
-		// TODO Auto-generated method stub
-		
-	}
-	private void cuerpo2() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
 	/**
 	 * 37. INSTRUCCION → INS_FUNCION
 	 * 38. INSTRUCIION → INS_REGISTRO
@@ -769,6 +758,106 @@ public class AnalizadorSintactico {
 		
 	}
 	
+
+	/**
+	 * 73-83 aun no estan terminadas!
+	 * 73. INS_ASIGNACION → ID  OP_ASIGNACION EXPRESION
+	 */
+	private void ins_asignacion()
+	{
+		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+			parse.add(73);
+			//tipo = null;//((EntradaTS)token.getAtributo()).getLexema();//TOFIX obtener enumerado tipo de la variable declarada
+			token = lexico.scan();
+			//expresion();
+		} 
+		
+	}
+	/**
+	 * 
+	 * 	74. CUERPO → INSTRUCCION CUERPO 
+		75. CUERPO → SENT_BUCLE CUERPO
+		76. CUERPO → SENT_IF CUERPO
+		77. CUERPO → SENT_CASE CUERPO
+		78. CUERPO → ℷ
+	 */
+	private void cuerpo()
+	{
+		/*if(instruccion())
+		{
+			parse.add(74);
+			cuerpo();
+		}
+		else*/ if(sent_bucle())
+		{
+			parse.add(75);
+			cuerpo();
+		}
+		else if(sent_if())
+		{
+			parse.add(76);
+			cuerpo();
+		}
+		else if(sent_if())
+		{
+			parse.add(77);
+			cuerpo();
+		}
+	}
+	
+
+	/**
+	 *  79. CUERPO2 → INSTRUCCION
+		80. CUERPO2 → SENT_BUCLE
+		81. CUERPO2 → SENT_IF
+		82. CUERPO2 → SENT_CASE 
+		83. CUERPO2 → { CUERPO }
+	 */
+	private void cuerpo2() {
+		/*if(instruccion())
+		{
+			parse.add(79);
+		}
+		else*/ if(sent_bucle())
+		{
+			parse.add(80);
+		}
+		else if(sent_if())
+		{
+			parse.add(81);
+		}
+		else if(sent_case())
+		{
+			parse.add(82);
+		}
+		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
+			token = lexico.scan();
+			cuerpo();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
+				parse.add(83);
+				token = lexico.scan();
+			}
+			else
+				System.out.println("ERROR EN REGLA 83. FALTA PARENTESIS DE CIERRE");
+		}
+		
+	}
+	
+	
+	private boolean sent_case() {
+		return true;
+	}
+
+
+	private boolean sent_if() {
+		return true;
+	}
+
+
+	private boolean sent_bucle() {
+		return true;
+	}
+	
 	/**
 	 * 84. EXPRESION → EXPRESIONNiv1 RESTO_EXPR
 	 * 85. RESTO_EXPR → OpNiv0 EXPRESION
@@ -875,6 +964,8 @@ public class AnalizadorSintactico {
 			
 		}
 	}
+	
+	
 	
 	public Vector<Integer> getParse() {
 		return parse;

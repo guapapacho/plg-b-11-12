@@ -7,57 +7,52 @@ import java.util.Iterator;
 public class GestorErrores {
 	
 	/** Lista de los distintos errores existentes */
-	private ArrayList<String> lista ;
+	private ArrayList<String> lista;
 	/** Instancia unica del gestor de errores */
 	private static GestorErrores instance;
+	/** Array que contiene la lista de errores */
+    private ArrayList<TError> errors;
 	
-	/**
-	 * Triplete sencillo con el que insertamos errores
-	 */
-		public class TError{
-			private int error;
-
+	public enum TipoError {
+		LEXICO("léxico"), SINTACTICO("sintáctico"), SEMANTICO("semántico");
+		
+		private String description;
+		private TipoError(String desc) { description = desc; };
+		public String toString() { return description; };
+	}
+	
+		/**
+		 * Triplete sencillo con el que insertamos errores
+		 */
+		public class TError {
+			private TipoError tipo;
 			private int linea;
-
 			private int columna;
-			
-		public int getError() {
-				return error;
-			}
-
-			public void setError(int error) {
-				this.error = error;
-			}
-
+			private String mensaje;
+		
 			public int getLinea() {
 				return linea;
 			}
-
-			public void setLinea(int linea) {
-				this.linea = linea;
-			}
-
+		
 			public int getColumna() {
 				return columna;
 			}
-
-			public void setColumna(int columna) {
+		
+			public String toString() {
+				return "Error "+tipo+" en L: "+linea+" C: "+columna+
+						"\n   mensaje: "+mensaje;
+			//	return "Error "+tipo+": "+lista.get(error)+
+			//			" en: \n la linea "+linea+" y la columna "+columna;
+			}
+		
+			public TError(TipoError tipo, String string, int linea, int columna){
+				this.tipo = tipo;
+				this.mensaje = string;
+				this.linea = linea;
 				this.columna = columna;
 			}
+		}
 
-
-			public TError(int error, int linea, int columna){
-			this.error = error;
-			this.linea = linea;
-			this.columna = columna;
-				
-			}
-			}
-	/**
-	 * Array que contiene la lista de errores
-	 */
-    private ArrayList<TError> errors;
-    private int cuenta;
     
     public static GestorErrores getGestorErrores() {
     	if(instance == null)
@@ -74,18 +69,20 @@ public class GestorErrores {
     	lista.add("token de entrada invalido");
     	lista.add("pila vacia no esperada");
         errors = new ArrayList<TError>();
-        cuenta=0;
     }
 
-    public void insertaError(int er, int l, int n) {
-        errors.add(new TError(er, l, n));
-        cuenta=cuenta++;
+    public void insertaErrorLexico(int er, int l, int n) {
+        errors.add(new TError(TipoError.LEXICO, lista.get(er), l, n));
     }
 
-    public void setErrores(ArrayList<TError> copia) {
-        errors = copia;
-        cuenta=copia.size();
+    public void insertaErrorSintactico(int er, int l, int n) {
+        errors.add(new TError(TipoError.SEMANTICO, lista.get(er), l, n));
     }
+
+    public void insertaErrorSintactico(int l, int n,String mensaje) {
+        errors.add(new TError(TipoError.SEMANTICO, mensaje, l, n));
+    }
+    
     public ArrayList<TError> devuelveErrores(){
     	return errors;
     }
@@ -95,24 +92,23 @@ public class GestorErrores {
      */
     public String muestraListaErrores(){
     	String salida;
-    	salida= " ";
-    	if (cuenta==0){
-    	salida=salida+"No hubo errores\n";
-    	return salida;
-    		   	}
+    	salida= "\n";
+    	if (errors.size()==0){
+	    	salida=salida+"No hubo errores\n";
+	    	return salida;
+    	}
     	else {
-    		salida=salida+"Hubo: "+cuenta+" errores\n";
+    		salida=salida+"Hubo: "+errors.size()+" errores\n";
     		Iterator<TError> iterator = errors.iterator();
     		while (iterator.hasNext()){
     			TError err2;
     			err2=iterator.next();
-    			salida=salida+lista.get(err2.getError())+" en: \n la linea "+err2.getLinea()+" y la columna "+err2.getColumna()+" \n";
+    			salida=salida+err2+" \n";
     			
     		}
     		return salida;
-    		}
-    		 
-    		
-    	  }
+    	}
     }
+
+}
 

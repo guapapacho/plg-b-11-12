@@ -102,8 +102,37 @@ public class Token {
 	public boolean esIgual(TipoToken t, Object ob) {
 		return tipo.equals(t) && atributo.equals(ob);		
 	}
+	
 	public boolean esIgual(TipoToken t) {
 		return tipo.equals(t);		
 	}
 	
+	public boolean esOpNiv0() {
+		return tipo.compareTo(TipoToken.OP_COMPARACION) == 0;
+	}
+	
+	public boolean esOpNiv1() {
+		return atributo == OpAritmetico.SUMA ||
+				atributo == OpAritmetico.RESTA ||
+				atributo == OpLogico.OR;
+	}
+	
+	public boolean esOpNiv2() {
+		return atributo == OpAritmetico.MULTIPLICACION ||
+				atributo == OpAritmetico.DIVISION ||
+				atributo == OpAritmetico.PORCENTAJE ||
+				atributo == OpLogico.AND;
+	}
+	
+	public boolean esOpNiv3() {
+		return atributo == OpLogico.DOS_MAYORES ||
+				atributo == OpLogico.DOS_MENORES;
+	}
+	
+	public boolean esOpNiv4() {
+		return atributo == OpLogico.NOT ||
+				atributo == OpAritmetico.RESTA ||
+				atributo == OpAritmetico.INCREMENTO ||
+				atributo == OpAritmetico.DECREMENTO;
+	}
 }

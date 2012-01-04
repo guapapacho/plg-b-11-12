@@ -134,7 +134,7 @@ public class AnalizadorSintactico {
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA)){
 			parse.add(7);
 			switch((Integer)token.getAtributo()){
-			//TODO no se si hace falta mirar si es un tipo valido
+			// no se si hace falta mirar si es un tipo valido
 			}
 			token = lexico.scan();
 		} else {
@@ -180,50 +180,12 @@ public class AnalizadorSintactico {
 		
 	}
 	
-	
-	
-	
-	/**
-	 private void idConst() {
-		entradaTS = (EntradaTS)token.getAtributo();
-		entradaTS.setTipo(tipo);
-		entradaTS.setConstante(true);
-		token = lexico.scan();
-		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
-			token = lexico.scan();
-			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-			System.out.println("inicializacion constante " + entradaTS.getLexema() + " con " + valor);
-			token = lexico.scan();
-		} else {
-			//error
-			System.err.print(" error const ");
-		}
-	}
-
-
-	private void id() {
-		entradaTS = (EntradaTS)token.getAtributo();
-		entradaTS.setTipo(tipo);
-		token = lexico.scan();
-	} 
-	 */
-	
-	
-	
-	
-	
-	
 	private void principal() {
 
 		
 	}
 
-	/**
-	 * 17. COSAS → const TIPO ID = valor INIC_CONST ;
-	 *  5. COSAS → TIPO ID COSAS2 COSAS
-	 *  6. COSAS → lambda
-	 */
-	/* 	8. COSAS → const TIPO ID = LITERAL INIC_CONST ;
+	/**	8. COSAS → const TIPO ID = LITERAL INIC_CONST ;
  		9. COSAS → TIPO ID COSAS2 COSAS
 		10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3
 		11. COSAS → ℷ
@@ -231,16 +193,22 @@ public class AnalizadorSintactico {
 	 	*/
 	private void cosas() {
 		if(!token.esIgual(TipoToken.EOF)) {
-			if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 9 /*const*/) {
-				// 8. COSAS → const TIPO ID = valor INIC_CONST ;
-				parse.add(8);
-				token = lexico.scan();
-				tipo();
-				if(true) {//TODO tipo correcto
+			if (!token.esIgual(null)){
+				// 8. COSAS → const TIPO ID = LITERAL INIC_CONST ;
+				if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 9 /*const*/) {
+					parse.add(8);
+					token = lexico.scan();
+					tipo(); /// Para el siguiente true el metodo tipo() debria devolver si es un tipo valido
+					//if(true) {//TODO tipo correcto -> NO HACE FALTA, ES EL SEMANTICO EL QUE COMPRUEBA SI ES CORRECTO EL TIPO
 					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 						//idConst(); // ID = valor
-						literal();
-						inic_const();
+						id();
+						if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
+							literal();  // ID = LITERAL
+							inic_const();
+						}else{
+							System.err.print("Regla 8");
+						}
 						if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 							//error
 							System.err.print(" error 8 ");
@@ -248,11 +216,26 @@ public class AnalizadorSintactico {
 							token = lexico.scan();
 						}
 					}
+					//}
+				}/////////////////// PAL_RESERVADA
+				else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 69 /*void*/){
+					parse.add(10);
+					token = lexico.scan();
+					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+						token = lexico.scan();
+						if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
+							token = lexico.scan();
+							lista_param();
+							if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
+								token = lexico.scan();
+								cosas3();
+							}
+						}
+					}
 				}
-			} else {
+				else {// 9. COSAS → TIPO ID COSAS2 COSAS
 				tipo();
-				if(true) {//TODO tipo correcto
-					// 9. COSAS → TIPO ID COSAS2 COSAS
+				//if(true) {//TODO tipo correcto
 					parse.add(9);
 					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 						id();
@@ -262,10 +245,11 @@ public class AnalizadorSintactico {
 						// error sintáctico
 						System.err.print(" error 9 ");
 					}
-				} else {
-					// 11. COSAS → lambda
-					parse.add(11);
 				}
+					
+			}//////////////////////////////////////////////// !lambda
+			else{//Si es lambda
+				parse.add(11);
 			}
 		}
 	}
@@ -339,17 +323,24 @@ public class AnalizadorSintactico {
 	 */
 	private void inic_const() {
 		System.out.println("declaracion constante " + entradaTS.getLexema());
-		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
-			parse.add(30);
-			token = lexico.scan();
-			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-				idConst();
-				inic_const();
-			} else {
+		if (!token.esIgual(null)){ // Si no es lambda
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
+				parse.add(30);
+				token = lexico.scan();
+				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+					//idConst();
+					literal();  // ID = LITERAL
+					inic_const();
+				} else {
 				// error
+					System.err.print(" error 30 ");
+				}	
+			}
+			else{
 				System.err.print(" error 30 ");
-			}		
-		} else {
+			}
+		}
+		else { ///Si es lambda
 			parse.add(31);
 		}
 		

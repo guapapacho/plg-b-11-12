@@ -143,6 +143,76 @@ public class AnalizadorSintactico {
 		}
 	}
 	
+	
+	/**
+	 Metodo que devuelve el LITERAL
+	 */
+	private void literal() {
+		entradaTS = (EntradaTS)token.getAtributo();
+		entradaTS.setTipo(tipo);
+		entradaTS.setConstante(false);
+		//token = lexico.scan();
+		if(token.esIgual(TipoToken.LIT_CADENA)) {
+			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+			System.out.println("LITERAL CADENA: " + valor);
+			token = lexico.scan();
+		}
+		else if(token.esIgual(TipoToken.LIT_CARACTER)){
+			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+			System.out.println("LITERAL CARACTER: " + valor);
+			token = lexico.scan();
+		} 
+		else if (token.esIgual(TipoToken.NUM_ENTERO)){
+			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+			System.out.println("NUMERO ENTERO: " + valor);
+			token = lexico.scan();
+		}
+		else if (token.esIgual(TipoToken.NUM_REAL)){
+			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+			System.out.println("NUMERO REAL: " + valor);
+			token = lexico.scan();
+		}
+		else {
+			//error
+			System.err.print(" error const ");
+		}
+		
+		
+	}
+	
+	
+	
+	
+	/**
+	 private void idConst() {
+		entradaTS = (EntradaTS)token.getAtributo();
+		entradaTS.setTipo(tipo);
+		entradaTS.setConstante(true);
+		token = lexico.scan();
+		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
+			token = lexico.scan();
+			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+			System.out.println("inicializacion constante " + entradaTS.getLexema() + " con " + valor);
+			token = lexico.scan();
+		} else {
+			//error
+			System.err.print(" error const ");
+		}
+	}
+
+
+	private void id() {
+		entradaTS = (EntradaTS)token.getAtributo();
+		entradaTS.setTipo(tipo);
+		token = lexico.scan();
+	} 
+	 */
+	
+	
+	
+	
+	
+	
 	private void principal() {
 
 		
@@ -168,7 +238,8 @@ public class AnalizadorSintactico {
 				tipo();
 				if(true) {//TODO tipo correcto
 					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-						idConst(); // ID = valor
+						//idConst(); // ID = valor
+						literal();
 						inic_const();
 						if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 							//error

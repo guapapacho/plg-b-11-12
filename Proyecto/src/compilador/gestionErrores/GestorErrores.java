@@ -76,11 +76,11 @@ public class GestorErrores {
     }
 
     public void insertaErrorSintactico(int er, int l, int n) {
-        errors.add(new TError(TipoError.SEMANTICO, lista.get(er), l, n));
+        errors.add(new TError(TipoError.SINTACTICO, lista.get(er), l, n));
     }
 
     public void insertaErrorSintactico(int l, int n,String mensaje) {
-        errors.add(new TError(TipoError.SEMANTICO, mensaje, l, n));
+        errors.add(new TError(TipoError.SINTACTICO, mensaje, l, n));
     }
     
     public ArrayList<TError> devuelveErrores(){

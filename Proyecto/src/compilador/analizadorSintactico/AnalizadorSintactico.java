@@ -35,6 +35,7 @@ public class AnalizadorSintactico {
 		parse = new Vector<Integer>();
 		token = lexico.scan();
 		gestorTS = GestorTablasSimbolos.getGestorTS();
+		gestorErr = GestorErrores.getGestorErrores();
 		tipo = null;
 		entradaTS = null;
 		programa();
@@ -53,12 +54,11 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * 2. LIBRERIA → #include RESTO_LIBRERIA
+	 *  2. LIBRERIA → #include RESTO_LIBRERIA
+	 *  3. LIBRERIA -> lambda
 	 */
-	// Falta 3. LIBRERIA -> lambda creo
 	private void libreria() {
-		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ALMOHADILLA))
-		{
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ALMOHADILLA)) {
 			token = lexico.scan();
 			if(token.esIgual(TipoToken.IDENTIFICADOR) && 
 					"include".equals( ((EntradaTS)token.getAtributo()).getLexema() )) {
@@ -70,6 +70,8 @@ public class AnalizadorSintactico {
 			//error sintactico
 				
 			}
+		} else {
+			parse.add(3);
 		}
 	}
 
@@ -124,22 +126,25 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 6. TIPO → ID										
-	 * 7. TIPO → TIPO_SIMPLE | VOID // pal reservada --> Ahora ya no hay VOID en esta reglas
+	 * 7. TIPO → TIPO_SIMPLE
 	 */
-	private void tipo() {
+	private boolean tipo() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(6);
 			tipo = null;//((EntradaTS)token.getAtributo()).getLexema();//TOFIX obtener enumerado tipo de la variable declarada
 			token = lexico.scan();
+			return true;
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA)){
 			parse.add(7);
 			switch((Integer)token.getAtributo()){
 			// no se si hace falta mirar si es un tipo valido
 			}
 			token = lexico.scan();
+			return true;
 		} else {
 			// error
 			System.err.print(" error 7 ");
+			return false;
 		}
 	}
 	
@@ -173,6 +178,12 @@ public class AnalizadorSintactico {
 		else if (token.esIgual(TipoToken.NUM_REAL)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("NUMERO REAL: " + valor);
+			token = lexico.scan();
+			return true;
+		}
+		else if (token.esIgual(TipoToken.NUM_REAL_EXPO)){
+			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+			System.out.println("NUMERO REAL EXPO: " + valor);
 			token = lexico.scan();
 			return true;
 		}
@@ -758,13 +769,119 @@ public class AnalizadorSintactico {
 		
 	}
 	
+	/**
+	 * 84. EXPRESION → EXPRESIONNiv1 RESTO_EXPR
+	 * 85. RESTO_EXPR → OpNiv0 EXPRESION
+	 * 86. RESTO_EXPR → lambda
+	 */
+	private void expresion() {
+		parse.add(84);
+		expresionNiv1();
+		//restoExpr
+		if(token.esOpNiv0()) {
+			parse.add(85);
+			lexico.scan();
+			expresion();
+		} else {
+			parse.add(86);
+		}
+	}
+	
+	/**
+	 * 87. EXPRESIONNiv1 → EXPRESIONNiv2 RESTO_EXPR1
+	 * 88. RESTO_EXPR1 → OpNiv1 EXPRESIONNiv1
+	 * 89. RESTO_EXPR1 → lambda
+	 */
+	private void expresionNiv1() {
+		parse.add(87);
+		expresionNiv2();
+		//restoExpr1
+		if(token.esOpNiv1()) {
+			parse.add(88);
+			lexico.scan();
+			expresionNiv1();
+		} else {
+			parse.add(86);
+		}
+	}
 
+	/**
+	 * 90. EXPRESIONNiv2 → EXPRESIONNiv3  RESTO_EXPR2
+	 * 91. RESTO_ESPR2 → OpNiv2 EXPRESIONNiv2
+	 * 92. RESTO_ESPR2 → lambda
+	 */
+	private void expresionNiv2() {
+		parse.add(90);
+		expresionNiv3();
+		//restoExpr2
+		if(token.esOpNiv2()) {
+			parse.add(91);
+			lexico.scan();
+			expresionNiv2();
+		} else {
+			parse.add(92);
+		}
+	}
+	
+	/**
+	 * 93. EXPRESIONNiv3 → EXPRESIONNiv4 RESTO_EXPR3
+	 * 94. RESTO_EXPR3 → OpNiv3 EXPRESIONNiv3
+	 * 95. RESTO_EXPR3 → lambda
+	 */
+	private void expresionNiv3() {
+		parse.add(93);
+		expresionNiv4();
+		//restoExpr3
+		if(token.esOpNiv3()) {
+			parse.add(94);
+			lexico.scan();
+			expresionNiv3();
+		} else {
+			parse.add(95);
+		}
+	}
+	
+	/**
+	 * 96. EXPRESIONNiv4 → OpNiv4 EXPRESIONNiv4
+	 * 97. EXPRESIONNiv4 → ( RESTO_EXP4
+	 * 98. RESTO_EXPR4 → TIPO ) EXPRESIONNiv4
+	 * 99. RESTO_EXPR4 → EXPRESION )
+	 */
+	private void expresionNiv4() {
+		if(token.esOpNiv4()) {
+			parse.add(96);
+			lexico.scan();
+			expresionNiv4();
+		} else if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
+			parse.add(97);
+			lexico.scan();
+			//restoExpr4
+			if(tipo()) {
+				parse.add(98);
+				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)){
+					lexico.scan();
+					expresionNiv4();
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
+							"Expresion no terminada correctamente: falta ')'");
+				}
+			} else {
+				parse.add(99);
+				expresion();
+				if(!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS))
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
+							"Expresion no terminada correctamente: falta ')'");
+			}
+			
+		}
+	}
+	
 	public Vector<Integer> getParse() {
 		return parse;
 	}	
 	
 	/**
-	 * Clase main de pruebas.
+	 * Main de pruebas.
 	 */
 	public static void main(String args[])
 	{

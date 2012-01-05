@@ -193,6 +193,7 @@ public class GestorTablasSimbolos {
 		palRes.put("String", 73);
 		palRes.put("cin", 74);
 		palRes.put("cout", 75);
+		palRes.put("endl", 76); // TODO: agregar en otros sitios pertinentes !??
 
 	}	
 	

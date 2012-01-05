@@ -5,6 +5,7 @@ import java.io.StringBufferInputStream;
 import java.util.Vector;
 
 import compilador.analizadorLexico.*;
+import compilador.analizadorLexico.Token.TipoToken;
 import compilador.analizadorLexico.Token.*;
 import compilador.gestionErrores.GestorErrores;
 import compilador.tablaSimbolos.*;
@@ -732,18 +733,117 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * 
+	 * 60. INS_LECTURA → cin >>  RESTO_LECT 
 	 */
 	private void ins_lect() {
-		
+		if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 74){
+			parse.add(60);
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MAYORES)){
+				token = lexico.scan();
+				resto_lect();
+			}
+			else{
+				// error
+				System.err.print(" error 60 ");
+			}
+		}
+		else{
+			// error
+			System.err.print(" error 60 ");
+		}
+	}
+	
+	/**
+	 * 61. RESTO_LECT → ID ;
+	 * 62. RESTO_LECT → LITERAL  ;
+	 */
+	private void resto_lect() {
+		if(token.esIgual(TipoToken.IDENTIFICADOR)){ //FALTA ALGO MAS AQUI???
+			parse.add(61);
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
+				token = lexico.scan();
+			}
+			else{
+				// error
+				System.err.print(" error 61 ");
+			}
+		}
+		else if(esLiteral()){
+			parse.add(62);
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
+				token = lexico.scan();	
+			}
+			else{
+				// error
+				System.err.print(" error 62 ");
+			}
+		}
+		else{
+			// error
+			System.err.print(" error 62 ");
+		}
+	}
+	
+	/**
+	 * 63. INS_ESCRITURA → cout << RESTO_ESC
+	 */
+	private void ins_esc() {
+		if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 75){
+			parse.add(63);
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
+				token = lexico.scan();
+				resto_esc();
+			}
+			else{
+				// error
+				System.err.print(" error 63 ");
+			}
+		}
+		else{
+			// error
+			System.err.print(" error 63 ");
+		}
+	}
+	
+	/**
+	 * 64. RESTO_ESC →  LITERAL INS_ESCRITURA2
+	 * 65. RESTO_ESC →  ID INS_ESCRITURA2
+	 * 66. RESTO_ESC → endl INS_ESCITURA2
+	 */
+	private void resto_esc() {
+		if(esLiteral()){
+			parse.add(64);
+			token = lexico.scan();
+			ins_esc2();
+		}
+		else if(token.esIgual(TipoToken.IDENTIFICADOR)){
+			parse.add(65);
+			token = lexico.scan();
+			ins_esc2();
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 76){
+			parse.add(66);
+			token = lexico.scan();
+			ins_esc2();
+		}
+		else{
+			// error
+			System.err.print(" error 66 ");
+		}
 	}
 	
 	/**
 	 * 
 	 */
-	private void ins_esc() {
+	private void ins_esc2(){
 		
 	}
+	
+	
 	
 	/**
 	 * 
@@ -974,7 +1074,10 @@ public class AnalizadorSintactico {
 		}
 	}
 	
-	
+	private boolean esLiteral(){
+		return (token.esIgual(TipoToken.LIT_CADENA) || token.esIgual(TipoToken.LIT_CARACTER) || token.esIgual(TipoToken.NUM_ENTERO)
+				|| token.esIgual(TipoToken.NUM_REAL) || token.esIgual(TipoToken.NUM_REAL_EXPO));
+	}
 	
 	public Vector<Integer> getParse() {
 		return parse;

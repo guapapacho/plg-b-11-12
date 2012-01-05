@@ -199,9 +199,9 @@ public class AnalizadorSintactico {
 		
 	}
 
-	/**	8. COSAS → const TIPO ID = LITERAL INIC_CONST ;
+	/**	8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
  		9. COSAS → TIPO ID COSAS2 COSAS
-		10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3
+		10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3 COSAS
 		11. COSAS → ℷ
 		
 	 	*/
@@ -209,8 +209,9 @@ public class AnalizadorSintactico {
 		boolean esLiteral=false;
 		
 		if(!token.esIgual(TipoToken.EOF)) {
-			if (!token.esIgual(null)){
-				// 8. COSAS → const TIPO ID = LITERAL INIC_CONST ;
+			if (!token.esIgual(null)){ //Y esto?? Yo creo que si es lambda no tiene por que ser token null. Puede que este usando otra regla, no? (Cris)
+				
+				// 8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
 				if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 9 /*const*/) {
 					parse.add(8);
 					token = lexico.scan();
@@ -231,10 +232,12 @@ public class AnalizadorSintactico {
 							System.err.print(" error 8 ");
 						} else {
 							token = lexico.scan();
+							cosas();
 						}
 					}
 					//}
 				}/////////////////// PAL_RESERVADA
+				//10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3 COSAS
 				else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 69 /*void*/){
 					parse.add(10);
 					token = lexico.scan();
@@ -246,6 +249,7 @@ public class AnalizadorSintactico {
 							if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 								token = lexico.scan();
 								cosas3();
+								cosas();
 							}
 						}
 					}
@@ -273,7 +277,7 @@ public class AnalizadorSintactico {
 	
 
 	/**	12. COSAS2 → ( LISTA_PARAM ) COSAS3
-		13. COSAS2 → [NUM_ENTERO] DIMENSION INIC_DIM
+		13. COSAS2 → [NUM_ENTERO] DIMENSION INIC_DIM ;
 		14. COSAS2 → INICIALIZACION  DECLARACIONES ;
 	*/
 	private void cosas2() {
@@ -299,6 +303,11 @@ public class AnalizadorSintactico {
 					token = lexico.scan();
 					dimension();
 					inicDim();
+					token = lexico.scan();
+					if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA))
+						token = lexico.scan();
+					else
+						System.err.println("Regla 13. Falta ';'");
 				}
 				else{
 					System.err.print("Regla 13");
@@ -497,14 +506,14 @@ public class AnalizadorSintactico {
 		}
 		
 	}
-	
-	/**	30. INIC_DIM5 → , INIC_DIM2 INIC_DIM5
-		31. INIC_DIM5 → lambda 
+
+	/**	28. INIC_DIM5 → , INIC_DIM2 INIC_DIM5
+		29. INIC_DIM5 → lambda 
 	 */
 	private void inicDim5() {
 		if(!token.esIgual(null)){
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
-				parse.add(30);
+				parse.add(28);
 				token = lexico.scan();
 				inicDim2();
 				inicDim5();
@@ -514,7 +523,7 @@ public class AnalizadorSintactico {
 			}
 		}
 		else{
-			parse.add(31);
+			parse.add(29);
 		}
 	}
 

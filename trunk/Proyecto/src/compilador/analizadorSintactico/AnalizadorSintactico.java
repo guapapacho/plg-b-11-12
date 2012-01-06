@@ -203,7 +203,7 @@ public class AnalizadorSintactico {
 	/**	8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
  		9. COSAS → TIPO ID COSAS2 COSAS
 		10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3 COSAS
-		11. COSAS → ℷ
+		11. COSAS → lambda
 		
 	 	*/
 	private void cosas() {
@@ -636,6 +636,7 @@ public class AnalizadorSintactico {
 	 */
 
 	private void instruccion() {
+		//Esto no está bien, tengo que ver como implementarlo...
 		parse.add(23);
 		ins_fun();
 		ins_reg();
@@ -726,11 +727,47 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * 
+	 * 51. INS_REGISTRO → struct RESTO_ST
 	 */
 	private void ins_reg() {
 		
 	}
+	
+	/**
+	 * 52. RESTO_ST → ID { CUERPO_ST } ID NOMBRES
+	 * 53. RESTO_ST → { CUERPO_ST } ID NOMBRES
+	 */
+	private void resto_st() {
+		
+	}
+	
+	
+	/**
+	 * 54. CUERPO_ST → TIPO ID RESTO_VAR CUERPO_ST
+	 * 55. CUERPO_ST → lambda
+	 */
+	private void cuerpo_st() {
+		
+	}
+	
+	
+	/**
+	 * 56. RESTO_VAR → , ID RESTO_VAR
+	 * 57. RESTO_VAR → ;
+	 */
+	private void resto_var() {
+		
+	}
+	
+	
+	/**
+	 * 58. NOMBRES → , ID NOMBRES
+	 * 59. NOMBRES → ;
+	 */
+	private void nombres() {
+		
+	}
+	
 	
 	/**
 	 * 60. INS_LECTURA → cin >>  RESTO_LECT 

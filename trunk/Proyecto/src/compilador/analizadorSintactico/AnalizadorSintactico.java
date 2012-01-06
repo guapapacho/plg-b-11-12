@@ -964,7 +964,6 @@ public class AnalizadorSintactico {
 		
 	}
 	/**
-	 * 
 	 * 	74. CUERPO → INSTRUCCION CUERPO 
 		75. CUERPO → SENT_BUCLE CUERPO
 		76. CUERPO → SENT_IF CUERPO
@@ -1050,7 +1049,7 @@ public class AnalizadorSintactico {
 							if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
 								token = lexico.scan();
 								cuerpo_case();
-								if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
+								if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_CORCHETE)) {
 									token = lexico.scan();
 									return true;
 								}
@@ -1075,7 +1074,7 @@ public class AnalizadorSintactico {
 	}
 
 	/** TODO ¡¡¡¡¡SIN TERMINAR!!!
-	 * CUERPO_CASE  → case valor: CUERPO  |  CUERPO2
+	 * CUERPO_CASE  → case LITERAL: CUERPO  |  CUERPO2
 	 * mas expresiones: defalut: break; goto identifier ; continue ;
 	 */
 	private void cuerpo_case() {
@@ -1083,7 +1082,7 @@ public class AnalizadorSintactico {
 		{
 			parse.add(-1); //Añadir numero de regla cuando se sepa
 			token = lexico.scan();
-			if(literal())
+			if(literal()) /** TODO si literal lanza error (alomejor deberiamos tratar errores con excepciones), deberia seguir? si no entonces esto no habria que comprobarlo.. (Cris)*/
 			{
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
 					token = lexico.scan();
@@ -1091,6 +1090,8 @@ public class AnalizadorSintactico {
 					cuerpo_case();
 				}	
 			}
+			else 
+				System.err.println("error en case");
 		}
 	}
 	/**  TODO ¡¡¡¡¡SIN TERMINAR!!!
@@ -1184,6 +1185,30 @@ public class AnalizadorSintactico {
 			parse.add(-1); //Añadir numero de regla cuando se sepa
 			token = lexico.scan();
 			cuerpo2();
+			if(token.esIgual(TipoToken.PAL_RESERVADA,72)) //Palabra reservada while
+			{
+				token = lexico.scan();
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
+					token = lexico.scan();
+					//condicion();
+					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+						token = lexico.scan();
+						if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
+							token = lexico.scan();
+							return true;
+						}	
+						else
+							System.err.println("error");
+						
+					}
+					else
+						System.err.println("error");
+				}
+				else
+					System.err.println("error");
+			}
+			else
+				System.err.println("error");
 			
 		}	
 		return false;

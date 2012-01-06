@@ -825,7 +825,7 @@ public class AnalizadorSintactico {
 			token = lexico.scan();
 			ins_esc2();
 		}
-		else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 76){
+		else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 76 /* endl */){
 			parse.add(66);
 			token = lexico.scan();
 			ins_esc2();
@@ -837,12 +837,53 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * 
+	 * 67. INS_ESCRITURA2 →  << RESTO_ESC2
+	 * 68. INS_ESCRITURA2 →  ;
 	 */
 	private void ins_esc2(){
-		
+		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
+			parse.add(67);
+			token = lexico.scan();
+			resto_esc2();
+		}
+		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
+			parse.add(68);
+			token = lexico.scan();
+		}
+		else{
+			// error
+			System.err.print(" error 68 ");
+		}
 	}
 	
+	
+	/**
+	 * 69. RESTO_ESC2 → LITERAL  INS_ESCRITURA2 
+	 * 70. RESTO_ESC2 → ID  INS_ESCRITURA2  
+	 * 71. RESTO_ESC2 → endl INS_ESCRITURA2 
+	 * 72. RESTO_ESC2 → ℷ
+	 */
+	private void resto_esc2() {
+		if(esLiteral()){
+			parse.add(69);
+			token = lexico.scan();
+			ins_esc2();
+		}
+		else if(token.esIgual(TipoToken.IDENTIFICADOR)){
+			parse.add(70);
+			token = lexico.scan();
+			ins_esc2();
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 76 /* endl */){
+			parse.add(71);
+			token = lexico.scan();
+			ins_esc2();
+		}
+		else{
+			// Lambda...
+			parse.add(72);
+		}
+	}
 	
 	
 	/**

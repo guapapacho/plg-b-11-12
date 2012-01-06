@@ -639,14 +639,29 @@ public class AnalizadorSintactico {
 		//Esto no está bien, tengo que ver como implementarlo...
 		//Yo en el caso de COSAS lo puse con ifs -> if(ins_funcion) parse.add(37) else if(..) parse.add(38) etc
 		//aunque no estoy muy segura de que sea asi (Cris)
-		parse.add(23);
-		ins_fun();
-		ins_reg();
-		ins_lect(); 
-		ins_esc();
-		ins_asig();
-		ins_decl();
-		ins_vacia();
+		//ya, pero no tengo muy claras las condiciones de los ifs, jeje! :) pero graciasss!!!
+		if (true) {
+			parse.add(37);
+			ins_fun();
+		} else if (true) {
+			parse.add(38);
+			ins_reg();
+		} else if (true) {
+			parse.add(39);
+			ins_lect(); 
+		} else if (true) {
+			parse.add(40);
+			ins_esc();
+		} else if (true) {
+			parse.add(41);
+			ins_asig();
+		} else if (true) {
+			parse.add(42);
+			ins_decl();
+		} else if (true) {
+			parse.add(43);
+			ins_vacia();
+		}
 		return true;
 	}
 	
@@ -717,7 +732,7 @@ public class AnalizadorSintactico {
 			parse.add(50);
 			tipo = null;//((EntradaTS)token.getAtributo()).getLexema();//TOFIX obtener enumerado tipo de la variable declarada
 			token = lexico.scan();
-		} else if(token.esIgual(TipoToken.LIT_CADENA)){ //NO SERIA ESTE!!!!! HABRIA QUE VER QUE PONER...
+		} else if(esLiteral()){
 			parse.add(49);
 			//no se si hay que hacer algo mas...
 			token = lexico.scan();
@@ -733,7 +748,14 @@ public class AnalizadorSintactico {
 	 * 51. INS_REGISTRO → struct RESTO_ST
 	 */
 	private void ins_reg() {
-		
+		if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 54){
+			parse.add(51);
+			token = lexico.scan();
+			resto_st();
+		} else {
+			// error
+			System.err.print(" error 51 ");
+		}
 	}
 	
 	/**
@@ -741,7 +763,50 @@ public class AnalizadorSintactico {
 	 * 53. RESTO_ST → { CUERPO_ST } ID NOMBRES
 	 */
 	private void resto_st() {
-		
+		if(token.esIgual(TipoToken.IDENTIFICADOR)){ 
+			parse.add(52);
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
+				token = lexico.scan();
+				cuerpo_st();
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
+					token = lexico.scan();
+					if(token.esIgual(TipoToken.IDENTIFICADOR)){
+						token = lexico.scan();
+						nombres();
+					} else {
+						// error
+						System.err.print(" error 52 ");
+					}
+				} else
+					// error
+					System.err.print(" error 52 ");
+			}
+			else{
+				// error
+				System.err.print(" error 52 ");
+			}
+		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
+			parse.add(53);
+			token = lexico.scan();
+			cuerpo_st();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
+				token = lexico.scan();
+				if(token.esIgual(TipoToken.IDENTIFICADOR)){
+					token = lexico.scan();
+					nombres();
+				} else {
+					// error
+					System.err.print(" error 53 ");
+				}
+			} else {
+				// error
+				System.err.print(" error 53 ");
+			}
+		} else{
+			// error
+			System.err.print(" error 53 ");
+		}
 	}
 	
 	
@@ -750,6 +815,20 @@ public class AnalizadorSintactico {
 	 * 55. CUERPO_ST → lambda
 	 */
 	private void cuerpo_st() {
+		if(tipo()) {
+			parse.add(54);
+			token = lexico.scan();
+			if (token.esIgual(TipoToken.IDENTIFICADOR)) {
+				token = lexico.scan();
+				resto_var();
+				cuerpo_st();
+			}
+			else {
+				//error
+				System.err.print(" error 54 ");
+			}
+		} else
+			parse.add(55);
 		
 	}
 	
@@ -759,7 +838,23 @@ public class AnalizadorSintactico {
 	 * 57. RESTO_VAR → ;
 	 */
 	private void resto_var() {
-		
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){ 
+			parse.add(56);
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				token = lexico.scan();
+				resto_var();
+			} else {
+				// error
+				System.err.print(" error 56 ");
+			}
+		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
+			parse.add(57);
+			token = lexico.scan();
+		} else {
+			// error
+			System.err.print(" error 57 ");
+		}
 	}
 	
 	
@@ -768,8 +863,26 @@ public class AnalizadorSintactico {
 	 * 59. NOMBRES → ;
 	 */
 	private void nombres() {
-		
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){ 
+			parse.add(58);
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				token = lexico.scan();
+				nombres();
+			} else {
+				// error
+				System.err.print(" error 58 ");
+			}
+		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
+			parse.add(59);
+			token = lexico.scan();
+		} else {
+			// error
+			System.err.print(" error 59 ");
+		}
 	}
+	
+	
 	
 	
 	/**

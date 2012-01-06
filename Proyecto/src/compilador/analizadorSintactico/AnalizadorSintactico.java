@@ -635,8 +635,10 @@ public class AnalizadorSintactico {
 	 * 43. INSTRUCCION → ;
 	 */
 
-	private void instruccion() {
+	private boolean instruccion() {
 		//Esto no está bien, tengo que ver como implementarlo...
+		//Yo en el caso de COSAS lo puse con ifs -> if(ins_funcion) parse.add(37) else if(..) parse.add(38) etc
+		//aunque no estoy muy segura de que sea asi (Cris)
 		parse.add(23);
 		ins_fun();
 		ins_reg();
@@ -645,6 +647,7 @@ public class AnalizadorSintactico {
 		ins_asig();
 		ins_decl();
 		ins_vacia();
+		return true;
 	}
 	
 	
@@ -970,12 +973,12 @@ public class AnalizadorSintactico {
 	 */
 	private void cuerpo()
 	{
-		/*if(instruccion())
+		if(instruccion())
 		{
 			parse.add(74);
 			cuerpo();
 		}
-		else*/ if(sent_bucle())
+		else if(sent_bucle())
 		{
 			parse.add(75);
 			cuerpo();
@@ -993,7 +996,7 @@ public class AnalizadorSintactico {
 	}
 	
 
-	/**
+	/** 
 	 *  79. CUERPO2 → INSTRUCCION
 		80. CUERPO2 → SENT_BUCLE
 		81. CUERPO2 → SENT_IF
@@ -1001,11 +1004,11 @@ public class AnalizadorSintactico {
 		83. CUERPO2 → { CUERPO }
 	 */
 	private void cuerpo2() {
-		/*if(instruccion())
+		if(instruccion())
 		{
 			parse.add(79);
 		}
-		else*/ if(sent_bucle())
+		else if(sent_bucle())
 		{
 			parse.add(80);
 		}
@@ -1030,19 +1033,160 @@ public class AnalizadorSintactico {
 		
 	}
 	
-	
+	/** TODO ¡¡¡¡¡SIN TERMINAR!!!
+	 * SENT_CASE → switch ( ID ) { CUERPO_CASE }
+	 */
 	private boolean sent_case() {
-		return true;
+		if(token.esIgual(TipoToken.PAL_RESERVADA,55)) //Palabra reservada switch
+		{
+			parse.add(-1); //Añadir numero de regla cuando se sepa
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
+				token = lexico.scan();
+				 if(token.esIgual(TipoToken.IDENTIFICADOR)){
+						token = lexico.scan();
+						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+							token = lexico.scan();
+							if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
+								token = lexico.scan();
+								cuerpo_case();
+								if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
+									token = lexico.scan();
+									return true;
+								}
+								else 
+									System.err.println("error en switch");
+							}
+							else
+								System.err.println("error en switch");
+						}
+						else
+							System.err.println("error en switch");
+					}
+				 else
+					 System.err.println("error en switch");
+				
+			}
+			else
+				System.err.println("error en switch");
+			
+		}
+		return false;
 	}
 
-
+	/** TODO ¡¡¡¡¡SIN TERMINAR!!!
+	 * CUERPO_CASE  → case valor: CUERPO  |  CUERPO2
+	 * mas expresiones: defalut: break; goto identifier ; continue ;
+	 */
+	private void cuerpo_case() {
+		if(token.esIgual(TipoToken.PAL_RESERVADA,6)) //Palabra reservada case
+		{
+			parse.add(-1); //Añadir numero de regla cuando se sepa
+			token = lexico.scan();
+			if(literal())
+			{
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
+					token = lexico.scan();
+					cuerpo2();// Aqui podriamos hacer una especie de cuerpo2 que admita break y mas de una instruccuon sin parentesis
+					cuerpo_case();
+				}	
+			}
+		}
+	}
+	/**  TODO ¡¡¡¡¡SIN TERMINAR!!!
+	 *  SENT_IF → if ( EXPRESION )  CUERPO2 SENT_ELSE
+	 */
 	private boolean sent_if() {
-		return true;
+		if(token.esIgual(TipoToken.PAL_RESERVADA,32)) //Palabra reservada if
+		{
+			parse.add(-1); //Añadir numero de regla cuando se sepa
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
+				token = lexico.scan();
+				expresion();// ??? Poner cuando se tenga
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+					token = lexico.scan();
+					cuerpo2();
+					sent_else();
+					return true;
+				}
+				else
+					System.err.print(" error en IF: Falta parentesis de cierre ");
+			}
+			else
+				System.err.print(" error en IF: Falta parentesis de apertura ");
+		}
+		return false;
+	}
+	/** TODO ¡¡¡¡¡SIN TERMINAR!!!
+	 * SENT_ELSE → else CUERPO2 | lambda
+	 */
+	private void sent_else() {
+		if(token.esIgual(TipoToken.PAL_RESERVADA,22)) //Palabra reservada else
+		{
+			parse.add(-1); //añadir el numero de regla cuando se sepa
+			token = lexico.scan();
+			cuerpo2();
+		}
+		else //SENT_ELSE -> lambda
+			parse.add(-1); //añadir el numero de regla cuando se sepa
+		
 	}
 
-
+	/** TODO ¡¡¡¡¡SIN TERMINAR!!!
+	 *  SENT_BUCLE → while (CONDICION) do CUERPO2
+	 *  SENT_BUCLE → for ( INDICE; CONDICION; CAMBIO) CUERPO2 
+	 *  SENT_BUCLE → do CUERPO2 while (CONDICION);
+	 */
 	private boolean sent_bucle() {
-		return true;
+		
+		/** SENT_BUCLE → while (CONDICION) do CUERPO2*/
+		if(token.esIgual(TipoToken.PAL_RESERVADA,72)) //Palabra reservada while
+		{
+			parse.add(-1); //Añadir numero de regla cuando se sepa
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
+				token = lexico.scan();
+				//condicion();
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+					token = lexico.scan();
+					if(token.esIgual(TipoToken.PAL_RESERVADA,19)) //Palabra reservada do
+					{
+						token = lexico.scan();
+						cuerpo2();
+						return true;
+					}
+					else
+						System.err.println("error en while");
+				}
+				else
+					System.err.println("error en while");
+			}
+			else
+				System.err.println("error en while");
+		}	
+		/** SENT_BUCLE → for ( INDICE; CONDICION; CAMBIO) CUERPO2 */
+		else if(token.esIgual(TipoToken.PAL_RESERVADA,29)) //Palabra reservada for
+		{
+			parse.add(-1); //Añadir numero de regla cuando se sepa
+			token = lexico.scan();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
+				token = lexico.scan();
+				//indice();
+				// ....
+			}
+			else
+				System.err.println("error en for");
+		}
+		/** SENT_BUCLE → do CUERPO2 while (CONDICION);*/
+		else if(token.esIgual(TipoToken.PAL_RESERVADA,19)) //Palabra reservada do
+		{
+			parse.add(-1); //Añadir numero de regla cuando se sepa
+			token = lexico.scan();
+			cuerpo2();
+			
+		}	
+		return false;
 	}
 	
 	/**

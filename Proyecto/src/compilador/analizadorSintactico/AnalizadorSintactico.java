@@ -161,6 +161,7 @@ public class AnalizadorSintactico {
 	 * Metodo que devuelve el LITERAL y lee el siguiente token
 	 */
 	private boolean literal() {		
+		//TODO hacer algo con los valores, si hace falta...
 		if(token.esIgual(TipoToken.LIT_CADENA)) {
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("LITERAL CADENA: " + valor);
@@ -188,6 +189,14 @@ public class AnalizadorSintactico {
 		else if (token.esIgual(TipoToken.NUM_REAL_EXPO)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("NUMERO REAL EXPO: " + valor);
+			nextToken();
+			return true;
+		}
+		else if (token.esIgual(TipoToken.PAL_RESERVADA) &&
+				( (Integer)token.getAtributo() == 27 /*false*/ || 
+				  (Integer)token.getAtributo() == 60 /*true*/)){
+			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+			System.out.println("BOOLEANO: " + valor);
 			nextToken();
 			return true;
 		}

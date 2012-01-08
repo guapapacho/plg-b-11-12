@@ -287,12 +287,13 @@ public class AnalizadorSintactico {
 	}
 	
 
-	/**	12. COSAS2 → ( LISTA_PARAM ) COSAS3
-		13. COSAS2 → [NUM_ENTERO] DIMENSION INIC_DIM ;
-		14. COSAS2 → INICIALIZACION  DECLARACIONES ;
-	*/
+	/**	
+	 * 12. COSAS2 → ( LISTA_PARAM ) COSAS3
+	 * 13. COSAS2 → [NUM_ENTERO] DIMENSION INIC_DIM ;
+	 * 14. COSAS2 → INICIALIZACION  DECLARACIONES ;
+	 */
 	private void cosas2() {
-		// COSAS2 → ( LISTA_PARAM ) COSAS3
+		//12. COSAS2 → ( LISTA_PARAM ) COSAS3
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
 			parse.add(12);
 			nextToken();
@@ -301,10 +302,10 @@ public class AnalizadorSintactico {
 				nextToken();
 				cosas3();
 			} else {
-				//error
-				System.err.print(" error 12 ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta ')'");
 			}
 		} 
+		//13. COSAS2 → [NUM_ENTERO] DIMENSION INIC_DIM ;
 		else if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_CORCHETE)){
 			parse.add(13);
 			nextToken();
@@ -318,24 +319,24 @@ public class AnalizadorSintactico {
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA))
 						nextToken();
 					else
-						System.err.println("Regla 13. Falta ';'");
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta ';'");
 				}
 				else{
-					System.err.print("Regla 13");
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta ']'");
 				}
 			}
 			else{
-				System.err.print("Regla 13");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Se espera un numero entero (tamaño del array)");
 			}
 		}
+		//14. COSAS2 → INICIALIZACION  DECLARACIONES ;
 		else {
-			// COSAS2 → INICIALIZACION  DECLARACIONES ;
 			parse.add(14);
 			inicializacion();
 			declaraciones();		
 			if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
-				//error
-				System.err.print(" error 14 ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta ';'");
 			}
 			nextToken();
 		}

@@ -680,7 +680,7 @@ public class AnalizadorSintactico {
 	private void ins_fun() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(44);
-			tipo = null;//((EntradaTS)token.getAtributo()).getLexema();//TOFIX obtener enumerado tipo de la variable declarada
+			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
 				parse.add(44);
@@ -691,12 +691,15 @@ public class AnalizadorSintactico {
 					nextToken();
 				} else {
 					// error
-					System.err.print(" error 44 ");
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta el separador abre llave {");				
 				}
+			} else {
+				//error
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta el separador cierra llave }");
 			}
 		} else {
 			// error
-			System.err.print(" error 44 ");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta un nombre que identifique a la funcion");
 		}
 		
 	}
@@ -705,7 +708,7 @@ public class AnalizadorSintactico {
 	 * 45. LISTA_ATB → ATRIBUTO RESTO_ATB
 	 * 46. LISTA_ATB → lambda
 	 */
-	private void lista_atb() {
+	private void lista_atb() {							//TOFIX aqui no habria que meter algun error?
 		if(!token.esIgual(TipoToken.EOF)) {
 			parse.add(45);
 			atributo();
@@ -720,7 +723,7 @@ public class AnalizadorSintactico {
 	 * 47. RESTO_ATB → , ATRIBUTO RESTO_ATB
 	 * 48. RESTO_ATB → lambda
 	 */
-	private void resto_atb() {
+	private void resto_atb() {							//TOFIX aqui no habria que meter algun error?
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 			parse.add(47);
 			nextToken();
@@ -738,7 +741,7 @@ public class AnalizadorSintactico {
 	private void atributo() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(50);
-			tipo = null;//((EntradaTS)token.getAtributo()).getLexema();//TOFIX obtener enumerado tipo de la variable declarada
+			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 			nextToken();
 		} else if(esLiteral()){
 			parse.add(49);
@@ -746,7 +749,7 @@ public class AnalizadorSintactico {
 			nextToken();
 		} else {
 			// error
-			System.err.print(" error 29 ");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta identificador o literal que identifique al atributo");
 		}
 	}
 	
@@ -762,7 +765,7 @@ public class AnalizadorSintactico {
 			resto_st();
 		} else {
 			// error
-			System.err.print(" error 51 ");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta la palabra reservada \"struct\"");
 		}
 	}
 	
@@ -773,6 +776,7 @@ public class AnalizadorSintactico {
 	private void resto_st() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){ 
 			parse.add(52);
+			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 				nextToken();
@@ -780,19 +784,20 @@ public class AnalizadorSintactico {
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
 					nextToken();
 					if(token.esIgual(TipoToken.IDENTIFICADOR)){
+						tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 						nextToken();
 						nombres();
 					} else {
 						// error
-						System.err.print(" error 52 ");
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta la identificacion de la estructura");
 					}
 				} else
 					// error
-					System.err.print(" error 52 ");
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta el separador cierra llave }");
 			}
 			else{
 				// error
-				System.err.print(" error 52 ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta el separador abre llave {");
 			}
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 			parse.add(53);
@@ -801,19 +806,20 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
 				nextToken();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
+					tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 					nextToken();
 					nombres();
 				} else {
 					// error
-					System.err.print(" error 53 ");
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta la identificacion de la estructura");
 				}
 			} else {
 				// error
-				System.err.print(" error 53 ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta el separador cierra llave }");
 			}
 		} else{
 			// error
-			System.err.print(" error 53 ");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta el separador abre llave { o identificacion de la estructura");
 		}
 	}
 	
@@ -827,13 +833,14 @@ public class AnalizadorSintactico {
 			parse.add(54);
 			nextToken();
 			if (token.esIgual(TipoToken.IDENTIFICADOR)) {
+				tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 				nextToken();
 				resto_var();
 				cuerpo_st();
 			}
 			else {
 				//error
-				System.err.print(" error 54 ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Los atributos deben estar identificados");
 			}
 		} else
 			parse.add(55);
@@ -850,18 +857,19 @@ public class AnalizadorSintactico {
 			parse.add(56);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 				nextToken();
 				resto_var();
 			} else {
 				// error
-				System.err.print(" error 56 ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se deben identificar todos los atributos");
 			}
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 			parse.add(57);
 			nextToken();
 		} else {
 			// error
-			System.err.print(" error 57 ");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba un separador coma (,) o punto_coma (;)");
 		}
 	}
 	
@@ -875,18 +883,19 @@ public class AnalizadorSintactico {
 			parse.add(58);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 				nextToken();
 				nombres();
 			} else {
 				// error
-				System.err.print(" error 58 ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se deben identificar todas las variables de la estructura");
 			}
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 			parse.add(59);
 			nextToken();
 		} else {
 			// error
-			System.err.print(" error 59 ");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba un separador coma (,) o punto_coma (;)");
 		}
 	}
 	

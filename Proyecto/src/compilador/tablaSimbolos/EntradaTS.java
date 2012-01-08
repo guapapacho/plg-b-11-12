@@ -9,13 +9,6 @@ import compilador.tablaSimbolos.Argumento.TipoArg;
  */
 public class EntradaTS {
 	
-	/**
-	 * Enumerado para el tipo de un identificador
-	 */
-	public enum Tipo {
-		PROGRAMA, PROCEDIMIENTO, FUNCION, ENTERO, REAL, BOOL; // TODO añadir el resto de tipos
-	}
-
 	/** Lexema del identificador */
 	private String lexema;
 	/** Tipo del identificador */

@@ -10,6 +10,8 @@ public class GestorTablasSimbolos {
 	
 	/** Tabla de palabras reservadas */
 	private Hashtable<String, Integer> palRes;
+	/** Tabla de tipos simples */
+	private Hashtable<String, Integer> tipos;
 	/** Puntero al ambito actual */
 	private TablaSimbolos bloque_actual;
 	/** Instancia única de la clase */
@@ -32,6 +34,7 @@ public class GestorTablasSimbolos {
 	private GestorTablasSimbolos(){
 		bloque_actual = new TablaSimbolos(null);
 		inicializaPalRes();
+		inicializaTiposSimples();
 	}
 	
 	/**
@@ -111,6 +114,31 @@ public class GestorTablasSimbolos {
 	private boolean esReservada(String palabra){
 		return palRes.containsKey(palabra);
 	}
+
+	/**
+	 * Comprueba si una palabra es de tipo simple
+	 */
+	public boolean esTipoSimple(String palabra){
+		return tipos.containsKey(palabra);
+	}
+
+	/**
+	 * Inicializa la tabla de tipos
+	 */
+	private void inicializaTiposSimples()	{
+		tipos = new Hashtable<String,Integer>();
+		tipos.put("bool", 4);
+		tipos.put("char", 13);
+		tipos.put("char16_t", 14);
+		tipos.put("char32_t", 15);
+		tipos.put("double", 20);
+		tipos.put("float", 28);
+		tipos.put("int",34);
+		tipos.put("long",35);
+		tipos.put("short",48);
+		tipos.put("wchar_t",71);
+		tipos.put("String", 73);
+	}	
 	
 	/**
 	 * Inicializa la tabla de palabras reservadas
@@ -196,5 +224,4 @@ public class GestorTablasSimbolos {
 		palRes.put("endl", 76); // TODO: agregar en otros sitios pertinentes !??
 
 	}	
-	
 }

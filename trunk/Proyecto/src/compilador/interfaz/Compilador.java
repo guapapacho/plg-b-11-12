@@ -223,8 +223,8 @@ public class Compilador extends JFrame {
 		
 		ta1=new JTextArea();
 		ta1.setText("#include <Alina.h> \n#include \"cris.h\" " +
-				"int a=2,b,c; \nconst bool i=3; \nconst k=true; \nint f(); " +
-				"\nfloat g=3; \ndouble h(){}");
+				"int a=2,b,c; \nconst bool i=3; \nconst float k=true; \nint f(); " +
+				"\nfloat g=3; \ndouble h();");
 		ta1.setFont(new java.awt.Font("Verdana", Font.BOLD, 12));
 		sp1.setViewportView(ta1);
 		panelPrincipal_1.add(sp2);
@@ -259,22 +259,14 @@ public class Compilador extends JFrame {
 						in=new StringBufferInputStream(contenido);
 						GestorErrores gestor = GestorErrores.getGestorErrores();
 						gestor.resetErrores();
-						AnalizadorLexico anLex = new AnalizadorLexico(in);
-//								Token token = anLex.scan();
-//								ta2.setText("");
-//								while(token.getTipo() != TipoToken.EOF) {
-//									ta2.append("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo()+"\n");
-//									token = anLex.scan();
-//								}
-//								ta2.append("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo()+"\n");
-//								ta2.append(gestor.muestraListaErrores());
-						
+						AnalizadorLexico anLex = new AnalizadorLexico(in);						
 						AnalizadorSintactico anSin = new AnalizadorSintactico(anLex);
 						ta2.setText("");
-						ta2.append("Tokens:\n");
+						ta2.append("Tokens:");
 						ta2.append(anSin.getStringTokens());
 						ta2.append("\nParse:\n");
 						ta2.append(anSin.getStringParse());
+						ta2.append("\nErrores:");
 						ta2.append(gestor.muestraListaErrores());
 					}
 				}

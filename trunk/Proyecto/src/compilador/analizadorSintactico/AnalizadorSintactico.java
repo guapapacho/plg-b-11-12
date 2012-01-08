@@ -1210,6 +1210,8 @@ public class AnalizadorSintactico {
 			parse.add(74);
 			cuerpo();
 		}
+		else //cuerpo --> lambda
+			parse.add(80);
 	}
 	
 	
@@ -1254,13 +1256,13 @@ public class AnalizadorSintactico {
 		}
 		else if(instruccion())
 		{
-			parse.add(80);
+			parse.add(86);
 		}
 		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			nextToken();
 			cuerpo();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
-				parse.add(86);
+				parse.add(87);
 				nextToken();
 			}
 			else

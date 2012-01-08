@@ -87,6 +87,10 @@ public class GestorErrores {
     	return errors;
     }
     
+    public void resetErrores(){
+    	errors = new ArrayList<TError>();
+    }
+    
     /*
      * Imprime los errores que han ocurrido y devuelve el numero que hubo
      */

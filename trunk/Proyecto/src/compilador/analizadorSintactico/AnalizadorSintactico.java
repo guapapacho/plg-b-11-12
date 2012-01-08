@@ -629,6 +629,18 @@ public class AnalizadorSintactico {
 	}
 
 	/**
+	 * 37B. INSTRUCCION → ID INSTRUCCION2
+	 * 38B. INSTRUCCION → struct RESTO_ST
+	 * 39B. INSTRUCCION → cin INS_LECT
+	 * 40B. INSTRUCCION → cout INS_ESC
+	 * 43B. INSTRUCCION → const INS_DEC
+	 * 44B. INSTRUCCION → TIPO INS_DEC2
+	 * 45B. INSTRUCCION → ;
+	 * 
+	 * 46B. INSTRUCCION2 → ( LISTA_ATB ) ; 
+	 * 47B. INSTRUCCION2 → OP_ASIGNACION EXPRESION
+	 * 
+	 * 
 	 * 37. INSTRUCCION → INS_FUNCION
 	 * 38. INSTRUCIION → INS_REGISTRO
 	 * 39. INSTRUCCION → INS_LECTURA
@@ -684,6 +696,8 @@ public class AnalizadorSintactico {
 			parse.add(00000);
 			nextToken();
 			ins_decl2();
+		} if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) { //INS_VACIA
+			nextToken();
 		} else {
 			//error
 			return false;
@@ -1100,24 +1114,60 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * 
+	 * 48B. INS_DEC → TIPO ID = LITERAL INIC_CONST ;
 	 */
 	private void ins_decl() {
+		if (tipo()) {
+			parse.add(00000);
+			nextToken();
+			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+				nextToken();
+				if (token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.IGUALDAD)) {
+					nextToken();
+					if (esLiteral()) {
+						nextToken();
+						inic_const(); //no lo tengo muy claro
+						if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
+							nextToken();
+						} else {
+							//error
+							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba un separador \";\"");
+						}
+					} else {
+						//error
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba un valor literal");
+					}
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba el operador de comparacion \"=\"");
+				}
+			} else {
+				// error
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba un identificador");
+			}
+		}
 		
 	}
 	
 	/**
-	 * 
+	 * 49B. INS_DEC2 → ID MAS_COSAS
 	 */
 	private void ins_decl2() {
-		
+		if(token.esIgual(TipoToken.IDENTIFICADOR)){
+			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+			nextToken();
+			mas_cosas();
+		} else {
+			// error
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba un identificador");
+		}
 	}
 	
-	
 	/**
-	 * 
+	 * 146. MAS_COSAS → INICIALIZACION  DECLARACIONES
+	 * 147. MAS_COSAS → [NUM_ENTERO] DIMENSION INIC_DIM
 	 */
-	private void ins_vacia() {
+	private void mas_cosas() {
 		
 	}
 	

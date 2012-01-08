@@ -153,11 +153,8 @@ public class AnalizadorSintactico {
 			tipo = new Tipo(EnumTipo.DEFINIDO, (gestorTS.getTipoSimple((Integer)token.getAtributo())));
 			nextToken();
 			return true;
-		} else {
-			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-					"Tipo de variable incorrecto");	
-			return false;
 		}
+		return false;
 	}
 
 	/**
@@ -194,11 +191,8 @@ public class AnalizadorSintactico {
 			nextToken();
 			return true;
 		}
-		else {
-			//error
-			System.err.print(" error const ");
-			return false;
-		}		
+		
+		return false;		
 	}
 	
 	
@@ -208,14 +202,12 @@ public class AnalizadorSintactico {
 	}
 
 	/**	
-	 * 8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
-	 * 9. COSAS → TIPO ID COSAS2 COSAS
+	 *  8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
+	 *  9. COSAS → TIPO ID COSAS2 COSAS
 	 * 10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3 COSAS
 	 * 11. COSAS → lambda
 	 */
 	private void cosas() {
-		boolean esLiteral=false;
-		
 		if(!token.esIgual(TipoToken.EOF)) {
 			// 8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
 			if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 9 /*const*/) {
@@ -223,15 +215,8 @@ public class AnalizadorSintactico {
 				nextToken();
 				if(tipo()) {
 					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-						id(); // ID = valor
-						if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
-							if(esLiteral=literal()){  // ID = LITERAL
-								inic_const();
-							}
-						}else{
-							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-									"Constante no inicializada");
-						}
+						idConst(); // ID = LITERAL
+						inic_const();
 						if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
 									"Declaracion de constantes terminada incorrectamente, falta ';'");
@@ -239,13 +224,15 @@ public class AnalizadorSintactico {
 							nextToken();
 							cosas();
 						}
+					} else {
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+								"Falta el identificador de la constante");	
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
 							"Tipo de constante incorrecto");	
 				}
 			}
-			/////////////////// PAL_RESERVADA
 			//10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3 COSAS
 			else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 69 /*void*/){
 				parse.add(10);
@@ -259,28 +246,35 @@ public class AnalizadorSintactico {
 							nextToken();
 							cosas3();
 							cosas();
-						}// TODO añadir errores
+						} else {
+							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta ')'");
+						}
+					} else {
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta '('");
 					}
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+							"Nombre de funcion void incorrecto");	
 				}
 			}
-			else {// 9. COSAS → TIPO ID COSAS2 COSAS
-				if(tipo()) {
+			// 9. COSAS → TIPO ID COSAS2 COSAS
+			else if(tipo()) {
 					parse.add(9);
 					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 						id();
 						cosas2();	
 						cosas();			
 					} else {
-						// error sintáctico
-						System.err.print(" error 9 ");
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+								"Falta el identificador");
 					}
-				}
 			}
-				
-		}//////////////////////////////////////////////// !lambda
-		else{//Si es lambda
-			parse.add(11);
+			//11. COSAS → lambda
+			else {
+				parse.add(11);
+			}
 		}
+		
 	}
 	
 
@@ -363,13 +357,13 @@ public class AnalizadorSintactico {
 		
 	}
 
-	/**	17. LISTA_PARAM → TIPO ID RESTO_LISTA 
-	 * 	18. LISTA_PARAM → lambda
+	/**	
+	 * 17. LISTA_PARAM → TIPO ID RESTO_LISTA 
+	 * 18. LISTA_PARAM → lambda
 	 */
 	private void lista_param() {
-		if(!token.esIgual(null)){
+		if(tipo()){
 			parse.add(17);
-			tipo();
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 				id();
@@ -383,19 +377,15 @@ public class AnalizadorSintactico {
 	} 
 
 	
-	/** 19. RESTO_LISTA → , LISTA_PARAM 
-	 	20. RESTO_LISTA → lambda
+	/** 
+	 * 19. RESTO_LISTA → , LISTA_PARAM 
+	 * 20. RESTO_LISTA → lambda
 	 */
 	private void restoLista() {
-		if(!token.esIgual(null)){
-			if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
-				parse.add(19);
-				nextToken();
-				lista_param();
-			}
-			else{
-				System.err.print("REegla 19");
-			}
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
+			parse.add(19);
+			nextToken();
+			lista_param();
 		}
 		else{
 			parse.add(20);
@@ -536,33 +526,25 @@ public class AnalizadorSintactico {
 	}
 
 	/**
-	 Hay que cambiar valor por LITERAL
 	 * 30. INIC_CONST → , ID = LITERAL INIC_CONST
 	 * 31. INIC_CONST → lambda
 	 */
 	private void inic_const() {
 		System.out.println("declaracion constante " + entradaTS.getLexema());
-		if (!token.esIgual(null)){ // Si no es lambda
-			if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
-				parse.add(30);
-				nextToken();
-				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-					//idConst();
-					literal();  // ID = LITERAL
-					inic_const();
-				} else {
-				// error
-					System.err.print(" error 30 ");
-				}	
-			}
-			else{
-				System.err.print(" error 30 ");
-			}
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
+			parse.add(30);
+			nextToken();
+			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+				idConst(); // ID = LITERAL
+				inic_const();
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Declaracion de constantes incorrecta, se espera un identificador");
+			}	
 		}
 		else { ///Si es lambda
 			parse.add(31);
-		}
-		
+		}	
 	}
 
 	
@@ -580,8 +562,8 @@ public class AnalizadorSintactico {
 				inicializacion();
 				declaraciones();
 			} else {
-				// error
-				System.err.print(" error 32 ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Falta el identificador");;
 			}		
 		} else {
 			parse.add(33);
@@ -596,12 +578,17 @@ public class AnalizadorSintactico {
 		nextToken();
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
 			nextToken();
-			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-			System.out.println("inicializacion constante " + entradaTS.getLexema() + " con " + valor);
-			nextToken();
+			if(literal()) {
+				Object valor = token.getAtributo(); // TODO depende del tipo... a ver que se hace con el...
+				System.out.println("inicializacion constante " + entradaTS.getLexema() + " con " + valor);
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Constante mal inicializada");
+			}
+			
 		} else {
-			//error
-			System.err.print(" error const ");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+					"Constante no inicializada");
 		}
 	}
 
@@ -1498,7 +1485,7 @@ public class AnalizadorSintactico {
 		String string = "";
 		for(Token token : tokens) 
 			string += "\nTipo: " + token.getTipo() + " Atr: " + token.getAtributo();
-		return string;
+		return string+"\n";
 	}
 	
 //	/**

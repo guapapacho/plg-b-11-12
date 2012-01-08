@@ -88,7 +88,7 @@ public class GestorErrores {
     }
     
     public void resetErrores(){
-    	errors = new ArrayList<TError>();
+    	errors.clear();;
     }
     
     /*

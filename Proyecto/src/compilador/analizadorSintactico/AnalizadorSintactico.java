@@ -644,28 +644,47 @@ public class AnalizadorSintactico {
 		//Yo en el caso de COSAS lo puse con ifs -> if(ins_funcion) parse.add(37) else if(..) parse.add(38) etc
 		//aunque no estoy muy segura de que sea asi (Cris)
 		//ya, pero no tengo muy claras las condiciones de los ifs, jeje! :) pero graciasss!!!
-		if (true) {
-			parse.add(37);
-			ins_fun();
-		} else if (true) {
+		if(token.esIgual(TipoToken.IDENTIFICADOR)) { 
+			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+			nextToken();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) { //INS_FUNCION
+				parse.add(37);
+				nextToken();
+				lista_atb();
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
+					System.out.println("llamada a funcion " + entradaTS.getLexema());
+					nextToken();
+				} else {
+					// error
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta el separador abre llave {");				
+				}
+			} else if (token.esIgual(TipoToken.OP_ASIGNACION)) { //INS_ASIG
+				parse.add(41);
+				nextToken();
+				//llamada a EXPRESION
+			} else {
+				//error
+			}
+		} else if (token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 54){ //INS_REG
 			parse.add(38);
+			nextToken();
 			ins_reg();
-		} else if (true) {
+		} else if (token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 74){ //INS_LECT
 			parse.add(39);
+			nextToken();
 			ins_lect(); 
-		} else if (true) {
+		} else if (token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 75){ //INS_ESC
 			parse.add(40);
-			ins_esc();
-		} else if (true) {
-			parse.add(41);
-			ins_asig();
-		} else if (true) {
-			parse.add(42);
-			ins_decl();
-		} else if (true) {
-			parse.add(43);
-			ins_vacia();
+			nextToken();
+			ins_esc(); 
+		} else if (tipo()) { //INS_DECL
+			
+		} else if (token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 9){ //INS_DECL
+			
+		} else {
+			//error
 		}
+		
 		return true;
 	}
 	
@@ -673,7 +692,7 @@ public class AnalizadorSintactico {
 	/**
 	 * 44. INS_FUNCION → ID (LISTA_ATB);
 	 */
-	private void ins_fun() {
+/*	private void ins_fun() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(44);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
@@ -698,7 +717,7 @@ public class AnalizadorSintactico {
 			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta un nombre que identifique a la funcion");
 		}
 		
-	}
+	}*/
 	
 	/**
 	 * 45. LISTA_ATB → ATRIBUTO RESTO_ATB
@@ -755,14 +774,14 @@ public class AnalizadorSintactico {
 	 * 51. INS_REGISTRO → struct RESTO_ST
 	 */
 	private void ins_reg() {
-		if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 54){
+		//if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 54){
 			parse.add(51);
 			nextToken();
 			resto_st();
-		} else {
+	//	} else {
 			// error
-			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta la palabra reservada \"struct\"");
-		}
+	//		gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta la palabra reservada \"struct\"");
+		//}
 	}
 	
 	/**
@@ -901,8 +920,8 @@ public class AnalizadorSintactico {
 	/**
 	 * 60. INS_LECTURA → cin >>  RESTO_LECT 
 	 */
-	private void ins_lect() {
-		if(token.esIgual(TipoToken.PAL_RESERVADA,74)){ // Palabra reservada cin
+	private void ins_lect() { //TODO: he cambiado instruccion, por lo que necesito quitar de aqui la condicion del if :) el error lo contemplo arriba
+		//if(token.esIgual(TipoToken.PAL_RESERVADA,74)){ // Palabra reservada cin
 			parse.add(60);
 			nextToken();
 			if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MAYORES)){
@@ -915,13 +934,13 @@ public class AnalizadorSintactico {
 						"Lectura incorrecta, se esperaba el operador \">>\"");
 				//System.err.print(" error 60 ");
 			}
-		}
-		else{
+	//	}
+	//	else{
 			// error
-			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-					"Se esperaba la palabra reservada \"cin\"");
+	//		gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+		//			"Se esperaba la palabra reservada \"cin\"");
 			//System.err.print(" error 60 ");
-		}
+	//	}
 	}
 	
 	/**
@@ -966,8 +985,8 @@ public class AnalizadorSintactico {
 	/**
 	 * 63. INS_ESCRITURA → cout << RESTO_ESC
 	 */
-	private void ins_esc() {
-		if(token.esIgual(TipoToken.PAL_RESERVADA,75)){ // Palabra reservada cout
+	private void ins_esc() { //TODO: he cambiado instruccion, por lo que necesito quitar de aqui la condicion del if :) el error lo contemplo arriba
+		//if(token.esIgual(TipoToken.PAL_RESERVADA,75)){ // Palabra reservada cout
 			parse.add(63);
 			nextToken();
 			if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
@@ -980,13 +999,13 @@ public class AnalizadorSintactico {
 						"Escritura incorrecta, se esperaba el operador \"<<\"");
 				//System.err.print(" error 63 ");
 			}
-		}
-		else{
+		//}
+	//	else{
 			// error
-			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-					"Se esperaba la palabra reservada \"cout\"");
+	//		gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+		//			"Se esperaba la palabra reservada \"cout\"");
 			//System.err.print(" error 63 ");
-		}
+	//	}
 	}
 	
 	/**

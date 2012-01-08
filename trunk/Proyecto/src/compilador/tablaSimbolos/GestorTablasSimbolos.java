@@ -11,7 +11,7 @@ public class GestorTablasSimbolos {
 	/** Tabla de palabras reservadas */
 	private Hashtable<String, Integer> palRes;
 	/** Tabla de tipos simples */
-	private Hashtable<String, Integer> tipos;
+	private Hashtable<Integer, String> tipos;
 	/** Puntero al ambito actual */
 	private TablaSimbolos bloque_actual;
 	/** Instancia única de la clase */
@@ -119,25 +119,29 @@ public class GestorTablasSimbolos {
 	 * Comprueba si una palabra es de tipo simple
 	 */
 	public boolean esTipoSimple(Integer integer){
-		return tipos.containsValue(integer);
+		return tipos.containsKey(integer);
 	}
 
 	/**
 	 * Inicializa la tabla de tipos
 	 */
 	private void inicializaTiposSimples()	{
-		tipos = new Hashtable<String,Integer>();
-		tipos.put("bool", 4);
-		tipos.put("char", 13);
-		tipos.put("char16_t", 14);
-		tipos.put("char32_t", 15);
-		tipos.put("double", 20);
-		tipos.put("float", 28);
-		tipos.put("int",34);
-		tipos.put("long",35);
-		tipos.put("short",48);
-		tipos.put("wchar_t",71);
-		tipos.put("String", 73);
+		tipos = new Hashtable<Integer,String>();
+		tipos.put(4, "bool");
+		tipos.put(13, "char");
+		tipos.put(14, "char16_t");
+		tipos.put(15, "char32_t");
+		tipos.put(20, "double");
+		tipos.put(28, "float");
+		tipos.put(34, "int");
+		tipos.put(35, "long");
+		tipos.put(48, "short");
+		tipos.put(71, "wchar_t");
+		tipos.put(73, "String");
+	}	
+	
+	public String getTipoSimple(Integer atributo) {
+		return tipos.get(atributo);
 	}	
 	
 	/**
@@ -223,5 +227,5 @@ public class GestorTablasSimbolos {
 		palRes.put("cout", 75);
 		palRes.put("endl", 76); // TODO: agregar en otros sitios pertinentes !??
 
-	}	
+	}
 }

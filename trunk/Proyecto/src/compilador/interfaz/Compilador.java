@@ -26,8 +26,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import compilador.analizadorLexico.AnalizadorLexico;
-import compilador.analizadorLexico.Token;
-import compilador.analizadorLexico.Token.TipoToken;
+import compilador.analizadorSintactico.AnalizadorSintactico;
 import compilador.gestionErrores.GestorErrores;
 
 /**
@@ -196,9 +195,9 @@ public class Compilador extends JFrame {
 		panelPrincipal_1=new JPanel();
 		panelPrincipal_1.setLayout(null);
 		l0=new JLabel();
-		l0.setBounds(370, 11, 185, 34);
+		l0.setBounds(345, 11, 250, 34);
 		l0.setFont(new java.awt.Font("Verdana", Font.BOLD, 18));
-		l0.setText("Analizador léxico");
+		l0.setText("Analizador sintáctico");
 		l1=new JLabel();
 		l1.setBounds(145, 26, 163, 34);
 		l1.setText("Código de entrada");
@@ -223,6 +222,9 @@ public class Compilador extends JFrame {
 		panelPrincipal_1.add(sp1);
 		
 		ta1=new JTextArea();
+		ta1.setText("#include <Alina.h> \n#include \"cris.h\" " +
+				"int a=2,b,c; \nconst bool i=3; \nconst k=true; \nint f(); " +
+				"\nfloat g=3; \ndouble h(){}");
 		ta1.setFont(new java.awt.Font("Verdana", Font.BOLD, 12));
 		sp1.setViewportView(ta1);
 		panelPrincipal_1.add(sp2);
@@ -242,32 +244,41 @@ public class Compilador extends JFrame {
 	public JButton getBotonTokens() {
 		botonTokens=new JButton();
 		botonTokens.setBounds(399, 275, 116, 50);
-		botonTokens.setText("Lista Tokens");
+		botonTokens.setText("Parse");
 		botonTokens.setFont(new java.awt.Font("Verdana", Font.BOLD, 11));
 		botonTokens.revalidate();
 		botonTokens.addActionListener(
-					new ActionListener(){
-						public void actionPerformed(ActionEvent e){
-							String contenido=null;
-							contenido=new String(ta1.getText());
-							if(contenido.equals("")){
-								JOptionPane.showMessageDialog(null,"Debe abrir un archivo o escribir un programa en c++ \n antes de proceder al analisis de tokens");
-							}
-							else{
-								in=new StringBufferInputStream(contenido);
-								GestorErrores gestor = GestorErrores.getGestorErrores();
-								AnalizadorLexico analizador = new AnalizadorLexico(in);
-								Token token = analizador.scan();
-								ta2.setText("");
-								while(token.getTipo() != TipoToken.EOF) {
-									ta2.append("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo()+"\n");
-									token = analizador.scan();
-								}
-								ta2.append("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo()+"\n");
-								ta2.append(gestor.muestraListaErrores());
-							}
-						}
-					});
+			new ActionListener(){
+				public void actionPerformed(ActionEvent e){
+					String contenido=null;
+					contenido=new String(ta1.getText());
+					if(contenido.equals("")){
+						JOptionPane.showMessageDialog(null,"Debe abrir un archivo o escribir un programa en c++ \n antes de proceder al analisis de tokens");
+					}
+					else{
+						in=new StringBufferInputStream(contenido);
+						GestorErrores gestor = GestorErrores.getGestorErrores();
+						
+						AnalizadorLexico anLex = new AnalizadorLexico(in);
+//								Token token = anLex.scan();
+//								ta2.setText("");
+//								while(token.getTipo() != TipoToken.EOF) {
+//									ta2.append("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo()+"\n");
+//									token = anLex.scan();
+//								}
+//								ta2.append("TOKEN: "+token.getTipo()+"\t ATRIBUTO: "+token.getAtributo()+"\n");
+//								ta2.append(gestor.muestraListaErrores());
+						
+						AnalizadorSintactico anSin = new AnalizadorSintactico(anLex);
+						ta2.setText("");
+						ta2.append("Tokens:\n");
+						ta2.append(anSin.getStringTokens());
+						ta2.append("\nParse:\n");
+						ta2.append(anSin.getStringParse());
+						ta2.append(gestor.muestraListaErrores());
+					}
+				}
+			});
 		return botonTokens;
 	}
 

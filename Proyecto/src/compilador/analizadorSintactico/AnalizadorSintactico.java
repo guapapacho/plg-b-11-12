@@ -150,7 +150,7 @@ public class AnalizadorSintactico {
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && 
 				gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
-			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+			tipo = new Tipo(EnumTipo.DEFINIDO, (gestorTS.getTipoSimple((Integer)token.getAtributo())));
 			nextToken();
 			return true;
 		} else {
@@ -223,7 +223,7 @@ public class AnalizadorSintactico {
 				nextToken();
 				if(tipo()) {
 					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-						idConst(); // ID = valor
+						id(); // ID = valor
 						if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
 							if(esLiteral=literal()){  // ID = LITERAL
 								inic_const();
@@ -244,7 +244,8 @@ public class AnalizadorSintactico {
 					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
 							"Tipo de constante incorrecto");	
 				}
-			}/////////////////// PAL_RESERVADA
+			}
+			/////////////////// PAL_RESERVADA
 			//10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3 COSAS
 			else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 69 /*void*/){
 				parse.add(10);
@@ -263,16 +264,16 @@ public class AnalizadorSintactico {
 				}
 			}
 			else {// 9. COSAS → TIPO ID COSAS2 COSAS
-			tipo();
-			//if(true) {//TODO tipo correcto
-				parse.add(9);
-				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-					id();
-					cosas2();	
-					cosas();			
-				} else {
-					// error sintáctico
-					System.err.print(" error 9 ");
+				if(tipo()) {
+					parse.add(9);
+					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+						id();
+						cosas2();	
+						cosas();			
+					} else {
+						// error sintáctico
+						System.err.print(" error 9 ");
+					}
 				}
 			}
 				

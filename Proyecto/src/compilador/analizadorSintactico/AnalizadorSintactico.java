@@ -1142,9 +1142,10 @@ public class AnalizadorSintactico {
 	}
 	
 
+
 	/**
 	 * 73-83 aun no estan terminadas!
-	 * 73. INS_ASIGNACION → ID  OP_ASIGNACION EXPRESION
+	 * 73. INS_ASIGNACION ? ID  OP_ASIGNACION EXPRESION
 	 */
 	private void ins_asignacion()
 	{
@@ -1157,117 +1158,238 @@ public class AnalizadorSintactico {
 		
 	}
 	/**
-	 * 	74. CUERPO → INSTRUCCION CUERPO 
-		75. CUERPO → SENT_BUCLE CUERPO
-		76. CUERPO → SENT_IF CUERPO
-		77. CUERPO → SENT_CASE CUERPO
-		78. CUERPO → lambda
+	 *	
+	   	. CUERPO --> INSTRUCCION CUERPO 
+		. CUERPO --> for RESTO_FOR CUERPO
+		. CUERPO --> do RESTO_DO CUERPO
+		. CUERPO --> while RESTO_WHILE CUERPO
+		. CUERPO --> if RESTO_IF CUERPO
+		. CUERPO --> switch RESTO_CASE CUERPO
+		. CUERPO --> lambda
 	 */
 	private void cuerpo()
 	{
-		if(instruccion())
+	
+		if(token.esIgual(TipoToken.PAL_RESERVADA,29)) //Palabra reservada for
+		{
+			parse.add(75);
+			nextToken();
+			resto_for();
+			cuerpo();
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA,19)) //Palabra reservada do
+		{
+			parse.add(76);
+			nextToken();
+			resto_do();
+			cuerpo();
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA,72)) //Palabra reservada while
+		{
+			parse.add(77);
+			nextToken();
+			resto_while();
+			cuerpo();
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA,32)) //Palabra reservada if
+		{
+			parse.add(78);
+			nextToken();
+			resto_if();
+			cuerpo();
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA,55)) //Palabra reservada switch
+		{
+			parse.add(79);
+			nextToken();
+			resto_case();
+			cuerpo();
+		}
+		else if(instruccion())
 		{
 			parse.add(74);
 			cuerpo();
 		}
-		else if(sent_bucle())
-		{
-			parse.add(75);
-			cuerpo();
-		}
-		else if(sent_if())
-		{
-			parse.add(76);
-			cuerpo();
-		}
-		else if(sent_if())
-		{
-			parse.add(77);
-			cuerpo();
-		}
 	}
 	
-
+	
 	/** 
-	 *  79. CUERPO2 → INSTRUCCION
-		80. CUERPO2 → SENT_BUCLE
-		81. CUERPO2 → SENT_IF
-		82. CUERPO2 → SENT_CASE 
-		83. CUERPO2 → { CUERPO }
+	 *  . CUERPO2 --> INSTRUCCION
+		. CUERPO2 --> SENT_BUCLE
+		. CUERPO2 --> SENT_IF
+		. CUERPO2 --> SENT_CASE 
+		. CUERPO2 --> { CUERPO }
 	 */
 	private void cuerpo2() {
-		if(instruccion())
-		{
-			parse.add(79);
-		}
-		else if(sent_bucle())
-		{
-			parse.add(80);
-		}
-		else if(sent_if())
+		
+		if(token.esIgual(TipoToken.PAL_RESERVADA,29)) //Palabra reservada for
 		{
 			parse.add(81);
+			nextToken();
+			resto_for();
 		}
-		else if(sent_case())
+		else if(token.esIgual(TipoToken.PAL_RESERVADA,19)) //Palabra reservada do
 		{
 			parse.add(82);
+			nextToken();
+			resto_do();
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA,72)) //Palabra reservada while
+		{
+			parse.add(83);
+			nextToken();
+			resto_while();
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA,32)) //Palabra reservada if
+		{
+			parse.add(84);
+			nextToken();
+			resto_if();
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA,55)) //Palabra reservada switch
+		{
+			parse.add(85);
+			nextToken();
+			resto_case();
+		}
+		else if(instruccion())
+		{
+			parse.add(80);
 		}
 		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			nextToken();
 			cuerpo();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
-				parse.add(83);
+				parse.add(86);
 				nextToken();
 			}
 			else
-				System.out.println("ERROR EN REGLA 83. FALTA PARENTESIS DE CIERRE");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+				"Lectura terminada incorrectamente, falta ')'");
 		}
 		
 	}
-	
 	/** TODO ¡¡¡¡¡SIN TERMINAR!!!
-	 * SENT_CASE → switch ( ID ) { CUERPO_CASE }
+	 *  RESTO_WHILE --> while (CONDICION) do CUERPO2
 	 */
-	private boolean sent_case() {
-		if(token.esIgual(TipoToken.PAL_RESERVADA,55)) //Palabra reservada switch
-		{
+	private void resto_while() {
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(-1); //Añadir numero de regla cuando se sepa
+			nextToken();
+			//condicion();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+				nextToken();
+				cuerpo2();
+			}
+			else
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+				"Lectura terminada incorrectamente, falta ')'");
+		}
+		else
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+			"Lectura terminada incorrectamente, falta '('");
+	}		
+
+	/**
+	 * 
+	 *  RESTO_DO --> do CUERPO2 while (CONDICION);
+	 */
+	private void resto_do() {
+		
+		parse.add(-1); //Añadir numero de regla cuando se sepa
+		cuerpo2();
+		if(token.esIgual(TipoToken.PAL_RESERVADA,72)) //Palabra reservada while
+		{
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 				nextToken();
-				 if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				//condicion(); !!!!!!!!!!!
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+					nextToken();
+					if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 						nextToken();
-						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
-							nextToken();
-							if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
-								nextToken();
-								cuerpo_case();
-								if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_CORCHETE)) {
-									nextToken();
-									return true;
-								}
-								else 
-									System.err.println("error en switch");
-							}
-							else
-								System.err.println("error en switch");
-						}
-						else
-							System.err.println("error en switch");
-					}
-				 else
-					 System.err.println("error en switch");
-				
+					}	
+					else
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Lectura terminada incorrectamente, falta ';'");
+					
+				}
+				else
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+					"Lectura terminada incorrectamente, falta ')'");
 			}
 			else
-				System.err.println("error en switch");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+				"Lectura terminada incorrectamente, falta '('");
+		}
+		else
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+			"Lectura terminada incorrectamente, falta palabra 'while'");
+		
+	}	
+		
+ /**
+  *  RESTO_FOR --> for ( INDICE; CONDICION; CAMBIO) CUERPO2 
+  */
+	private void resto_for() {
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
+			parse.add(-1); //Añadir numero de regla cuando se sepa
+			nextToken();
+			//indice();
+			// ....
+		}
+		else
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+			"Lectura terminada incorrectamente, falta '('");
+	}
+
+	
+	/** TODO ¡¡¡¡¡SIN TERMINAR!!!
+	 * RESTO_CASE --> ( ID ) { CUERPO_CASE }
+	 */
+	private boolean resto_case() {
+		
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
+			parse.add(-1); //Añadir numero de regla cuando se sepa
+			nextToken();
+			 if(token.esIgual(TipoToken.IDENTIFICADOR)){
+					nextToken();
+					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+						nextToken();
+						if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
+							nextToken();
+							cuerpo_case();
+							if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_CORCHETE)) {
+								nextToken();
+								return true;
+							}
+							else 
+								gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+								"Lectura terminada incorrectamente, falta '}'");
+						}
+						else
+							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+							"Lectura terminada incorrectamente, falta '{'");
+					}
+					else
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Lectura terminada incorrectamente, falta ')'");
+				}
+			 else
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+					"Lectura terminada incorrectamente, falta identificador");
 			
 		}
-		return false;
+		else
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+			"Lectura terminada incorrectamente, falta ')'");
+		
+	
+	return false;
 	}
 
 	/** TODO ¡¡¡¡¡SIN TERMINAR!!!
-	 * CUERPO_CASE  → case LITERAL: CUERPO  |  CUERPO2
+	 * CUERPO_CASE  --> case LITERAL: CUERPO  |  CUERPO2
 	 * mas expresiones: defalut: break; goto identifier ; continue ;
 	 */
 	private void cuerpo_case() {
@@ -1284,36 +1406,36 @@ public class AnalizadorSintactico {
 				}	
 			}
 			else 
-				System.err.println("error en case");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+				"Lectura terminada incorrectamente, falta literal");
 		}
 	}
 	/**  TODO ¡¡¡¡¡SIN TERMINAR!!!
-	 *  SENT_IF → if ( EXPRESION )  CUERPO2 SENT_ELSE
+	 *  RESTO_IF --> ( EXPRESION )  CUERPO2 SENT_ELSE
 	 */
-	private boolean sent_if() {
-		if(token.esIgual(TipoToken.PAL_RESERVADA,32)) //Palabra reservada if
-		{
+	private boolean resto_if() {
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(-1); //Añadir numero de regla cuando se sepa
 			nextToken();
-			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
+			expresion();// ??? Poner cuando se tenga
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
-				expresion();// ??? Poner cuando se tenga
-				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
-					nextToken();
-					cuerpo2();
-					sent_else();
-					return true;
-				}
-				else
-					System.err.print(" error en IF: Falta parentesis de cierre ");
+				cuerpo2();
+				sent_else();
+				return true;
 			}
 			else
-				System.err.print(" error en IF: Falta parentesis de apertura ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+				"Lectura terminada incorrectamente, falta ')'");
 		}
+		else
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+			"Lectura terminada incorrectamente, falta '('");
+	
 		return false;
 	}
 	/** TODO ¡¡¡¡¡SIN TERMINAR!!!
-	 * SENT_ELSE → else CUERPO2 | lambda
+	 * SENT_ELSE --> else CUERPO2 | lambda
 	 */
 	private void sent_else() {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,22)) //Palabra reservada else
@@ -1327,85 +1449,6 @@ public class AnalizadorSintactico {
 		
 	}
 
-	/** TODO ¡¡¡¡¡SIN TERMINAR!!!
-	 *  SENT_BUCLE → while (CONDICION) do CUERPO2
-	 *  SENT_BUCLE → for ( INDICE; CONDICION; CAMBIO) CUERPO2 
-	 *  SENT_BUCLE → do CUERPO2 while (CONDICION);
-	 */
-	private boolean sent_bucle() {
-		
-		/** SENT_BUCLE → while (CONDICION) do CUERPO2*/
-		if(token.esIgual(TipoToken.PAL_RESERVADA,72)) //Palabra reservada while
-		{
-			parse.add(-1); //Añadir numero de regla cuando se sepa
-			nextToken();
-			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
-				nextToken();
-				//condicion();
-				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
-					nextToken();
-					if(token.esIgual(TipoToken.PAL_RESERVADA,19)) //Palabra reservada do
-					{
-						nextToken();
-						cuerpo2();
-						return true;
-					}
-					else
-						System.err.println("error en while");
-				}
-				else
-					System.err.println("error en while");
-			}
-			else
-				System.err.println("error en while");
-		}	
-		/** SENT_BUCLE → for ( INDICE; CONDICION; CAMBIO) CUERPO2 */
-		else if(token.esIgual(TipoToken.PAL_RESERVADA,29)) //Palabra reservada for
-		{
-			parse.add(-1); //Añadir numero de regla cuando se sepa
-			nextToken();
-			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
-				nextToken();
-				//indice();
-				// ....
-			}
-			else
-				System.err.println("error en for");
-		}
-		/** SENT_BUCLE → do CUERPO2 while (CONDICION);*/
-		else if(token.esIgual(TipoToken.PAL_RESERVADA,19)) //Palabra reservada do
-		{
-			parse.add(-1); //Añadir numero de regla cuando se sepa
-			nextToken();
-			cuerpo2();
-			if(token.esIgual(TipoToken.PAL_RESERVADA,72)) //Palabra reservada while
-			{
-				nextToken();
-				if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
-					nextToken();
-					//condicion();
-					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
-						nextToken();
-						if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
-							nextToken();
-							return true;
-						}	
-						else
-							System.err.println("error");
-						
-					}
-					else
-						System.err.println("error");
-				}
-				else
-					System.err.println("error");
-			}
-			else
-				System.err.println("error");
-			
-		}	
-		return false;
-	}
 	
 	/**
 	 * 84. EXPRESION → EXPRESIONNiv1 RESTO_EXPR

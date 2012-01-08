@@ -906,7 +906,7 @@ public class AnalizadorSintactico {
 	 * 60. INS_LECTURA → cin >>  RESTO_LECT 
 	 */
 	private void ins_lect() {
-		if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 74){
+		if(token.esIgual(TipoToken.PAL_RESERVADA,74)){ // Palabra reservada cin
 			parse.add(60);
 			nextToken();
 			if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MAYORES)){
@@ -915,12 +915,16 @@ public class AnalizadorSintactico {
 			}
 			else{
 				// error
-				System.err.print(" error 60 ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Lectura incorrecta, se esperaba el operador \">>\"");
+				//System.err.print(" error 60 ");
 			}
 		}
 		else{
 			// error
-			System.err.print(" error 60 ");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+					"Se esperaba la palabra reservada \"cin\"");
+			//System.err.print(" error 60 ");
 		}
 	}
 	
@@ -937,7 +941,9 @@ public class AnalizadorSintactico {
 			}
 			else{
 				// error
-				System.err.print(" error 61 ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Lectura terminada incorrectamente, falta ';'");
+				//System.err.print(" error 61 ");
 			}
 		}
 		else if(esLiteral()){
@@ -948,12 +954,16 @@ public class AnalizadorSintactico {
 			}
 			else{
 				// error
-				System.err.print(" error 62 ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Lectura terminada incorrectamente, falta ';'");
+				//System.err.print(" error 62 ");
 			}
 		}
 		else{
 			// error
-			System.err.print(" error 62 ");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+					"Lectura incorrecta, se esperaba un literal o una variable");
+			//System.err.print(" error 62 ");
 		}
 	}
 	
@@ -961,7 +971,7 @@ public class AnalizadorSintactico {
 	 * 63. INS_ESCRITURA → cout << RESTO_ESC
 	 */
 	private void ins_esc() {
-		if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 75){
+		if(token.esIgual(TipoToken.PAL_RESERVADA,75)){ // Palabra reservada cout
 			parse.add(63);
 			nextToken();
 			if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
@@ -970,12 +980,16 @@ public class AnalizadorSintactico {
 			}
 			else{
 				// error
-				System.err.print(" error 63 ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Escritura incorrecta, se esperaba el operador \"<<\"");
+				//System.err.print(" error 63 ");
 			}
 		}
 		else{
 			// error
-			System.err.print(" error 63 ");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+					"Se esperaba la palabra reservada \"cout\"");
+			//System.err.print(" error 63 ");
 		}
 	}
 	
@@ -995,14 +1009,16 @@ public class AnalizadorSintactico {
 			nextToken();
 			ins_esc2();
 		}
-		else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 76 /* endl */){
+		else if(token.esIgual(TipoToken.PAL_RESERVADA,76)){ // Palabra reservada endl 
 			parse.add(66);
 			nextToken();
 			ins_esc2();
 		}
 		else{
 			// error
-			System.err.print(" error 66 ");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+					"Escritura incorrecta, se esperaba un literal, una variable o la palabra reservada \"endl\"");
+			//System.err.print(" error 66 ");
 		}
 	}
 	
@@ -1022,7 +1038,9 @@ public class AnalizadorSintactico {
 		}
 		else{
 			// error
-			System.err.print(" error 68 ");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+					"Escritura terminada incorrectamente, falta ';'");
+			//System.err.print(" error 68 ");
 		}
 	}
 	
@@ -1031,7 +1049,7 @@ public class AnalizadorSintactico {
 	 * 69. RESTO_ESC2 → LITERAL  INS_ESCRITURA2 
 	 * 70. RESTO_ESC2 → ID  INS_ESCRITURA2  
 	 * 71. RESTO_ESC2 → endl INS_ESCRITURA2 
-	 * 72. RESTO_ESC2 → ℷ
+	 * 72. RESTO_ESC2 → lamdba
 	 */
 	private void resto_esc2() {
 		if(esLiteral()){
@@ -1044,7 +1062,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			ins_esc2();
 		}
-		else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 76 /* endl */){
+		else if(token.esIgual(TipoToken.PAL_RESERVADA,76)){ // Palabra reservada endl 
 			parse.add(71);
 			nextToken();
 			ins_esc2();
@@ -1098,7 +1116,7 @@ public class AnalizadorSintactico {
 		75. CUERPO → SENT_BUCLE CUERPO
 		76. CUERPO → SENT_IF CUERPO
 		77. CUERPO → SENT_CASE CUERPO
-		78. CUERPO → ℷ
+		78. CUERPO → lambda
 	 */
 	private void cuerpo()
 	{
@@ -1453,13 +1471,17 @@ public class AnalizadorSintactico {
 	
 	private boolean esLiteral(){
 		return (token.esIgual(TipoToken.LIT_CADENA) || token.esIgual(TipoToken.LIT_CARACTER) || token.esIgual(TipoToken.NUM_ENTERO)
-				|| token.esIgual(TipoToken.NUM_REAL) || token.esIgual(TipoToken.NUM_REAL_EXPO));
+				|| token.esIgual(TipoToken.NUM_REAL) || token.esIgual(TipoToken.NUM_REAL_EXPO) || token.esIgual(TipoToken.PAL_RESERVADA, 27 /*false*/)
+				|| token.esIgual(TipoToken.PAL_RESERVADA, 60 /*true*/));
 	}
 	
 	public Vector<Integer> getParse() {
 		return parse;
 	}	
 	
+
+		
+
 	public String getStringParse() {
 		String string = "";
 		for(Integer regla : parse) 
@@ -1469,6 +1491,7 @@ public class AnalizadorSintactico {
 	
 	public Vector<Token> getTokens() {
 		return tokens;
+
 	}
 	
 	public String getStringTokens() {
@@ -1486,6 +1509,8 @@ public class AnalizadorSintactico {
 //		String entrada = "#include <Alina.h> \n  #include \"cris.h\" " +
 //				"int a=2,b,c; const bool i=3, k=true; int f(); " +
 //				"float g=3; double h(){}";
+//				String entrada2 = "cout << 4 << \"lo que sea\"<< endl;";
+//				String entrada3 = "cin >> b;";
 //		AnalizadorLexico a = new AnalizadorLexico(new StringBufferInputStream(entrada));
 //		AnalizadorSintactico s = new AnalizadorSintactico(a);
 //		for (int i : s.getParse()) 

@@ -676,11 +676,16 @@ public class AnalizadorSintactico {
 			nextToken();
 			ins_esc(); 
 		} else if (tipo()) { //INS_DECL
-			
+			parse.add(0000);
+			nextToken();
+			ins_decl();
 		} else if (token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 9){ //INS_DECL
-			
+			parse.add(00000);
+			nextToken();
+			ins_decl2();
 		} else {
 			//error
+			return false;
 		}
 		
 		return true;
@@ -1097,6 +1102,13 @@ public class AnalizadorSintactico {
 	 * 
 	 */
 	private void ins_decl() {
+		
+	}
+	
+	/**
+	 * 
+	 */
+	private void ins_decl2() {
 		
 	}
 	

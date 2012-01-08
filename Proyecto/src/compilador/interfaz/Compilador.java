@@ -223,7 +223,8 @@ public class Compilador extends JFrame {
 		
 		ta1=new JTextArea();
 		ta1.setText("#include <Alina.h> \n#include \"cris.h\" " +
-				"int a=2,b,c; \nconst bool i=3; \nconst float k=true; \nint f(int a, int b); " +
+				"int a=2,b[3]={1,2,3},c; " +
+				"\nconst bool i=3; \nconst float k=true; \nint f(int a, int b); " +
 				"\nfloat g=3; \ndouble h();");
 		ta1.setFont(new java.awt.Font("Verdana", Font.BOLD, 12));
 		sp1.setViewportView(ta1);

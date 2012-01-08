@@ -289,7 +289,6 @@ public class AnalizadorSintactico {
 
 	/**	
 	 * 12. COSAS2 → ( LISTA_PARAM ) COSAS3
-	 * 13. COSAS2 → [NUM_ENTERO] DIMENSION INIC_DIM ;
 	 * 14. COSAS2 → INICIALIZACION  DECLARACIONES ;
 	 */
 	private void cosas2() {
@@ -305,31 +304,6 @@ public class AnalizadorSintactico {
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta ')'");
 			}
 		} 
-		//13. COSAS2 → [NUM_ENTERO] DIMENSION INIC_DIM ;
-		else if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_CORCHETE)){
-			parse.add(13);
-			nextToken();
-			if(token.esIgual(TipoToken.NUM_ENTERO )){
-				nextToken();
-				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)){
-					nextToken();
-					dimension();
-					inicDim();
-					nextToken();
-					if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA))
-						nextToken();
-					else
-						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta ';'");
-				}
-				else{
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta ']'");
-				}
-			}
-			else{
-				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-						"Se espera un numero entero (tamaño del array)");
-			}
-		}
 		//14. COSAS2 → INICIALIZACION  DECLARACIONES ;
 		else {
 			parse.add(14);
@@ -405,20 +379,15 @@ public class AnalizadorSintactico {
 		22. DIMENSION → lambda
 	 */
 	private void dimension() {
-		if(!token.esIgual(null)){
-			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
-				parse.add(21);
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
+			parse.add(21);
+			nextToken();
+			if(token.esIgual(TipoToken.NUM_ENTERO)){
 				nextToken();
-				if(token.esIgual(TipoToken.NUM_ENTERO)){
+				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)){
 					nextToken();
-					if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)){
-						nextToken();
-						dimension();
-					}
+					dimension();
 				}
-			}
-			else{
-				System.err.print("Regla 21");
 			}
 		}
 		else{
@@ -431,15 +400,10 @@ public class AnalizadorSintactico {
 		24. INIC_DIM → lambda
 	 */
 	private void inicDim() {
-		if(!token.esIgual(null)){
-			if(token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
-				parse.add(23);
-				nextToken();
-				inicDim2();
-			}
-			else{
-				System.err.print("Regla 24");
-			}
+		if(token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
+			parse.add(23);
+			nextToken();
+			inicDim2();
 		}
 		else{
 			parse.add(24);
@@ -471,10 +435,8 @@ public class AnalizadorSintactico {
 		27. INIC_DIM3 → INIC_DIM2 INIC_DIM5
 	 */
 	private void inicDim3() {
-		boolean esLiteral=false;
-		
 		if(!token.esIgual(TipoToken.EOF)){
-			if(esLiteral=literal()){ // El metodo literal() lee el siguiente token
+			if(literal()){ // El metodo literal() lee el siguiente token
 				parse.add(26);
 				inicDim4();
 			}
@@ -491,20 +453,14 @@ public class AnalizadorSintactico {
 		29. INIC_DIM4 → lambda
 	 */
 	private void inicDim4() {
-		boolean esLiteral = false;
-		if(!token.esIgual(null)){
-			if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
-				parse.add(28);
-				nextToken();
-				if(!(esLiteral=literal())){
-					System.err.print("Regla 28");
-				}
-				else{
-					inicDim4();
-				}
+		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
+			parse.add(28);
+			nextToken();
+			if(!literal()){
+				System.err.print("Regla 28");
 			}
 			else{
-				System.err.print("Regla 28");
+				inicDim4();
 			}
 		}
 		else{
@@ -517,16 +473,11 @@ public class AnalizadorSintactico {
 		29. INIC_DIM5 → lambda 
 	 */
 	private void inicDim5() {
-		if(!token.esIgual(null)){
-			if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
-				parse.add(28);
-				nextToken();
-				inicDim2();
-				inicDim5();
-			}
-			else{
-				System.err.print("Regla 28");
-			}
+		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
+			parse.add(28);
+			nextToken();
+			inicDim2();
+			inicDim5();
 		}
 		else{
 			parse.add(29);
@@ -609,20 +560,39 @@ public class AnalizadorSintactico {
 	}
 
 	/**
-	 * 34. INICIALIZACION → = valor
+	 * 34. INICIALIZACION → = LITERAL
+	 * 13. INICIALIZACION → [NUM_ENTERO] DIMENSION INIC_DIM
 	 * 35. INICIALIZACION → lambda
 	 */
-	
-	/*	34. INICIALIZACION → = LITERAL
-		35. INICIALIZACION → ℷ
-	 */
 	private void inicializacion() {
+		//34. INICIALIZACION → = LITERAL
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
 			parse.add(34);
 			nextToken();
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("inicializacion variable " + entradaTS.getLexema() + " con " + valor);
 			nextToken();
+			
+		}
+		//13. INICIALIZACION → [NUM_ENTERO] DIMENSION INIC_DIM
+		else if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_CORCHETE)){
+			parse.add(13);
+			nextToken();
+			if(token.esIgual(TipoToken.NUM_ENTERO )){
+				nextToken();
+				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)){
+					nextToken();
+					dimension();
+					inicDim();
+				}
+				else{
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta ']'");
+				}
+			}
+			else{
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Se espera un numero entero (tamaño del array)");
+			}
 		} else {
 			parse.add(35);
 		}

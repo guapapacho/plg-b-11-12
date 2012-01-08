@@ -916,22 +916,20 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * 60. INS_LECTURA → cin >>  RESTO_LECT 
+	 * 60. INS_LECTURA → >>  RESTO_LECT 
 	 */
 	private void ins_lect() { //TODO: he cambiado instruccion, por lo que necesito quitar de aqui la condicion del if :) el error lo contemplo arriba
-		//if(token.esIgual(TipoToken.PAL_RESERVADA,74)){ // Palabra reservada cin
+		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MAYORES)){
 			parse.add(60);
 			nextToken();
-			if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MAYORES)){
-				nextToken();
-				resto_lect();
-			}
-			else{
-				// error
-				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-						"Lectura incorrecta, se esperaba el operador \">>\"");
-				//System.err.print(" error 60 ");
-			}
+			resto_lect();
+		}
+		else{
+			// error
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+					"Lectura incorrecta, se esperaba el operador \">>\"");
+			//System.err.print(" error 60 ");
+		}
 	//	}
 	//	else{
 			// error
@@ -981,13 +979,14 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * 63. INS_ESCRITURA → cout << RESTO_ESC
+	 * 63. INS_ESCRITURA → << RESTO_ESC
 	 */
 	private void ins_esc() { //TODO: he cambiado instruccion, por lo que necesito quitar de aqui la condicion del if :) el error lo contemplo arriba
 		//if(token.esIgual(TipoToken.PAL_RESERVADA,75)){ // Palabra reservada cout
-			parse.add(63);
-			nextToken();
+		//	parse.add(63);
+		//	nextToken();
 			if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
+				parse.add(63);
 				nextToken();
 				resto_esc();
 			}

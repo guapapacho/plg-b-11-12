@@ -148,7 +148,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			return true;
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && 
-				gestorTS.esTipoSimple(((EntradaTS)token.getAtributo()).getLexema())){
+				gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 			nextToken();
@@ -207,12 +207,12 @@ public class AnalizadorSintactico {
 		
 	}
 
-	/**	8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
- 		9. COSAS → TIPO ID COSAS2 COSAS
-		10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3 COSAS
-		11. COSAS → lambda
-		
-	 	*/
+	/**	
+	 * 8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
+	 * 9. COSAS → TIPO ID COSAS2 COSAS
+	 * 10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3 COSAS
+	 * 11. COSAS → lambda
+	 */
 	private void cosas() {
 		boolean esLiteral=false;
 		

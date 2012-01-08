@@ -118,8 +118,8 @@ public class GestorTablasSimbolos {
 	/**
 	 * Comprueba si una palabra es de tipo simple
 	 */
-	public boolean esTipoSimple(String palabra){
-		return tipos.containsKey(palabra);
+	public boolean esTipoSimple(Integer integer){
+		return tipos.containsValue(integer);
 	}
 
 	/**

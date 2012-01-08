@@ -373,10 +373,8 @@ public class AnalizadorSintactico {
 	private void lista_param() {
 		if(tipo()){
 			parse.add(17);
-			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 				id();
-				nextToken();
 				restoLista();
 			}
 		}

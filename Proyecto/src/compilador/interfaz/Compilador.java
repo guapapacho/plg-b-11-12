@@ -258,7 +258,7 @@ public class Compilador extends JFrame {
 					else{
 						in=new StringBufferInputStream(contenido);
 						GestorErrores gestor = GestorErrores.getGestorErrores();
-						
+						gestor.resetErrores();
 						AnalizadorLexico anLex = new AnalizadorLexico(in);
 //								Token token = anLex.scan();
 //								ta2.setText("");

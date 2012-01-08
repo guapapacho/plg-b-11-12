@@ -5,17 +5,18 @@ import java.io.StringBufferInputStream;
 import java.util.Vector;
 
 import compilador.analizadorLexico.*;
-import compilador.analizadorLexico.Token.TipoToken;
 import compilador.analizadorLexico.Token.*;
 import compilador.gestionErrores.GestorErrores;
 import compilador.tablaSimbolos.*;
-import compilador.tablaSimbolos.EntradaTS.Tipo;
+import compilador.tablaSimbolos.Tipo.EnumTipo;
 
 @SuppressWarnings("deprecation")
 public class AnalizadorSintactico {
 
 	/** Token actual obtenido mediante el Analizador lexico */
 	private Token token;
+	/** Lista de tokens obtenidos del Analizador lexico */
+	private Vector<Token> tokens;
 	/** Analizador lexico */
 	private AnalizadorLexico lexico;
 	/** Gestor tablas de simbolos */
@@ -34,12 +35,18 @@ public class AnalizadorSintactico {
 	public AnalizadorSintactico(AnalizadorLexico lexico){
 		this.lexico = lexico;
 		parse = new Vector<Integer>();
-		token = lexico.scan();
+		tokens = new Vector<Token>();
+		nextToken();
 		gestorTS = GestorTablasSimbolos.getGestorTS();
 		gestorErr = GestorErrores.getGestorErrores();
 		tipo = null;
 		entradaTS = null;
 		programa();
+	}
+	
+	public void nextToken() {
+		token = lexico.scan();
+		tokens.add(token);
 	}
 	
 	
@@ -60,16 +67,16 @@ public class AnalizadorSintactico {
 	 */
 	private void libreria() {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ALMOHADILLA)) {
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR) && 
 					"include".equals( ((EntradaTS)token.getAtributo()).getLexema() )) {
-				token = lexico.scan();
+				nextToken();
 				parse.add(2);
 				resto_libreria();
 			}
 			else {
-			//error sintactico
-				
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Falta la palabra reservada \"include\"");				
 			}
 		} else {
 			parse.add(3);
@@ -84,43 +91,48 @@ public class AnalizadorSintactico {
 		
 		if(token.esIgual(TipoToken.LIT_CADENA))
 		{
-			token = lexico.scan();
+			nextToken();
 			parse.add(4);
 			System.out.println("libreria con lit cadena");
 			libreria();
 		} 
 		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MENOR))
 		{
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR))
 			{	
-				token = lexico.scan();
+				nextToken();
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO)) {
-					token = lexico.scan();
+					nextToken();
 					
 					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-						token = lexico.scan();
+						nextToken();
 						
 						if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR)) {
-							token = lexico.scan();
+							nextToken();
 							parse.add(4);
 							System.out.println("libreria con angulos");
 							libreria();
-						}	
-						else //error
-						{}	
+						} else {
+							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+									"Falta el cierre de la declaracion '>'");				
+						}
+					} else {
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+								"Falta la extension de la libreria");				
 					}
-					else //error
-					{}
-				}	
-				else //error
-				{}
-			}
-			else //error
-			{}	
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+							"Falta la extension de la libreria");				
+				}
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Falta el nombre de la libreria");				
+			}	
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+					"Libreria incorrecta, se espera \"libreria.ext\" o <libreria.ext>");				
 		}
-		else //error
-		{System.err.print(" error 3 libreria ");}	
 		
 	}
 	
@@ -132,60 +144,54 @@ public class AnalizadorSintactico {
 	private boolean tipo() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(6);
-			tipo = null;//((EntradaTS)token.getAtributo()).getLexema();//TOFIX obtener enumerado tipo de la variable declarada
-			token = lexico.scan();
+			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+			nextToken();
 			return true;
-		} else if(token.esIgual(TipoToken.PAL_RESERVADA)){
+		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && 
+				gestorTS.esTipoSimple(((EntradaTS)token.getAtributo()).getLexema())){
 			parse.add(7);
-			switch((Integer)token.getAtributo()){
-			// no se si hace falta mirar si es un tipo valido
-			}
-			token = lexico.scan();
+			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+			nextToken();
 			return true;
 		} else {
-			// error
-			System.err.print(" error 7 ");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+					"Tipo de variable incorrecto");	
 			return false;
 		}
 	}
-	
-	
+
 	/**
-	 Metodo que devuelve el LITERAL y lee el siguiente token
+	 * Metodo que devuelve el LITERAL y lee el siguiente token
 	 */
-	private boolean literal() {
-		entradaTS = (EntradaTS)token.getAtributo();
-		entradaTS.setTipo(tipo);
-		entradaTS.setConstante(false);
-		
+	private boolean literal() {		
 		if(token.esIgual(TipoToken.LIT_CADENA)) {
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("LITERAL CADENA: " + valor);
-			token = lexico.scan();
+			nextToken();
 			return true;
 		}
 		else if(token.esIgual(TipoToken.LIT_CARACTER)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("LITERAL CARACTER: " + valor);
-			token = lexico.scan();
+			nextToken();
 			return true;
 		} 
 		else if (token.esIgual(TipoToken.NUM_ENTERO)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("NUMERO ENTERO: " + valor);
-			token = lexico.scan();
+			nextToken();
 			return true;
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("NUMERO REAL: " + valor);
-			token = lexico.scan();
+			nextToken();
 			return true;
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL_EXPO)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("NUMERO REAL EXPO: " + valor);
-			token = lexico.scan();
+			nextToken();
 			return true;
 		}
 		else {
@@ -195,8 +201,9 @@ public class AnalizadorSintactico {
 		}		
 	}
 	
+	
 	private void principal() {
-
+		//TODO
 		
 	}
 
@@ -210,69 +217,68 @@ public class AnalizadorSintactico {
 		boolean esLiteral=false;
 		
 		if(!token.esIgual(TipoToken.EOF)) {
-			if (!token.esIgual(null)){ //Y esto?? Yo creo que si es lambda no tiene por que ser token null. Puede que este usando otra regla, no? (Cris)
-				
-				// 8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
-				if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 9 /*const*/) {
-					parse.add(8);
-					token = lexico.scan();
-					tipo(); /// Para el siguiente true el metodo tipo() debria devolver si es un tipo valido
-					//if(true) {//TODO tipo correcto -> NO HACE FALTA, ES EL SEMANTICO EL QUE COMPRUEBA SI ES CORRECTO EL TIPO
+			// 8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
+			if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 9 /*const*/) {
+				parse.add(8);
+				nextToken();
+				if(tipo()) {
 					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-						//idConst(); // ID = valor
-						id();
+						idConst(); // ID = valor
 						if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
 							if(esLiteral=literal()){  // ID = LITERAL
 								inic_const();
 							}
 						}else{
-							System.err.print("Regla 8");
+							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+									"Constante no inicializada");
 						}
 						if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
-							//error
-							System.err.print(" error 8 ");
+							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+									"Declaracion de constantes terminada incorrectamente, falta ';'");
 						} else {
-							token = lexico.scan();
+							nextToken();
 							cosas();
 						}
 					}
-					//}
-				}/////////////////// PAL_RESERVADA
-				//10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3 COSAS
-				else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 69 /*void*/){
-					parse.add(10);
-					token = lexico.scan();
-					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-						token = lexico.scan();
-						if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
-							token = lexico.scan();
-							lista_param();
-							if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
-								token = lexico.scan();
-								cosas3();
-								cosas();
-							}
-						}
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+							"Tipo de constante incorrecto");	
+				}
+			}/////////////////// PAL_RESERVADA
+			//10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3 COSAS
+			else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 69 /*void*/){
+				parse.add(10);
+				nextToken();
+				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+					nextToken();
+					if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
+						nextToken();
+						lista_param();
+						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
+							nextToken();
+							cosas3();
+							cosas();
+						}// TODO añadir errores
 					}
 				}
-				else {// 9. COSAS → TIPO ID COSAS2 COSAS
-				tipo();
-				//if(true) {//TODO tipo correcto
-					parse.add(9);
-					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-						id();
-						cosas2();	
-						cosas();			
-					} else {
-						// error sintáctico
-						System.err.print(" error 9 ");
-					}
-				}
-					
-			}//////////////////////////////////////////////// !lambda
-			else{//Si es lambda
-				parse.add(11);
 			}
+			else {// 9. COSAS → TIPO ID COSAS2 COSAS
+			tipo();
+			//if(true) {//TODO tipo correcto
+				parse.add(9);
+				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+					id();
+					cosas2();	
+					cosas();			
+				} else {
+					// error sintáctico
+					System.err.print(" error 9 ");
+				}
+			}
+				
+		}//////////////////////////////////////////////// !lambda
+		else{//Si es lambda
+			parse.add(11);
 		}
 	}
 	
@@ -285,10 +291,10 @@ public class AnalizadorSintactico {
 		// COSAS2 → ( LISTA_PARAM ) COSAS3
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
 			parse.add(12);
-			token = lexico.scan();
+			nextToken();
 			lista_param();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
-				token = lexico.scan();
+				nextToken();
 				cosas3();
 			} else {
 				//error
@@ -297,16 +303,16 @@ public class AnalizadorSintactico {
 		} 
 		else if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_CORCHETE)){
 			parse.add(13);
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.NUM_ENTERO )){
-				token = lexico.scan();
+				nextToken();
 				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)){
-					token = lexico.scan();
+					nextToken();
 					dimension();
 					inicDim();
-					token = lexico.scan();
+					nextToken();
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA))
-						token = lexico.scan();
+						nextToken();
 					else
 						System.err.println("Regla 13. Falta ';'");
 				}
@@ -327,7 +333,7 @@ public class AnalizadorSintactico {
 				//error
 				System.err.print(" error 14 ");
 			}
-			token = lexico.scan();
+			nextToken();
 		}
 	}
 	
@@ -339,15 +345,15 @@ public class AnalizadorSintactico {
 		
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 			parse.add(15);
-			token = lexico.scan();
+			nextToken();
 			System.out.println("cabecera funcion " + entradaTS.getLexema());
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(16);
-			token = lexico.scan();
+			nextToken();
 			cuerpo();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 				System.out.println("funcion con cuerpo " + entradaTS.getLexema());
-				token = lexico.scan();
+				nextToken();
 			} else {
 				// error
 				System.err.print(" error 16 ");
@@ -363,10 +369,10 @@ public class AnalizadorSintactico {
 		if(!token.esIgual(null)){
 			parse.add(17);
 			tipo();
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 				id();
-				token = lexico.scan();
+				nextToken();
 				restoLista();
 			}
 		}
@@ -383,7 +389,7 @@ public class AnalizadorSintactico {
 		if(!token.esIgual(null)){
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 				parse.add(19);
-				token = lexico.scan();
+				nextToken();
 				lista_param();
 			}
 			else{
@@ -403,11 +409,11 @@ public class AnalizadorSintactico {
 		if(!token.esIgual(null)){
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
 				parse.add(21);
-				token = lexico.scan();
+				nextToken();
 				if(token.esIgual(TipoToken.NUM_ENTERO)){
-					token = lexico.scan();
+					nextToken();
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)){
-						token = lexico.scan();
+						nextToken();
 						dimension();
 					}
 				}
@@ -429,7 +435,7 @@ public class AnalizadorSintactico {
 		if(!token.esIgual(null)){
 			if(token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
 				parse.add(23);
-				token = lexico.scan();
+				nextToken();
 				inicDim2();
 			}
 			else{
@@ -450,14 +456,14 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(25);
-			token = lexico.scan();
+			nextToken();
 			inicDim3();
-			//token = lexico.scan();
+			//nextToken();
 			if(!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)){
 				System.err.print("Regla 25");
 			}
 			else{
-				token = lexico.scan();
+				nextToken();
 			}
 		}
 	}
@@ -490,7 +496,7 @@ public class AnalizadorSintactico {
 		if(!token.esIgual(null)){
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 				parse.add(28);
-				token = lexico.scan();
+				nextToken();
 				if(!(esLiteral=literal())){
 					System.err.print("Regla 28");
 				}
@@ -515,7 +521,7 @@ public class AnalizadorSintactico {
 		if(!token.esIgual(null)){
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 				parse.add(28);
-				token = lexico.scan();
+				nextToken();
 				inicDim2();
 				inicDim5();
 			}
@@ -538,7 +544,7 @@ public class AnalizadorSintactico {
 		if (!token.esIgual(null)){ // Si no es lambda
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 				parse.add(30);
-				token = lexico.scan();
+				nextToken();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 					//idConst();
 					literal();  // ID = LITERAL
@@ -567,7 +573,7 @@ public class AnalizadorSintactico {
 		System.out.println("declaracion variable " + entradaTS.getLexema());
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 			parse.add(32);
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 				id();
 				inicializacion();
@@ -586,12 +592,12 @@ public class AnalizadorSintactico {
 		entradaTS = (EntradaTS)token.getAtributo();
 		entradaTS.setTipo(tipo);
 		entradaTS.setConstante(true);
-		token = lexico.scan();
+		nextToken();
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
-			token = lexico.scan();
+			nextToken();
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("inicializacion constante " + entradaTS.getLexema() + " con " + valor);
-			token = lexico.scan();
+			nextToken();
 		} else {
 			//error
 			System.err.print(" error const ");
@@ -602,7 +608,8 @@ public class AnalizadorSintactico {
 	private void id() {
 		entradaTS = (EntradaTS)token.getAtributo();
 		entradaTS.setTipo(tipo);
-		token = lexico.scan();
+		entradaTS.setConstante(false);
+		nextToken();
 	}
 
 	/**
@@ -616,10 +623,10 @@ public class AnalizadorSintactico {
 	private void inicializacion() {
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
 			parse.add(34);
-			token = lexico.scan();
+			nextToken();
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("inicializacion variable " + entradaTS.getLexema() + " con " + valor);
-			token = lexico.scan();
+			nextToken();
 		} else {
 			parse.add(35);
 		}
@@ -673,14 +680,14 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(44);
 			tipo = null;//((EntradaTS)token.getAtributo()).getLexema();//TOFIX obtener enumerado tipo de la variable declarada
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
 				parse.add(44);
-				token = lexico.scan();
+				nextToken();
 				lista_atb();
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 					System.out.println("llamada a funcion " + entradaTS.getLexema());
-					token = lexico.scan();
+					nextToken();
 				} else {
 					// error
 					System.err.print(" error 44 ");
@@ -715,7 +722,7 @@ public class AnalizadorSintactico {
 	private void resto_atb() {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 			parse.add(47);
-			token = lexico.scan();
+			nextToken();
 			atributo();
 			resto_atb();
 		} else {
@@ -731,11 +738,11 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(50);
 			tipo = null;//((EntradaTS)token.getAtributo()).getLexema();//TOFIX obtener enumerado tipo de la variable declarada
-			token = lexico.scan();
+			nextToken();
 		} else if(esLiteral()){
 			parse.add(49);
 			//no se si hay que hacer algo mas...
-			token = lexico.scan();
+			nextToken();
 		} else {
 			// error
 			System.err.print(" error 29 ");
@@ -750,7 +757,7 @@ public class AnalizadorSintactico {
 	private void ins_reg() {
 		if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 54){
 			parse.add(51);
-			token = lexico.scan();
+			nextToken();
 			resto_st();
 		} else {
 			// error
@@ -765,14 +772,14 @@ public class AnalizadorSintactico {
 	private void resto_st() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){ 
 			parse.add(52);
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
-				token = lexico.scan();
+				nextToken();
 				cuerpo_st();
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
-					token = lexico.scan();
+					nextToken();
 					if(token.esIgual(TipoToken.IDENTIFICADOR)){
-						token = lexico.scan();
+						nextToken();
 						nombres();
 					} else {
 						// error
@@ -788,12 +795,12 @@ public class AnalizadorSintactico {
 			}
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 			parse.add(53);
-			token = lexico.scan();
+			nextToken();
 			cuerpo_st();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
-				token = lexico.scan();
+				nextToken();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
-					token = lexico.scan();
+					nextToken();
 					nombres();
 				} else {
 					// error
@@ -817,9 +824,9 @@ public class AnalizadorSintactico {
 	private void cuerpo_st() {
 		if(tipo()) {
 			parse.add(54);
-			token = lexico.scan();
+			nextToken();
 			if (token.esIgual(TipoToken.IDENTIFICADOR)) {
-				token = lexico.scan();
+				nextToken();
 				resto_var();
 				cuerpo_st();
 			}
@@ -840,9 +847,9 @@ public class AnalizadorSintactico {
 	private void resto_var() {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){ 
 			parse.add(56);
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
-				token = lexico.scan();
+				nextToken();
 				resto_var();
 			} else {
 				// error
@@ -850,7 +857,7 @@ public class AnalizadorSintactico {
 			}
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 			parse.add(57);
-			token = lexico.scan();
+			nextToken();
 		} else {
 			// error
 			System.err.print(" error 57 ");
@@ -865,9 +872,9 @@ public class AnalizadorSintactico {
 	private void nombres() {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){ 
 			parse.add(58);
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
-				token = lexico.scan();
+				nextToken();
 				nombres();
 			} else {
 				// error
@@ -875,7 +882,7 @@ public class AnalizadorSintactico {
 			}
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 			parse.add(59);
-			token = lexico.scan();
+			nextToken();
 		} else {
 			// error
 			System.err.print(" error 59 ");
@@ -891,9 +898,9 @@ public class AnalizadorSintactico {
 	private void ins_lect() {
 		if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 74){
 			parse.add(60);
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MAYORES)){
-				token = lexico.scan();
+				nextToken();
 				resto_lect();
 			}
 			else{
@@ -914,9 +921,9 @@ public class AnalizadorSintactico {
 	private void resto_lect() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){ //FALTA ALGO MAS AQUI???
 			parse.add(61);
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
-				token = lexico.scan();
+				nextToken();
 			}
 			else{
 				// error
@@ -925,9 +932,9 @@ public class AnalizadorSintactico {
 		}
 		else if(esLiteral()){
 			parse.add(62);
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
-				token = lexico.scan();	
+				nextToken();	
 			}
 			else{
 				// error
@@ -946,9 +953,9 @@ public class AnalizadorSintactico {
 	private void ins_esc() {
 		if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 75){
 			parse.add(63);
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
-				token = lexico.scan();
+				nextToken();
 				resto_esc();
 			}
 			else{
@@ -970,17 +977,17 @@ public class AnalizadorSintactico {
 	private void resto_esc() {
 		if(esLiteral()){
 			parse.add(64);
-			token = lexico.scan();
+			nextToken();
 			ins_esc2();
 		}
 		else if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(65);
-			token = lexico.scan();
+			nextToken();
 			ins_esc2();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 76 /* endl */){
 			parse.add(66);
-			token = lexico.scan();
+			nextToken();
 			ins_esc2();
 		}
 		else{
@@ -996,12 +1003,12 @@ public class AnalizadorSintactico {
 	private void ins_esc2(){
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
 			parse.add(67);
-			token = lexico.scan();
+			nextToken();
 			resto_esc2();
 		}
 		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 			parse.add(68);
-			token = lexico.scan();
+			nextToken();
 		}
 		else{
 			// error
@@ -1019,17 +1026,17 @@ public class AnalizadorSintactico {
 	private void resto_esc2() {
 		if(esLiteral()){
 			parse.add(69);
-			token = lexico.scan();
+			nextToken();
 			ins_esc2();
 		}
 		else if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(70);
-			token = lexico.scan();
+			nextToken();
 			ins_esc2();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 76 /* endl */){
 			parse.add(71);
-			token = lexico.scan();
+			nextToken();
 			ins_esc2();
 		}
 		else{
@@ -1071,7 +1078,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(73);
 			//tipo = null;//((EntradaTS)token.getAtributo()).getLexema();//TOFIX obtener enumerado tipo de la variable declarada
-			token = lexico.scan();
+			nextToken();
 			//expresion();
 		} 
 		
@@ -1133,11 +1140,11 @@ public class AnalizadorSintactico {
 			parse.add(82);
 		}
 		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
-			token = lexico.scan();
+			nextToken();
 			cuerpo();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 				parse.add(83);
-				token = lexico.scan();
+				nextToken();
 			}
 			else
 				System.out.println("ERROR EN REGLA 83. FALTA PARENTESIS DE CIERRE");
@@ -1152,18 +1159,18 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,55)) //Palabra reservada switch
 		{
 			parse.add(-1); //Añadir numero de regla cuando se sepa
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
-				token = lexico.scan();
+				nextToken();
 				 if(token.esIgual(TipoToken.IDENTIFICADOR)){
-						token = lexico.scan();
+						nextToken();
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
-							token = lexico.scan();
+							nextToken();
 							if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
-								token = lexico.scan();
+								nextToken();
 								cuerpo_case();
 								if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_CORCHETE)) {
-									token = lexico.scan();
+									nextToken();
 									return true;
 								}
 								else 
@@ -1194,11 +1201,11 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,6)) //Palabra reservada case
 		{
 			parse.add(-1); //Añadir numero de regla cuando se sepa
-			token = lexico.scan();
+			nextToken();
 			if(literal()) /** TODO si literal lanza error (alomejor deberiamos tratar errores con excepciones), deberia seguir? si no entonces esto no habria que comprobarlo.. (Cris)*/
 			{
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
-					token = lexico.scan();
+					nextToken();
 					cuerpo2();// Aqui podriamos hacer una especie de cuerpo2 que admita break y mas de una instruccuon sin parentesis
 					cuerpo_case();
 				}	
@@ -1214,12 +1221,12 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,32)) //Palabra reservada if
 		{
 			parse.add(-1); //Añadir numero de regla cuando se sepa
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
-				token = lexico.scan();
+				nextToken();
 				expresion();// ??? Poner cuando se tenga
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
-					token = lexico.scan();
+					nextToken();
 					cuerpo2();
 					sent_else();
 					return true;
@@ -1239,7 +1246,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,22)) //Palabra reservada else
 		{
 			parse.add(-1); //añadir el numero de regla cuando se sepa
-			token = lexico.scan();
+			nextToken();
 			cuerpo2();
 		}
 		else //SENT_ELSE -> lambda
@@ -1258,15 +1265,15 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,72)) //Palabra reservada while
 		{
 			parse.add(-1); //Añadir numero de regla cuando se sepa
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
-				token = lexico.scan();
+				nextToken();
 				//condicion();
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
-					token = lexico.scan();
+					nextToken();
 					if(token.esIgual(TipoToken.PAL_RESERVADA,19)) //Palabra reservada do
 					{
-						token = lexico.scan();
+						nextToken();
 						cuerpo2();
 						return true;
 					}
@@ -1283,9 +1290,9 @@ public class AnalizadorSintactico {
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,29)) //Palabra reservada for
 		{
 			parse.add(-1); //Añadir numero de regla cuando se sepa
-			token = lexico.scan();
+			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
-				token = lexico.scan();
+				nextToken();
 				//indice();
 				// ....
 			}
@@ -1296,18 +1303,18 @@ public class AnalizadorSintactico {
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,19)) //Palabra reservada do
 		{
 			parse.add(-1); //Añadir numero de regla cuando se sepa
-			token = lexico.scan();
+			nextToken();
 			cuerpo2();
 			if(token.esIgual(TipoToken.PAL_RESERVADA,72)) //Palabra reservada while
 			{
-				token = lexico.scan();
+				nextToken();
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
-					token = lexico.scan();
+					nextToken();
 					//condicion();
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
-						token = lexico.scan();
+						nextToken();
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
-							token = lexico.scan();
+							nextToken();
 							return true;
 						}	
 						else
@@ -1443,19 +1450,38 @@ public class AnalizadorSintactico {
 		return parse;
 	}	
 	
-	/**
-	 * Main de pruebas.
-	 */
-	public static void main(String args[])
-	{
-		String entrada = "#include <Alina.h> \n  #include \"cris.h\" " +
-				"int a=2,b,c; const bool i=3, k=true; int f(); " +
-				"float g=3; double h(){}";
-		AnalizadorLexico a = new AnalizadorLexico(new StringBufferInputStream(entrada));
-		AnalizadorSintactico s = new AnalizadorSintactico(a);
-		for (int i : s.getParse()) 
-			System.out.print(i+" ");
-		
+	public String getStringParse() {
+		String string = "";
+		for(Integer regla : parse) 
+			string += regla + " ";
+		return string+"\n";
 	}
 	
+	public Vector<Token> getTokens() {
+		return tokens;
+	}
+	
+	public String getStringTokens() {
+		String string = "";
+		for(Token token : tokens) 
+			string += "\nTipo: " + token.getTipo() + " Atr: " + token.getAtributo();
+		return string;
+	}
+	
+//	/**
+//	 * Main de pruebas.
+//	 */
+//	public static void main(String args[])
+//	{
+//		String entrada = "#include <Alina.h> \n  #include \"cris.h\" " +
+//				"int a=2,b,c; const bool i=3, k=true; int f(); " +
+//				"float g=3; double h(){}";
+//		AnalizadorLexico a = new AnalizadorLexico(new StringBufferInputStream(entrada));
+//		AnalizadorSintactico s = new AnalizadorSintactico(a);
+//		for (int i : s.getParse()) 
+//			System.out.print(i+" ");
+//		
+//	}
+
+
 }

@@ -216,7 +216,7 @@ public class AnalizadorSintactico {
 						
 						if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR)) {
 							nextToken();
-							parse.add(4);
+							parse.add(4);/// Ya se ha añadido al principio, no habria que volver a añadirlo
 							System.out.println("libreria con angulos");
 							libreria();
 						} else {
@@ -282,7 +282,6 @@ public class AnalizadorSintactico {
 	private void cosas() {
 		if(!token.esIgual(TipoToken.EOF)) {
 			// 8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
-			//if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 9 /*const*/) {
 			if(token.esIgual(TipoToken.PAL_RESERVADA, 9 /*const*/ )){
 				parse.add(8);
 				nextToken();
@@ -300,15 +299,26 @@ public class AnalizadorSintactico {
 					} else {
 						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
 								"Falta el identificador de la constante");	
-					}
+						}
 				} else {
 					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
 							"Tipo de constante incorrecto");	
 				}
 			}
+			// 9. COSAS → TIPO ID COSAS2 COSAS
+			else if(tipo()) {
+					parse.add(9);
+					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+						id();
+						cosas2();	
+						cosas();			
+					} else {
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+								"Falta el identificador");
+					}
+			}
 			//10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3 COSAS
-			//else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 69 /*void*/){
-			if(token.esIgual(TipoToken.PAL_RESERVADA, 69 /*void*/ )){
+			else if(token.esIgual(TipoToken.PAL_RESERVADA, 69 /*void*/ )){
 				parse.add(10);
 				nextToken();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
@@ -331,17 +341,46 @@ public class AnalizadorSintactico {
 							"Nombre de funcion void incorrecto");	
 				}
 			}
-			// 9. COSAS → TIPO ID COSAS2 COSAS
-			else if(tipo()) {
-					parse.add(9);
-					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-						id();
-						cosas2();	
-						cosas();			
-					} else {
-						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-								"Falta el identificador");
+			//11. COSAS → enum ID { LISTANOMBRES } ; COSAS
+			else if(token.esIgual(TipoToken.PAL_RESERVADA, 23 /*enum*/)){
+				parse.add(11);
+				nextToken();
+				if(token.esIgual(TipoToken.IDENTIFICADOR)){
+					id();
+					if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
+						nextToken();
+						listaNombres();
+						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
+								nextToken();
+								if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
+									gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+											"Declaracion de lista enumerada terminada incorrectamente, falta ';'");
+								} else {
+									nextToken();
+									cosas();
+								}
+						}
+						else{
+							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+									"Se esperaba `}´");
+						}
 					}
+					else{
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+								"Se esperaba `{´");
+					}
+				}
+				else{
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+							"Nombre de lista enumerada incorrecto");	
+				}
+			}
+			//12. COSAS → struct RESTO_ST COSAS
+			else if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /*struct*/)){
+				parse.add(12);
+				nextToken();
+				resto_st();
+				cosas();
 			}
 			//13. COSAS → lambda
 			else {
@@ -351,6 +390,40 @@ public class AnalizadorSintactico {
 		
 	}
 	
+	/** 14. LISTANOMBRES → ID RESTO_ListaNombres
+		15. LISTANOMBRES → lambda
+	*/
+	private void listaNombres() {
+		if(token.esIgual(TipoToken.IDENTIFICADOR)){
+			parse.add(14);
+			id();
+			resto_ln();
+		}
+		else{
+			parse.add(15);
+		}
+	}
+	
+	/**	101. RESTO_ListaNombres → , ID LISTANOMBRES
+		102. RESTO_ListaNombres → lambda
+	*/
+	private void resto_ln() {
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
+			parse.add(101);
+			nextToken();
+			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				id();
+				listaNombres();
+			}
+			else{
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Nombre de identificador incorrecto");
+			}
+		}
+		else{
+			parse.add(102);
+		}
+	}
 
 	/**	
 	 * 16. COSAS2 → ( LISTA_PARAM ) COSAS3
@@ -420,6 +493,10 @@ public class AnalizadorSintactico {
 				id();
 				restoLista();
 			}
+			else{
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Nombre de lista de parametros incorrecto");	
+			}
 		}
 		else{
 			parse.add(21);
@@ -457,6 +534,12 @@ public class AnalizadorSintactico {
 					nextToken();
 					dimension();
 				}
+				else{
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta ']'");
+				}
+			}
+			else{
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Se esperaba un numero entero");
 			}
 		}
 		else{

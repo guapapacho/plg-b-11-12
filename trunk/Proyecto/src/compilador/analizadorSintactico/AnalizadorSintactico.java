@@ -157,7 +157,7 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * 1. PROGRAMA → LIBRERIA COSAS MAIN COSAS
+	 * 1. PROGRAMA → LIBRERIA OTROS //COSAS MAIN COSAS
 	 */
 	private void programa() {
 		parse.add(1);

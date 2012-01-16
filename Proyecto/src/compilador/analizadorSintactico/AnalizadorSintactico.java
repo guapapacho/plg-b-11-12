@@ -1729,113 +1729,61 @@ public class AnalizadorSintactico {
 
 	
 	/**
-	 * 84. EXPRESION → EXPRESIONNiv1 RESTO_EXPR
-	 * 85. RESTO_EXPR → OpNiv0 EXPRESION
-	 * 86. RESTO_EXPR → lambda
+	 * 84. EXPRESION → ASSIGNEMENT-EXPRESION RESTO_EXP
 	 */
 	private void expresion() {
 		parse.add(84);
-		expresionNiv1();
-		//restoExpr
-		if(token.esOpNiv0()) {
+	    assignement_expression();
+	    resto_exp();
+	}
+	
+	/**
+	 * 87. ASSIGNEMENT-EXPRRESSION → throw THROW-EXPRESION
+	 * 88. ASSIGNEMENT-EXPRRESSION → LOGICAL-OR-EXPRESION RESTO_ASSIG
+	 */
+    private void assignement_expression() {
+    	if(token.esIgual(TipoToken.PAL_RESERVADA,59 /*throw*/)){
+			parse.add(87);
+			nextToken();
+			throw_expression();
+    	} else {
+    		parse.add(88);
+    		logical_or_expression();
+    	    resto_assig();
+    	}
+	}
+
+    private void resto_assig() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void logical_or_expression() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/**
+     * 89. THROW-EXPRESSION → ASSIGNEMENT-EXPRESSION
+     * 90. THROW-EXPRESSION → lambda
+     */
+	private void throw_expression() {
+		//TODO
+	}
+
+	/**
+     * 85. RESTO_EXP → , EXPRESSION
+     * 86. RESTO_EXP → lambda
+     */
+	private void resto_exp() {
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){
 			parse.add(85);
-			lexico.scan();
+			nextToken();
 			expresion();
 		} else {
 			parse.add(86);
 		}
 	}
-	
-	/**
-	 * 87. EXPRESIONNiv1 → EXPRESIONNiv2 RESTO_EXPR1
-	 * 88. RESTO_EXPR1 → OpNiv1 EXPRESIONNiv1
-	 * 89. RESTO_EXPR1 → lambda
-	 */
-	private void expresionNiv1() {
-		parse.add(87);
-		expresionNiv2();
-		//restoExpr1
-		if(token.esOpNiv1()) {
-			parse.add(88);
-			lexico.scan();
-			expresionNiv1();
-		} else {
-			parse.add(86);
-		}
-	}
-
-	/**
-	 * 90. EXPRESIONNiv2 → EXPRESIONNiv3  RESTO_EXPR2
-	 * 91. RESTO_ESPR2 → OpNiv2 EXPRESIONNiv2
-	 * 92. RESTO_ESPR2 → lambda
-	 */
-	private void expresionNiv2() {
-		parse.add(90);
-		expresionNiv3();
-		//restoExpr2
-		if(token.esOpNiv2()) {
-			parse.add(91);
-			lexico.scan();
-			expresionNiv2();
-		} else {
-			parse.add(92);
-		}
-	}
-	
-	/**
-	 * 93. EXPRESIONNiv3 → EXPRESIONNiv4 RESTO_EXPR3
-	 * 94. RESTO_EXPR3 → OpNiv3 EXPRESIONNiv3
-	 * 95. RESTO_EXPR3 → lambda
-	 */
-	private void expresionNiv3() {
-		parse.add(93);
-		expresionNiv4();
-		//restoExpr3
-		if(token.esOpNiv3()) {
-			parse.add(94);
-			lexico.scan();
-			expresionNiv3();
-		} else {
-			parse.add(95);
-		}
-	}
-	
-	/**
-	 * 96. EXPRESIONNiv4 → OpNiv4 EXPRESIONNiv4
-	 * 97. EXPRESIONNiv4 → ( RESTO_EXP4
-	 * 98. RESTO_EXPR4 → TIPO ) EXPRESIONNiv4
-	 * 99. RESTO_EXPR4 → EXPRESION )
-	 */
-	private void expresionNiv4() {
-		if(token.esOpNiv4()) {
-			parse.add(96);
-			lexico.scan();
-			expresionNiv4();
-		} else if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
-			parse.add(97);
-			lexico.scan();
-			//restoExpr4
-			if(tipo()) {
-				parse.add(98);
-				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)){
-					lexico.scan();
-					expresionNiv4();
-				} else {
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
-							"Expresion no terminada correctamente: falta ')'");
-				}
-			} else {
-				parse.add(99);
-				expresion();
-				if(!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS))
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
-							"Expresion no terminada correctamente: falta ')'");
-			}
-			
-		}
-	}
-	
-	
 	// PARA BORRAR:
 	
 	/**

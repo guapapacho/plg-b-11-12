@@ -157,15 +157,11 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * 1. PROGRAMA → LIBRERIA COSAS MAIN COSAS (antiguo)
 	 * 1. PROGRAMA → LIBRERIA RESTO_PROGRAMA
 	 */
 	private void programa() {
 		parse.add(1);
 		libreria();
-		//cosas();
-		//principal(); // TOFIX (alina) creo que no hace falta en el sintactico
-		//cosas();
 		resto_programa();
 	}
 	
@@ -399,20 +395,26 @@ public class AnalizadorSintactico {
 	 *  3. LIBRERIA -> lambda
 	 */
 	private void libreria() {
-		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ALMOHADILLA)) {
-			nextToken();
-			if(token.esIgual(TipoToken.IDENTIFICADOR) && 
-					"include".equals( ((EntradaTS)token.getAtributo()).getLexema() )) {
-				nextToken();
+		if (!token.esIgual(TipoToken.EOF)) {
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ALMOHADILLA)) {
 				parse.add(2);
-				resto_libreria();
-			}
-			else {
-				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-						"Falta la palabra reservada \"include\"");				
+				nextToken();
+				if(token.esIgual(TipoToken.PAL_RESERVADA, 77)) {
+					//token.esIgual(TipoToken.IDENTIFICADOR) && 
+					//"include".equals( ((EntradaTS)token.getAtributo()).getLexema() )) {
+					nextToken();
+					resto_libreria();
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta palabra \"include\""); 
+				}
+					//gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						//"Falta la palabra reservada \"include\"");				
+				//}
+			} else {
+				parse.add(3);
 			}
 		} else {
-			parse.add(3);
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Fin de fichero inesperado");
 		}
 	}
 
@@ -421,50 +423,38 @@ public class AnalizadorSintactico {
 	 * 5. RESTO_LIBRERIA → <ID.ID> LIBRERIA
 	 */
 	private void resto_libreria() {
-		
-		if(token.esIgual(TipoToken.LIT_CADENA))
-		{
-			nextToken();
+		if(token.esIgual(TipoToken.LIT_CADENA)) {
 			parse.add(4);
-			System.out.println("libreria con lit cadena");
-			libreria();
-		} 
-		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MENOR))
-		{
 			nextToken();
-			if(token.esIgual(TipoToken.IDENTIFICADOR))
-			{	
+			//System.out.println("libreria con lit cadena");
+			libreria();
+		} else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MENOR)) {
+			parse.add(5);
+			nextToken();
+			if(token.esIgual(TipoToken.IDENTIFICADOR)) {	
 				nextToken();
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO)) {
 					nextToken();
-					
 					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 						nextToken();
-						
 						if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR)) {
 							nextToken();
-							parse.add(4);/// Ya se ha añadido al principio, no habria que volver a añadirlo
-							System.out.println("libreria con angulos");
+							//System.out.println("libreria con angulos");
 							libreria();
 						} else {
-							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-									"Falta el cierre de la declaracion '>'");				
+							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta separador \">\"");			
 						}
 					} else {
-						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-								"Falta la extension de la libreria");				
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta extension de libreria");			
 					}
 				} else {
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-							"Falta la extension de la libreria");				
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \".\"");				
 				}
 			} else {
-				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-						"Falta el nombre de la libreria");				
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta la libreria");				
 			}	
 		} else {
-			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-					"Libreria incorrecta, se espera \"libreria.ext\" o <libreria.ext>");				
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta separador \"<\" o \"___\"");				
 		}
 		
 	}
@@ -490,26 +480,17 @@ public class AnalizadorSintactico {
 		return false;
 	}
 
-	
-	
-	
-	private void principal() {
-		//TODO
-		
-	}
 
 	/**	
 	 *  8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
 	 *  9. COSAS → TIPO ID COSAS2 COSAS
-	 * 10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3 COSAS
+	 * 10. COSAS → void ID ( LISTA_PARAM ) COSAS3 COSAS
 	 * 11. COSAS → enum ID { LISTANOMBRES } ; COSAS
 	 * 12. COSAS → struct RESTO_ST COSAS
-	 * 13. COSAS → lambda
 	 */
 	private void cosas() {
 		if(!token.esIgual(TipoToken.EOF)) {
-			// 8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
-			if(token.esIgual(TipoToken.PAL_RESERVADA, 9 /*const*/ )){
+			if(token.esIgual(TipoToken.PAL_RESERVADA, 9)){
 				parse.add(8);
 				nextToken();
 				if(tipo()) {
@@ -517,35 +498,27 @@ public class AnalizadorSintactico {
 						idConst(); // ID = LITERAL
 						inic_const();
 						if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
-							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-									"Declaracion de constantes terminada incorrectamente, falta ';'");
+							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta separador \";\"");
 						} else {
 							nextToken();
 							cosas();
 						}
 					} else {
-						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-								"Falta el identificador de la constante");	
-						}
-				} else {
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-							"Tipo de constante incorrecto");	
-				}
-			}
-			// 9. COSAS → TIPO ID COSAS2 COSAS
-			else if(tipo()) {
-					parse.add(9);
-					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-						id();
-						cosas2();	
-						cosas();			
-					} else {
-						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-								"Falta el identificador");
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el nombre de la variable");
 					}
-			}
-			//10. COSAS → VOID ID ( LISTA_PARAM ) COSAS3 COSAS
-			else if(token.esIgual(TipoToken.PAL_RESERVADA, 69 /*void*/ )){
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta tipo de la variable");	
+				}
+			} else if(tipo()) {
+				parse.add(9);
+				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+					id();
+					cosas2();	
+					cosas();			
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el nombre de la variable");
+				}
+			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 69)){
 				parse.add(10);
 				nextToken();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
@@ -558,18 +531,15 @@ public class AnalizadorSintactico {
 							cosas3();
 							cosas();
 						} else {
-							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta ')'");
+							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta separador \")\"");
 						}
 					} else {
-						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta '('");
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta separador \"(\"");
 					}
 				} else {
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-							"Nombre de funcion void incorrecto");	
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta nombre de la funcion");	
 				}
-			}
-			//11. COSAS → enum ID { LISTANOMBRES } ; COSAS
-			else if(token.esIgual(TipoToken.PAL_RESERVADA, 23 /*enum*/)){
+			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 23)){
 				parse.add(11);
 				nextToken();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
@@ -578,48 +548,41 @@ public class AnalizadorSintactico {
 						nextToken();
 						listaNombres();
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
+							nextToken();
+							if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
+								gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta separador \";\"");
+							} else {
 								nextToken();
-								if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
-									gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-											"Declaracion de lista enumerada terminada incorrectamente, falta ';'");
-								} else {
-									nextToken();
-									cosas();
-								}
+								cosas();
+							}
+						} else{
+							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta separador \"}\"");
 						}
-						else{
-							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-									"Se esperaba `}´");
-						}
+					} else{
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta separador \"{\"");
 					}
-					else{
-						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-								"Se esperaba `{´");
-					}
+				} else{
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta nombre de lista");	//No me gusta... :(
 				}
-				else{
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-							"Nombre de lista enumerada incorrecto");	
-				}
-			}
-			//12. COSAS → struct RESTO_ST COSAS
-			else if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /*struct*/)){
+			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 54)){
 				parse.add(12);
 				nextToken();
 				resto_st();
 				cosas();
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "");
 			}
-			//13. COSAS → lambda
-			else {
-				parse.add(13);
-			}
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Fin de fichero inesperado");
 		}
-		
 	}
 	
-	/** 14. LISTANOMBRES → ID RESTO_ListaNombres
-		15. LISTANOMBRES → lambda
-	*/
+	
+		
+	/** 
+	 * 14. LISTANOMBRES → ID RESTO_ListaNombres
+	 * 15. LISTANOMBRES → lambda
+	 */
 	private void listaNombres() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(14);

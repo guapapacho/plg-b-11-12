@@ -157,14 +157,241 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * 1. PROGRAMA → LIBRERIA OTROS //COSAS MAIN COSAS
+	 * 1. PROGRAMA → LIBRERIA COSAS MAIN COSAS (antiguo)
+	 * 1. PROGRAMA → LIBRERIA RESTO_PROGRAMA
 	 */
 	private void programa() {
 		parse.add(1);
 		libreria();
-		cosas();
-		principal(); // TOFIX (alina) creo que no hace falta en el sintactico
-		cosas();
+		//cosas();
+		//principal(); // TOFIX (alina) creo que no hace falta en el sintactico
+		//cosas();
+		resto_programa();
+	}
+	
+	/**
+	 * 105. RESTO_PROGRAMA → class ID { CUERPO_CLASE } ;
+	 * 106. RESTO_PROGRAMA → COSAS
+	 */
+	private void resto_programa() {
+		if (token.esIgual(TipoToken.PAL_RESERVADA, 8)) {
+			parse.add(105);
+			nextToken();
+			if (token.esIgual(TipoToken.IDENTIFICADOR)) {
+				nextToken();
+				if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_LLAVE)) {
+					nextToken();
+					cuerpo_clase();
+					if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)) {
+						nextToken();
+						if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
+							nextToken();
+						} else {
+							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \";\"");
+						}
+					} else {
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"}\"");
+					}
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"{\"");
+				}
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el identificador");
+			}
+		} else {
+			cosas();
+		}
+	}
+	
+	
+	/**
+	 * 107.CUERPO_CLASE → friend RESTO_FRIEND
+	 * 108.CUERPO_CLASE → public : LISTA_CLASE CUERPO_CLASE
+	 * 109.CUERPO_CLASE → private : LISTA_CLASE CUERPO_CLASE
+	 * 110.CUERPO_CLASE → protected : LISTA_CLASE CUERPO_CLASE
+	 * 111.CUERPO_CLASE → lambda
+	 */
+	private void cuerpo_clase() {
+		if (!token.esIgual(TipoToken.EOF)) {
+			if (token.esIgual(TipoToken.PAL_RESERVADA, 30)) {
+				parse.add(107);
+				nextToken();
+				resto_friend();
+			} else if (token.esIgual(TipoToken.PAL_RESERVADA, 44)) {
+				parse.add(108);
+				nextToken();
+				if (token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)) {
+					lista_clase();
+					cuerpo_clase();
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \":\"");
+				}
+			} else if (token.esIgual(TipoToken.PAL_RESERVADA, 42)) {
+				parse.add(109);
+				nextToken();
+				if (token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)) {
+					lista_clase();
+					cuerpo_clase();
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \":\"");
+				}
+			} else if (token.esIgual(TipoToken.PAL_RESERVADA, 43)) {
+				parse.add(110);
+				nextToken();
+				if (token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)) {
+					lista_clase();
+					cuerpo_clase();
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \":\"");
+				}
+			} else {
+				parse.add(111);
+			}
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Fin de fichero inesperado");
+		}
+	}
+	
+	
+	/**
+	 * 112.RESTO_FRIEND → void RESTO_FRIEND2
+	 * 113.RESTO_FRIEND → TIPO RESTO_FRIEND2
+	 */
+	private void resto_friend() {
+		if (token.esIgual(TipoToken.PAL_RESERVADA, 69)) {
+			parse.add(112);
+			nextToken();
+			resto_friend2();
+		} else if (tipo()) {
+			parse.add(113);
+			nextToken();
+			resto_friend2();
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta tipo de retorno (o void)");
+		}
+	}
+	
+	
+	/**
+	 * 114.RESTO_FRIEND2 → ID ( LISTA_PARAM ) ; CUERPO_CLASE
+	 */
+	private void resto_friend2() {
+		if (token.esIgual(TipoToken.IDENTIFICADOR)) {
+			parse.add(114);
+			nextToken();
+			if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+				nextToken();
+				lista_param();
+				if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
+					nextToken();
+					if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
+						nextToken();
+						cuerpo_clase();
+					} else {
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \";\"");
+					}
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \")\"");
+				}	
+			} else  {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"(\"");
+			}
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el identificador");
+		}
+	}
+	
+	
+	/**
+	 * 115.LISTA_CLASE → void RESTO_METODO LISTA_CLASE
+	 * 116.LISTA_CLASE → TIPO RESTO_LINEA
+	 */
+	private void lista_clase() {
+		if (token.esIgual(TipoToken.PAL_RESERVADA, 69)) {
+			parse.add(115);
+			nextToken();
+			resto_metodo();
+			lista_clase();
+		} else if (tipo()) {
+			parse.add(116);
+			nextToken();
+			resto_linea();
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta tipo de retorno (o void)");
+		}
+	}
+	
+	
+	/**
+	 * 117.RESTO_LINEA → ID RESTO_LINEA2
+	 */
+	private void resto_linea() {
+		if (token.esIgual(TipoToken.IDENTIFICADOR)) {
+			parse.add(117);
+			nextToken();
+			resto_linea2();
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el identificador");
+		}
+	}
+	
+	
+	/**
+	 * 118.RESTO_LINEA2 → ( RESTO_METODO 
+	 * 119.RESTO_LINEA2 → ; LISTA_CLASE
+	 */
+	private void resto_linea2() {
+		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+			parse.add(118);
+			nextToken();
+			resto_metodo();
+		} else if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
+			parse.add(119);
+			nextToken();
+			lista_clase();
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \";\" o \"(\"");
+		}
+	}
+	
+	
+	/**
+	 * 120.RESTO_METODO → LISTA_PARAM ) RESTO_METODO2 ; LISTA_CLASE
+	 */
+	private void resto_metodo() {
+		parse.add(120);
+		lista_param();
+		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+			nextToken();
+			resto_metodo2();
+			if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
+				nextToken();
+				lista_clase();
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \";\"");
+			}
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"(\"");
+		}
+	}
+	
+	
+	/**
+	 * 121.RESTO_METODO2 → { CUERPO
+	 * 122.RESTO_METODO2 → lambda
+	 */
+	private void resto_metodo2() {
+		if (!token.esIgual(TipoToken.EOF)) {
+			if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_LLAVE)) {
+				parse.add(121);
+				nextToken();
+				cuerpo();
+			} else {
+				parse.add(122);
+			}
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Fin de fichero inesperado");
+		}
 	}
 	
 	/**

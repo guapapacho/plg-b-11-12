@@ -907,16 +907,14 @@ public class AnalizadorSintactico {
 	private void inicializacion() {
 		//39. INICIALIZACION → = LITERAL
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
+			parse.add(39);
 			nextToken();
-			//Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-			//System.out.println("inicializacion variable " + entradaTS.getLexema() + " con " + valor);
 			if(esLiteral()){
-				parse.add(39);
 				nextToken();
 			}
 			else{
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-						"Inicialización incorrecta, se esperaba un literal");
+						"Inicialización incorrecta, se espera un literal");
 			}
 			
 		}
@@ -932,7 +930,7 @@ public class AnalizadorSintactico {
 					inicDim();
 				}
 				else{
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta ']'");
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta separador \"]\"");
 				}
 			}
 			else{
@@ -956,57 +954,43 @@ public class AnalizadorSintactico {
 	
 	private boolean instruccion() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) { 
+			parse.add(42);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 			nextToken();
 			return instruccion2();
-			/*if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) { //INS_FUNCION
-				parse.add(37);
-				nextToken();
-				lista_atb();
-				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
-					System.out.println("llamada a funcion " + entradaTS.getLexema());
-					nextToken();
-				} else {
-					// error
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta el separador abre llave {");				
-				}
-			} else if (token.esIgual(TipoToken.OP_ASIGNACION)) { //INS_ASIG
-				parse.add(41);
-				nextToken();
-				//llamada a EXPRESION
-			} else {
-				//error
-			}*/
-		//} else if (token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 54){ //INS_REG
-		}else if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /*struct*/ )){ //INS_REG
+			}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /*struct*/ )){ //INS_REG
 			parse.add(43);
 			nextToken();
 			//ins_reg();
 			resto_st();
-		//} else if (token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 74){ //INS_LECT
-		}else if(token.esIgual(TipoToken.PAL_RESERVADA, 74 /*cin*/ )){ //INS_LECT
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA, 74 /*cin*/ )){ //INS_LECT
 			parse.add(44);
 			nextToken();
 			ins_lect();
-		//} else if (token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 75){ //INS_ESC
-		}else if(token.esIgual(TipoToken.PAL_RESERVADA, 75 /*cout*/ )){ //INS_ESC
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA, 75 /*cout*/ )){ //INS_ESC
 			parse.add(45);
 			nextToken();
 			ins_esc(); 
-		//} else if (token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo() == 9){ //INS_DEC
-		}else if(token.esIgual(TipoToken.PAL_RESERVADA, 9 /*const*/ )){ //INS_DEC
-			parse.add(46); // MODIFICAR!!!!!
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA, 9 /*const*/ )){ //INS_DEC
+			parse.add(46); 
 			nextToken();
 			ins_dec();
-		} else if (tipo()) { //INS_DEC2
+		}
+		else if (tipo()) { //INS_DEC2
 			parse.add(47); 
 			nextToken();
 			ins_dec2();
-		} if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) { //INS_VACIA
+		} 
+		if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) { //INS_VACIA
 			parse.add(48);
 			nextToken();
 		} else {
-			//error
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+			"Falta separador \";\"");
 			return false;
 		}
 		
@@ -1026,18 +1010,27 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 				System.out.println("llamada a funcion " + entradaTS.getLexema());
 				nextToken();
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
+					nextToken();
+					return true;
+				}
+				else{
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
+					"Falta separador \";\"");
+				}
 			} else {
-				// error
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
-						"Falta el separador abre llave {");
+						"Falta separador \")\"");
 				return false;
 			}
 		} else if (token.esIgual(TipoToken.OP_ASIGNACION)) { //INS_ASIG
 			parse.add(50);
 			nextToken();
 			//llamada a EXPRESION
-		} else {
-			//error
+		} 
+		else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+			"Se espera \"(\" o un operador de asignacion");
 			return false;
 		}
 		return true;

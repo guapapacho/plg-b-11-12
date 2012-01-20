@@ -1736,66 +1736,66 @@ public class AnalizadorSintactico {
 		}
 		else //SENT_ELSE -> lambda
 			parse.add(101);
-		
 	}
 
+	//De donde habeis sacado esto??
+//	/**
+//	 * 84. EXPRESION → ASSIGNEMENT-EXPRESION RESTO_EXP
+//	 */
+//	private void expresion() {
+//		parse.add(84);
+//	    assignement_expression();
+//	    resto_exp();
+//	}
+//	
+//	/**
+//	 * 87. ASSIGNEMENT-EXPRRESSION → throw THROW-EXPRESION
+//	 * 88. ASSIGNEMENT-EXPRRESSION → LOGICAL-OR-EXPRESION RESTO_ASSIG
+//	 */
+//    private void assignement_expression() {
+//    	if(token.esIgual(TipoToken.PAL_RESERVADA,59 /*throw*/)){
+//			parse.add(87);
+//			nextToken();
+//			throw_expression();
+//    	} else {
+//    		parse.add(88);
+//    		logical_or_expression();
+//    	    resto_assig();
+//    	}
+//	}
+//
+//    private void resto_assig() {
+//		// TODO Auto-generated method stub
+//		
+//	}
+//
+//	private void logical_or_expression() {
+//		// TODO Auto-generated method stub
+//		
+//	}
+//
+//	/**
+//     * 89. THROW-EXPRESSION → ASSIGNEMENT-EXPRESSION
+//     * 90. THROW-EXPRESSION → lambda
+//     */
+//	private void throw_expression() {
+//		//TODO
+//	}
+//
+//	/**
+//     * 85. RESTO_EXP → , EXPRESSION
+//     * 86. RESTO_EXP → lambda
+//     */
+//	private void resto_exp() {
+//		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){
+//			parse.add(85);
+//			nextToken();
+//			expresion();
+//		} else {
+//			parse.add(86);
+//		}
+//	}
 	
-	/**
-	 * 84. EXPRESION → ASSIGNEMENT-EXPRESION RESTO_EXP
-	 */
-	private void expresion() {
-		parse.add(84);
-	    assignement_expression();
-	    resto_exp();
-	}
-	
-	/**
-	 * 87. ASSIGNEMENT-EXPRRESSION → throw THROW-EXPRESION
-	 * 88. ASSIGNEMENT-EXPRRESSION → LOGICAL-OR-EXPRESION RESTO_ASSIG
-	 */
-    private void assignement_expression() {
-    	if(token.esIgual(TipoToken.PAL_RESERVADA,59 /*throw*/)){
-			parse.add(87);
-			nextToken();
-			throw_expression();
-    	} else {
-    		parse.add(88);
-    		logical_or_expression();
-    	    resto_assig();
-    	}
-	}
-
-    private void resto_assig() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	private void logical_or_expression() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	/**
-     * 89. THROW-EXPRESSION → ASSIGNEMENT-EXPRESSION
-     * 90. THROW-EXPRESSION → lambda
-     */
-	private void throw_expression() {
-		//TODO
-	}
-
-	/**
-     * 85. RESTO_EXP → , EXPRESSION
-     * 86. RESTO_EXP → lambda
-     */
-	private void resto_exp() {
-		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){
-			parse.add(85);
-			nextToken();
-			expresion();
-		} else {
-			parse.add(86);
-		}
-	}
 	// PARA BORRAR:
 	
 	/**
@@ -1887,7 +1887,7 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(211);
-			nextToken();
+			//nextToken();
 		}
 	}
 	
@@ -1916,7 +1916,7 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(215);
-			nextToken();
+			//nextToken();
 		}
 		
 	}
@@ -1983,7 +1983,7 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(223);
-			nextToken();
+			//nextToken();
 		}		
 	}
 	
@@ -2005,7 +2005,7 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(226);
-			nextToken();
+			//nextToken();
 		}		
 	}
 	
@@ -2027,7 +2027,7 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(229);
-			nextToken();
+			//nextToken();
 		}
 	}
 	
@@ -2048,7 +2048,7 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(232);
-			nextToken();
+			//nextToken();
 		}
 	}
 	
@@ -2070,15 +2070,19 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(235);
-			nextToken();
+			//nextToken();
 		}
 	}
 	
+	//Este metodo nunca se usa /////
+	//deberia llamarse desde assignment_expression(), pero no lo hace ya que se ha factorizado por la izquierda
+	//ya que tanto conditional_expresion como assignment_expression tienen la regla log_or_expression
 	/**	236. CONDITIONAL_EXPRESION → LOGICAL_OR_EXPRESSION */
 	private void conditional_expression(){///////////////////////////////////////
 		parse.add(236);
 		log_or_expression(); 
 	}
+	
 	/**	237. RESTO_CONDITIONAL
 		238. RESTO_CONDITIONAL →  ? EXPRESSION  :  ASSIGNMENT_EXPRESSION
 		239. RESTO_CONDITIONAL → lambda
@@ -2087,7 +2091,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.INTEROGACION)){
 			parse.add(238);
 			nextToken();
-			expresion();
+			expression();
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)){
 				nextToken();
 				assignment_expression();
@@ -2098,17 +2102,64 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(239);
+			//nextToken(); lees el siguiente token solo cuando reconoces un terminal, lambda no lo consideramos como terminal
+		}		
+	}
+	
+	/**
+	 * 241. ASSIGNMENT_EXPRESSION → LOGICAL-OR-EXPRESSION RESTO_ASSIG
+	 */
+	private void assignment_expression() {
+		parse.add(241);
+		log_or_expression();
+		resto_asig();
+	}
+	
+	/**
+	 * (( 242. RESTO_ASSIG → ? EXPRESSION : ASSIGNMENT_EXPRESSION
+	 *    244. RESTO_ASSIG → lambda ))
+	 * 
+	 * 242. RESTO_ASSIG → RESTO_CONDITIONAL
+	 * 243. RESTO_ASSIG → op_asignacion ASSIGNMENT_EXPRESSION
+	 */
+	private void resto_asig() {
+		if(token.esIgual(TipoToken.OP_ASIGNACION)){
+			parse.add(243);
 			nextToken();
+			assignment_expression();
+		}
+		else{
+			parse.add(242);
+			resto_conditional();// Porque resto_conditional implementa las dos reglas que faltan: 238. RESTO_ASSIG →  ? EXPRESSION  :  ASSIGNMENT_EXPRESSION y 239. RESTO_ASSIG → lambda
 		}		
 	}
 
-	private void assignment_expression() {
-		// TODO Auto-generated method stub
-		
+	/**
+	 * 247. EXPRESSION → ASSIGNMENT-EXPRESSION RESTO_EXP
+	 * 
+	 * Esta regla no estoy segura de si deberia hacerse. En el ISO no aparece
+	 * 248. EXPRESSION → lambda
+	 */
+	private void expression() {
+		parse.add(247);
+		assignment_expression();
+		resto_exp();
 	}
 	
-
-	
+	/**
+	 * 249. RESTO_EXP → , EXPRESSION
+	 * 250. RESTO_EXP→ lambda
+	 */
+	private void resto_exp() {
+		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
+			parse.add(249);
+			nextToken();
+			expression();
+		}	
+		else {
+			parse.add(250);
+		}
+	}
 	
 //	/**
 //	 * Main de pruebas.

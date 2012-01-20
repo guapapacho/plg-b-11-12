@@ -1856,6 +1856,260 @@ public class AnalizadorSintactico {
 		
 	}*/
 	
+	private void additive_expression() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	/**208. SHIFT-EXPRESSION → ADDITIVE_EXPRESSION RESTO_SHIFT*/
+	
+	private void shift_expression(){
+		parse.add(208);
+		additive_expression(); //Debe leer el siguiente token
+		resto_shift();
+	}
+
+	/** 209. RESTO_SHIFT →  <<  SHIFT-EXPRESSION
+		210. RESTO_SHIFT →  >> SHIFT-EXPRESSION
+		211. RESTO_SHIFT → lambda
+	*/
+	
+	private void resto_shift() {
+		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.DOS_MENORES)){
+			parse.add(209);
+			nextToken();
+			shift_expression();
+		}
+		else if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.DOS_MAYORES)){
+			parse.add(210);
+			nextToken();
+			shift_expression();
+		}
+		else{
+			parse.add(211);
+			nextToken();
+		}
+	}
+	
+	/**	212. RELATIONAL-EXPRESSION → SHIFT-EXPRESSION RESTO-RELATIONAL*/
+	
+	private void relational_expression(){
+		parse.add(208);
+		shift_expression(); //Debe leer el siguiente token
+		resto_relational();
+	}
+
+	/**	213. RESTO-RELATIONAL → < RESTO2-RELATIONAL
+		214. RESTO-RELATIONAL → > RESTO2-RELATIONAL
+		215. RESTO-RELATIONAL → lambda
+	 */
+	private void resto_relational() {
+		if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MENOR)){
+			parse.add(213);
+			nextToken();
+			resto2_relational();
+		}
+		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR)){
+			parse.add(214);
+			nextToken();
+			resto2_relational();
+		}
+		else{
+			parse.add(215);
+			nextToken();
+		}
+		
+	}
+	
+	/**	216. RESTO2-RELATIONAL → = SHIFT-EXPRESSION
+		217. RESTO2-RELATIONAL → SHIFT-EXPRESSION
+	*/
+	
+	private void resto2_relational() {
+		if(token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
+			parse.add(216);
+			nextToken();
+			shift_expression();
+		}
+		else{
+			parse.add(217);
+			shift_expression();
+		}
+		
+	}
+	
+	/** 218. EQUALITY-EXPRESSION → RELATIONAL-EXPRESSION RESTO_EQUALITY*/
+	
+	private void equality_expression(){
+		parse.add(218);
+		relational_expression(); //Debe leer el siguiente token
+		resto_equality();
+	}
+
+	
+	/**	219. RESTO-EQUALITY → igualdad EQUALITY-EXPRESSION
+	 * 	220. RESTO-EQUALITY → distinto EQUALITY-EXPRESSION
+	 */
+	
+	private void resto_equality() {
+		if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.IGUALDAD)){
+			parse.add(219);
+			nextToken();
+			equality_expression();
+		}
+		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.DISTINTO)){
+			parse.add(220);
+			nextToken();
+			equality_expression();
+		}
+		
+	}
+		
+	/**	221. AND-EXPRESSION → EQUALITY-EXPRESSION RESTO_AND*/
+	private void and_expression(){
+		parse.add(208);
+		equality_expression(); //Debe leer el siguiente token
+		resto_and();
+	}
+	/**	222. RESTO-AND → bit_and AND-EXPRESSION
+	 *	223. RESTO-AND → lambda
+	 */
+	
+	private void resto_and() {
+		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.AND)){
+			parse.add(222);
+			nextToken();
+			and_expression();
+		}
+		else{
+			parse.add(223);
+			nextToken();
+		}		
+	}
+	
+	/**	224. EXCLUSIVE-OR-EXPRESSION → AND-EXPRESSION RESTO-EXCLUSIVE*/
+	private void exclusive_or_expression(){
+		parse.add(224);
+		and_expression(); 
+		resto_exclusive();
+	}
+
+	/**	225. RESTO-EXCLUSIVE → ^ EXCLUSIVE-OR-EXPRESSION
+		226. RESTO-EXCLUSIVE → lambda
+	 */
+	private void resto_exclusive() {
+		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.CIRCUNFLEJO)){
+			parse.add(225);
+			nextToken();
+			exclusive_or_expression();
+		}
+		else{
+			parse.add(226);
+			nextToken();
+		}		
+	}
+	
+	/**	227. INCL-OR-EXPRESSION → EXCL-OR-EXPRESSION RESTO_INCL-OR*/
+	private void incl_or_expression(){
+		parse.add(227);
+		exclusive_or_expression(); 
+		resto_incl_or();
+	}
+
+	/**	228. RESTO-INCL-OR → bit_or INCL-OR-EXPRESSION
+		229. RESTO-INCL-OR → lambda
+	*/
+	private void resto_incl_or() {
+		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.OR)){
+			parse.add(228);
+			nextToken();
+			incl_or_expression();
+		}
+		else{
+			parse.add(229);
+			nextToken();
+		}
+	}
+	
+	/**	230. LOG-AND-EXPRESSION → INCL-OR-EXPRESSION RESTO_LOG-AND*/
+	private void log_and_expression(){
+		parse.add(230);
+		incl_or_expression(); 
+		resto_log_and();
+	}
+	
+	/**	231. RESTO-LOG-AND → and LOG-AND-EXPRESSION
+		232. RESTO-LOG-AND → lambda*/
+	private void resto_log_and() {
+		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.AND)){//////////////////////////
+			parse.add(231);////////////////////////////////////////////////////////
+			nextToken();
+			log_and_expression();
+		}
+		else{
+			parse.add(232);
+			nextToken();
+		}
+	}
+	
+	/**	233. LOG-OR-EXPRESSION → LOG-AND-EXPRESSION RESTO_LOG-OR*/
+	private void log_or_expression(){
+		parse.add(233);
+		log_and_expression(); 
+		resto_log_or();
+	}
+
+	/**	234. RESTO-LOG-OR → or LOG-OR-EXPRESSION
+		235. RESTO-LOG-OR → lambda
+	*/
+	private void resto_log_or() {
+		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.OR)){//////////////////////////
+			parse.add(234);////////////////////////////////////////////////////////
+			nextToken();
+			log_or_expression();
+		}
+		else{
+			parse.add(235);
+			nextToken();
+		}
+	}
+	
+	/**	236. CONDITIONAL_EXPRESION → LOGICAL_OR_EXPRESSION */
+	private void conditional_expression(){///////////////////////////////////////
+		parse.add(236);
+		log_or_expression(); 
+	}
+	/**	237. RESTO_CONDITIONAL
+		238. RESTO_CONDITIONAL →  ? EXPRESSION  :  ASSIGNMENT_EXPRESSION
+		239. RESTO_CONDITIONAL → lambda
+	 */
+	private void resto_conditional() {//////////////////////////////////////////////
+		if(token.esIgual(TipoToken.SEPARADOR, Separadores.INTEROGACION)){
+			parse.add(238);
+			nextToken();
+			expresion();
+			if(token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)){
+				nextToken();
+				assignment_expression();
+			}
+			else{
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Se esperaba \":\"");
+			}
+		}
+		else{
+			parse.add(239);
+			nextToken();
+		}		
+	}
+
+	private void assignment_expression() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+
+	
+	
 //	/**
 //	 * Main de pruebas.
 //	 */

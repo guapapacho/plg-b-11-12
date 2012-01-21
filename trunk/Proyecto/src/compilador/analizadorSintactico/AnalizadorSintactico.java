@@ -700,7 +700,6 @@ public class AnalizadorSintactico {
 	 *  125.PASO → lambda
 	 */
 	private boolean paso() {
-		// TODO Auto-generated method stub
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.AND)) {
 			parse.add(123);
 			Object valor = token.getAtributo(); 
@@ -1441,14 +1440,7 @@ public class AnalizadorSintactico {
 		}
 	}
 	
-	
-	/**
-	 * 
-	 */
-	private void ins_asig() {
-		
-	}
-	
+
 	
 	/**
 	 * 81. CUERPO --> for RESTO_FOR CUERPO
@@ -1609,7 +1601,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			parse.add(92);
 			cuerpo();
-		}
+		}/** Y esta regla??? */
 		else {
 			parse.add(93);
 			instruccion();
@@ -1716,7 +1708,7 @@ public class AnalizadorSintactico {
 		}
 	}
 
-	/** TODO ¡¡¡¡¡SIN TERMINAR!!!
+	/** 
 	 * 97. RESTO_CASE --> ( ID ) { CUERPO_CASE }
 	 */
 	private boolean resto_case() {
@@ -1754,7 +1746,7 @@ public class AnalizadorSintactico {
 		}
 		else
 			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-			"Lectura terminada incorrectamente, falta ')'");
+			"Lectura terminada incorrectamente, falta '('");
 		
 	
 	return false;
@@ -1762,14 +1754,12 @@ public class AnalizadorSintactico {
 
 	/** TODO ¡¡¡¡¡SIN TERMINAR!!!
 	 * 98. CUERPO_CASE --> case LITERAL: CUERPO2 CUERPO_CASE
-	 * mas expresiones: defalut: break; goto identifier ; continue ;
-	 * se usa solo CUERPO2 al haber cambiado la estructura de CUERPO!!! (falta otro caso válido)
 	 */
 	private void cuerpo_case() {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,6 /*case*/)) {
 			parse.add(98);
 			nextToken();
-			if(literal()) /** TODO si literal lanza error (alomejor deberiamos tratar errores con excepciones), deberia seguir? si no entonces esto no habria que comprobarlo.. (Cris)*/
+			if(literal())
 			{
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
 					nextToken();
@@ -2256,7 +2246,7 @@ public class AnalizadorSintactico {
 			parse.add(188);
 			nextToken();
 			return true;
-		}else if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.BIT_OR)){
+		}else if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.BIT_AND)){
 			parse.add(189);
 			nextToken();
 			return true;
@@ -2733,11 +2723,7 @@ public class AnalizadorSintactico {
 	 */
 	private boolean primeroDeExpression() {
 		return (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)
-			 || token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.MULTIPLICACION)
-			 || token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.SUMA)
-			 || token.esIgual(TipoToken.OP_LOGICO, OpLogico.BIT_AND)
-			 || token.esIgual(TipoToken.OP_LOGICO, OpLogico.NOT)
-			 || token.esIgual(TipoToken.OP_LOGICO, OpLogico.SOBRERO)
+			 || unary_operator()
 			 || token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)	
 			 || token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.DECREMENTO)
 			 || token.esIgual(TipoToken.PAL_RESERVADA, 50) //sizeof

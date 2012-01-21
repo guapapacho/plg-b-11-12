@@ -1808,64 +1808,6 @@ public class AnalizadorSintactico {
 		else //SENT_ELSE -> lambda
 			parse.add(101);
 	}
-
-	//De donde habeis sacado esto??
-//	/**
-//	 * 84. EXPRESION → ASSIGNEMENT-EXPRESION RESTO_EXP
-//	 */
-//	private void expresion() {
-//		parse.add(84);
-//	    assignement_expression();
-//	    resto_exp();
-//	}
-//	
-//	/**
-//	 * 87. ASSIGNEMENT-EXPRRESSION → throw THROW-EXPRESION
-//	 * 88. ASSIGNEMENT-EXPRRESSION → LOGICAL-OR-EXPRESION RESTO_ASSIG
-//	 */
-//    private void assignement_expression() {
-//    	if(token.esIgual(TipoToken.PAL_RESERVADA,59 /*throw*/)){
-//			parse.add(87);
-//			nextToken();
-//			throw_expression();
-//    	} else {
-//    		parse.add(88);
-//    		logical_or_expression();
-//    	    resto_assig();
-//    	}
-//	}
-//
-//    private void resto_assig() {
-//		// TODO Auto-generated method stub
-//		
-//	}
-//
-//	private void logical_or_expression() {
-//		// TODO Auto-generated method stub
-//		
-//	}
-//
-//	/**
-//     * 89. THROW-EXPRESSION → ASSIGNEMENT-EXPRESSION
-//     * 90. THROW-EXPRESSION → lambda
-//     */
-//	private void throw_expression() {
-//		//TODO
-//	}
-//
-//	/**
-//     * 85. RESTO_EXP → , EXPRESSION
-//     * 86. RESTO_EXP → lambda
-//     */
-//	private void resto_exp() {
-//		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){
-//			parse.add(85);
-//			nextToken();
-//			expresion();
-//		} else {
-//			parse.add(86);
-//		}
-//	}
 	
 	// PARA BORRAR:
 	

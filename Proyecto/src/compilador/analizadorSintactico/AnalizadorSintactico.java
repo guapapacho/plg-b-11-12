@@ -1874,6 +1874,244 @@ public class AnalizadorSintactico {
 		
 	}
 	
+	/**
+	 * 144. PRIMARY-EXPRESSION → LITERAL
+	 * 145. PRIMARY-EXPRESSION → this
+	 * 146. PRIMARY-EXPRESSION → UNQUALIFIED-ID
+	 * 147. PRIMARY-EXPRESSION → ( EXPRESSION )
+	 */
+	private void primary_expression() {
+		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+			parse.add(147);
+			nextToken();
+			expression();
+			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
+				nextToken();
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \")\"");
+			}
+		} else if (token.esIgual(TipoToken.PAL_RESERVADA, 57)) {
+			parse.add(145);
+			nextToken();
+		} else if(literal()) {
+			parse.add(144);
+			nextToken();
+		} else {
+			parse.add(146);
+			unqualified_id();
+		}
+	}
+	
+	
+	/**
+	 * 148. UNQUALIFIED-ID → id
+	 * 149. UNQUALIFIED-ID →  ~ RESTO_UNQ
+	 */
+	private void unqualified_id() {
+		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+			parse.add(148);
+			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+			nextToken();
+		} else if (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {
+			parse.add(149);
+			resto_unq();
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta identificador u op_logico \"~\"");
+		}
+	}
+	
+	
+	/**
+	 * 150. RESTO_UNQ → id
+	 * 151. RESTO_UNQ → decltype ( EXPRESSION )
+	 */
+	private void resto_unq() {
+		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+			parse.add(150);
+			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+			nextToken();
+		} 
+		// decltype
+		else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta identificador o decltype");
+		}
+	}
+	
+	
+	/**
+	 * 152. POSTFIX-EXPRESSION → typeid ( EXPRESSION ) RESTO_POSTFIX_EXP
+	 * 153. POSTFIX-EXPRESSION → TIPO POSTFIX-2 RESTO_POSTFIX_EXP
+	 * 154. POSTFIX-EXPRESSION → PRIMARY-EXPRESSION RESTO_POSTFIX_EXP
+	 *
+	 * 168. POSTFIX-EXPRESSION → SIMPLE-TYPE-SPECIFIER ( POSTFIX-2
+	 * 170. POSTFIX-EXPRESSION →  ~ POSTFIX-EXPRESSION
+	 */
+	private void postfix_expression() {
+		if (token.esIgual(TipoToken.PAL_RESERVADA, 63)) {
+			parse.add(152);
+			nextToken();
+			if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+				nextToken();
+				expression();
+				if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
+					nextToken();
+					resto_postfix_exp();
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \")\"");
+				}
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"(\"");
+			}
+		} else if (tipo()) {
+			parse.add(153);
+			postfix2();
+			resto_postfix_exp();
+		} else if  (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {
+			parse.add(170);
+			nextToken();
+			postfix_expression();
+		}
+		//168
+		else {
+			primary_expression();
+			resto_postfix_exp();
+		}
+	}
+	
+	
+	/**
+	 * 155. RESTO_POSTFIX_EXP → [ EXPRESSION ]
+	 * 156. RESTO_POSTFIX_EXP → -> RESTO_POSTFIX_EXP3
+	 * 157. RESTO_POSTFIX_EXP → . RESTO_POSTFIX_EXP3
+	 * 158. RESTO_POSTFIX_EXP → decremento
+	 * 159. RESTO_POSTFIX_EXP → incremento
+	 * 160. RESTO_POSTFIX_EXP → ( RESTO_POSTFIX_EXP2
+	 * 161. RESTO_POSTFIX_EXP → lambda
+	 */
+	private void resto_postfix_exp() {
+		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_CORCHETE)) {
+			parse.add(155);
+			nextToken();
+			expression();
+			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)) {
+				nextToken();
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"]\"");
+			}
+		} else if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.PUNTERO)) {
+			parse.add(156);
+			nextToken();
+			resto_postfix_exp3();
+		} else if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO)) {
+			parse.add(157);
+			nextToken();
+			resto_postfix_exp3();
+		} else if (token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.DECREMENTO)) {
+			parse.add(158);
+			nextToken();
+		} else if (token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)) {
+			parse.add(159);
+			nextToken();
+		} else if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+			parse.add(160);
+			nextToken();
+			resto_postfix_exp2();
+		} else {
+			parse.add(161);
+		}
+	}
+	
+	
+	/**
+	 * 162. RESTO_POSTFIX_EXP2 → )
+	 * 163. RESTO_POSTFIX_EXP2 → INITIALIZER-LIST )
+	 */
+	private void resto_postfix_exp2() {
+		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
+			parse.add(162);
+			nextToken();
+		} else {
+			parse.add(163);
+			initializer_list();
+			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
+				nextToken();
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \")\"");
+			}
+		}
+	}
+	
+	
+	/**
+	 * 166. RESTO_POSTFIX_EXP3 → ~ decltype ( EXPRESSION )
+	 * 167. RESTO_POSTFIX_EXP3 → UNQUALIFIED-ID
+	 */
+	private void resto_postfix_exp3() {
+		if (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {	
+			parse.add(166);
+			nextToken();
+			//decltype
+			if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+				nextToken();
+				expression();
+				if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
+					nextToken();
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \")\"");
+				}
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"(\"");
+			}
+		} else {
+			unqualified_id();
+		}
+	}
+	
+	
+	/**
+	 * 173. POSTFIX-2 → ( POSTFIX-3
+	 */
+	private void postfix2() {
+		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+			parse.add(173);
+			nextToken();
+			postfix3();
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"(\"");
+		}
+	}
+	
+	
+	/**
+	 * 174. POSTFIX-3 →  )
+	 * 175. POSTFIX-3 → INITIALIZER-LIST )
+	 */
+	private void postfix3() {
+		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
+			parse.add(174);
+			nextToken();
+		} else {
+			parse.add(175);
+			initializer_list();
+			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
+				nextToken();
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \")\"");
+			}
+		}
+	}
+	
+	
+		
+	//TOMAS, esta es tuyaaa :) pero asi no hay errores...
+	private void initializer_list() {
+		
+	}
+
+		
+		
+		
+		
 	/**208. SHIFT-EXPRESSION → ADDITIVE_EXPRESSION RESTO_SHIFT*/
 	
 	private void shift_expression(){

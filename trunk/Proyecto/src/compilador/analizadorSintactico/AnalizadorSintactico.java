@@ -150,9 +150,7 @@ public class AnalizadorSintactico {
 		for(Token token : tokens) 
 			string += "\nTipo: " + token.getTipo() + " Atr: " + token.getAtributo();
 		return string+"\n";
-	}
-	
-	
+	}	
 	
 	/**
 	 * 1. PROGRAMA → LIBRERIA RESTO_PROGRAMA
@@ -1880,11 +1878,6 @@ public class AnalizadorSintactico {
 		
 	}*/
 
-	private void additive_expression() {
-		// TODO Auto-generated method stub
-		
-	}
-	
 	/**
 	 * 144. PRIMARY-EXPRESSION → LITERAL
 	 * 145. PRIMARY-EXPRESSION → this
@@ -2140,17 +2133,296 @@ public class AnalizadorSintactico {
 	
 	
 		
-	//TOMAS, esta es tuyaaa :) pero asi no hay errores...
-	private void initializer_list() {
-		
+	/**
+	 * 176. INITIALIZER-LIST → ASSIGNMENT-EXPRESSION RESTO_INIT 
+	 */
+	private void initializer_list(){
+		parse.add(176);
+		assignment_expression();
+		resto_init();
+	}
+	
+	/**
+	 * 177. RESTO_INIT → , INITIALIZER_LIST
+	 * 178. RESTO_INIT → lambda
+	 */
+	private void resto_init(){
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){
+			parse.add(177);
+			nextToken();
+			initializer_list();
+		}
+		else {
+			parse.add(178);
+		}
+	}
+			
+	/**
+	 * 179. UNARY_EXPRESSION → incremento CAST_EXPRESSION
+	 * 180. UNARY_EXPRESSION → decremento CAST_EXPRESSION
+	 * 181. UNARY_EXPRESSION → UNARY-OPERATOR CAST_EXPRESSION
+	 * 182. UNARY_EXPRESSION → sizeof RESTO_UNARY
+	 * 183. UNARY_EXPRESSION → alignof (type-id)
+	 * 184. UNARY_EXPRESSION → noexcept NOEXCEPT_EXPRESSION
+	 * 185. UNARY_EXPRESSION → POSTFIX_EXPRESSION
+	 */
+	private void unary_expression(){
+		if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)){
+			parse.add(179);
+			nextToken();
+			cast_expression();
+		}
+		else if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)){
+			parse.add(180);
+			nextToken();
+			cast_expression();
+		}
+		else if(unary_operator()){
+			parse.add(181);
+			nextToken();
+			cast_expression();
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA)
+				&& (Integer)token.getAtributo()==50 /*sizeof*/ ){
+			parse.add(182);
+			nextToken();
+			resto_unary();
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA)
+				&& (Integer)token.getAtributo()==1 /*alignof*/ ){
+			nextToken();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
+				nextToken();
+				if(tipo()){
+					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
+						parse.add(183);
+						nextToken();
+					}else{
+						// error
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba `)` ");
+					}	
+				}else{
+					// error
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba un identificador o tipo pre-definido ");
+				}
+			}else{
+				// error
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba `(` ");
+			}
+		} else if (token.esIgual(TipoToken.PAL_RESERVADA)
+				&& (Integer)token.getAtributo()==39 /*noexcept*/ ){
+			parse.add(184);
+			nextToken();
+			noexcept_expression();
+		} else{
+			parse.add(185);
+			postfix_expression();
+		}
+	}
+	
+	/**
+	 * 186. RESTO_UNARY → ( TIPO )
+	 * 187. RESTO_UNARY → UNARY-EXPRESSION
+	 */
+	private void resto_unary(){
+		if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
+			nextToken();
+			if(tipo()){
+				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)){
+					parse.add(186);
+					nextToken();
+				}else{
+					// error
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba `)` ");
+				}
+			}else{
+				// error
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba un identificador o tipo pre-definido ");
+			}
+		}else{
+			unary_expression();
+		}
+	}
+	
+	/**
+	 * 188. UNARY-OPERATOR → *
+	 * 189. UNARY-OPERATOR → &
+	 * 190. UNARY-OPERATOR → +
+	 * 191. UNARY-OPERATOR → !
+	 * 192. UNARY-OPERATOR → sombrero
+	 * 138. UNARY-OPERATOR → -
+	**/
+	private boolean unary_operator(){
+		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
+			parse.add(188);
+			nextToken();
+			return true;
+		}else if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.BIT_OR)){
+			parse.add(189);
+			nextToken();
+			return true;
+		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.SUMA)){
+			parse.add(190);
+			nextToken();
+			return true;
+		}else if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.NOT)){
+			parse.add(191);
+			nextToken();
+			return true;
+		}else if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)){
+			parse.add(192);
+			nextToken();
+			return true;
+		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.RESTA)){
+			parse.add(138);
+			nextToken();
+			return true;
+		}else{
+			return false;
+		}
 	}
 
-		
-		
-		
-		
-	/**208. SHIFT-EXPRESSION → ADDITIVE_EXPRESSION RESTO_SHIFT*/
+	/**
+	 * 193. NOEXCEPT-EXPRESSION → ( EXPRESSION ) 
+	 */
+	private void noexcept_expression(){
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
+			nextToken();
+			expression();
+			if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)){
+				parse.add(193);
+				nextToken();
+			}else{
+				// error
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba `)` ");
+			}
+		}else{
+			// error
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba `(` ");
+		}
+	}
 	
+	/**
+	 * 194. CAST-EXPRESSION → UNARY-EXPRESSION
+	 * 195. CAST-EXPRESSION → ( TIPO ) CAST-EXPRESSION
+	 */
+	private void cast_expression(){
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
+			nextToken();
+			if(tipo()){
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+					nextToken();
+					parse.add(195);
+					cast_expression();
+				}else{
+					// error
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba `)` ");
+				}
+			}else{
+				// error
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba un identificador o tipo pre-definido ");
+			}
+		}else {
+			parse.add(194);
+			unary_expression();
+		}
+	}
+	
+	/**
+	 * 196. PM-EXPRESSION → CAST-EXPRESSION
+	 * 197. PM-EXPRESSION → .* CAST-EXPRESSION
+	 * 198. PM-EXPRESSION → -> CAST-EXPRESSION
+	 */
+	private void pm_expression(){
+		if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO)){
+			nextToken();
+			if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
+				nextToken();
+				parse.add(197);
+				cast_expression();
+			}else{
+				// error
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba `*` ");
+			}
+		} else if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.PUNTERO)){
+			parse.add(198);
+			nextToken();
+			cast_expression();
+		} else{
+			parse.add(196);
+			cast_expression();
+		}
+	}
+	
+	
+	/**
+	 * 199. MULTIPLICATIVE-EXPRESSION → PM-EXPRESSION RESTO-MULT
+	 */
+	private void multiplicative_expression(){
+		parse.add(199);
+		pm_expression();
+		resto_mult();
+	}
+	
+	/**
+	 * 200. RESTO-MULT → * MULTIPLICATIVE-EXPRESSION
+	 * 201. RESTO-MULT → / MULTIPLICATIVE-EXPRESSION
+	 * 202. RESTO-MULT → % MULTIPLICATIVE-EXPRESSION
+	 * 203. RESTO-MULT → lambda
+	 */
+	private void resto_mult(){
+		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
+			nextToken();
+			parse.add(200);
+			multiplicative_expression();
+		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.DIVISION)){
+			nextToken();
+			parse.add(201);
+			multiplicative_expression();
+		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.PORCENTAJE)){
+			nextToken();
+			parse.add(202);
+			multiplicative_expression();
+		} else{
+			parse.add(203);
+			//lambda
+		}
+	}
+	
+	/**
+	 * 204. ADDITIVE_EXPRESSION  → MULTIPLICATIVE-EXPRESSION  RESTO _ADD
+	 */
+	private void additive_expression(){
+		parse.add(204);
+		multiplicative_expression();
+		resto_add();
+	}
+	
+	/**
+	 * 205. RESTO_ADD → + ADDITIVE_EXPRESSION
+	 * 206. RESTO_ADD → - ADDITIVE_EXPRESSION
+	 * 207. RESTO_ADD → lambda
+	 */
+	private void resto_add(){
+		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.SUMA)){
+			parse.add(205);
+			nextToken();
+			additive_expression();
+		}
+		else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.RESTA)){
+			parse.add(206);
+			nextToken();
+			additive_expression();
+		} else{
+			parse.add(207);
+			// lambda
+		}
+	}
+	
+	
+	/**
+	 * 208. SHIFT-EXPRESSION → ADDITIVE_EXPRESSION RESTO_SHIFT
+	 * */
 	private void shift_expression(){
 		parse.add(208);
 		additive_expression(); //Debe leer el siguiente token
@@ -2158,9 +2430,9 @@ public class AnalizadorSintactico {
 	}
 
 	/** 209. RESTO_SHIFT →  <<  SHIFT-EXPRESSION
-		210. RESTO_SHIFT →  >> SHIFT-EXPRESSION
-		211. RESTO_SHIFT → lambda
-	*/
+	 * 210. RESTO_SHIFT →  >> SHIFT-EXPRESSION
+	 * 211. RESTO_SHIFT → lambda
+	 * */
 	
 	private void resto_shift() {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.DOS_MENORES)){

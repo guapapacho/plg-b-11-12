@@ -1944,13 +1944,12 @@ public class AnalizadorSintactico {
 		}
 	}
 	
-	
 	/**
 	 * 152. POSTFIX-EXPRESSION → typeid ( EXPRESSION ) RESTO_POSTFIX_EXP
-	 * 153. POSTFIX-EXPRESSION → TIPO POSTFIX-2 RESTO_POSTFIX_EXP
+	 * 153. POSTFIX-EXPRESSION → ID POSTFIX-2 RESTO_POSTFIX_EXP
 	 * 154. POSTFIX-EXPRESSION → PRIMARY-EXPRESSION RESTO_POSTFIX_EXP
 	 *
-	 * 168. POSTFIX-EXPRESSION → TIPO_SIMPLE ( POSTFIX-2
+	 * 168. POSTFIX-EXPRESSION → TIPO_SIMPLE POSTFIX-4 POSTFIX-2 RESTO_POSTFIX_EXP
 	 * 170. POSTFIX-EXPRESSION →  ~ POSTFIX-EXPRESSION
 	 */
 	private void postfix_expression() {
@@ -2083,6 +2082,20 @@ public class AnalizadorSintactico {
 			}
 		} else {
 			unqualified_id();
+		}
+	}
+	
+	
+	/**
+	 * 171. POSTFIX4 → (
+	 * 172. POSTFIX4 → lambda
+	 */
+	private void postfix4() {
+		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+			parse.add(171);
+			nextToken();
+		} else {
+			parse.add(172);
 		}
 	}
 	

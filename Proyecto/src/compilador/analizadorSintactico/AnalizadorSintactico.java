@@ -191,6 +191,7 @@ public class AnalizadorSintactico {
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el identificador");
 			}
 		} else {
+			parse.add(106);
 			cosas();
 		}
 	}
@@ -579,9 +580,8 @@ public class AnalizadorSintactico {
 			} else {
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "");
 			}
-		} else {
-			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Fin de fichero inesperado");
-		}
+		} 
+		
 	}
 	
 	
@@ -601,7 +601,7 @@ public class AnalizadorSintactico {
 		}
 	}
 	
-	/**	102. RESTO_ListaNombres → , ID LISTANOMBRES
+	/**	102. RESTO_ListaNombres → , ID RESTO_ListaNombres
 		103. RESTO_ListaNombres → lambda
 	*/
 	private void resto_ln() {
@@ -610,7 +610,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				id();
-				listaNombres();
+				resto_ln();
 			}
 			else{
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta identificador de lista");
@@ -1223,7 +1223,6 @@ public class AnalizadorSintactico {
 	private void cuerpo_st() {
 		if(tipo()) {
 			parse.add(62);
-			nextToken();
 			if (token.esIgual(TipoToken.IDENTIFICADOR)) {
 				tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 				nextToken();

@@ -716,7 +716,7 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(125);
-//			nextToken();
+			nextToken();
 			return true;
 		}
 	}
@@ -949,24 +949,23 @@ public class AnalizadorSintactico {
 	}
 
 	/**
-	 * 42. INSTRUCCION → ID INSTRUCCION2  <-- SE PUEDE QUITAR!!!!
+	 * 42. INSTRUCCION → ID INSTRUCCION2
 	 * 43. INSTRUCCION → struct RESTO_ST
 	 * 44. INSTRUCCION → cin INS_LECT
 	 * 45. INSTRUCCION → cout INS_ESC
 	 * 46. INSTRUCCION → const INS_DEC
 	 * 47. INSTRUCCION → TIPO INS_DEC2
 	 * 48. INSTRUCCION → ;
-	 * 133.INSTRUCCION → EXPRESSION
 	 */
 	
 	private boolean instruccion() {
-/*		if(token.esIgual(TipoToken.IDENTIFICADOR)) { 
+		if(token.esIgual(TipoToken.IDENTIFICADOR)) { 
 			parse.add(42);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 			nextToken();
 			return instruccion2();
 			}
-		else */if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /*struct*/ )){ //INS_REG
+		else if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /*struct*/ )){ //INS_REG
 			parse.add(43);
 			nextToken();
 			//ins_reg();
@@ -995,15 +994,11 @@ public class AnalizadorSintactico {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) { //INS_VACIA
 			parse.add(48);
 			nextToken();
-		} else{
-			expression();
-		}	
-			
-			/*else {
+		} else {
 			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
 			"Falta separador \";\"");
 			return false;
-		}*/
+		}
 		
 		return true;
 	}
@@ -1569,6 +1564,7 @@ public class AnalizadorSintactico {
 	 * 90. CUERPO2 --> if RESTO_IF 
 	 * 91. CUERPO2 --> switch RESTO_CASE
 	 * 92. CUERPO2 --> { CUERPO 
+	 * 93. CUERPO2 --> INSTRUCCION
 	 */
 	private void cuerpo2() {
 		
@@ -1606,7 +1602,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			parse.add(92);
 			cuerpo();
-		}/** Y esta regla??? */
+		}
 		else {
 			parse.add(93);
 			instruccion();
@@ -2741,15 +2737,23 @@ public class AnalizadorSintactico {
 	 */
 	private boolean primeroDeExpression() {
 		return (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)
-			 || unary_operator()
+			 ||	token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)
+			 ||	token.esIgual(TipoToken.OP_LOGICO,OpLogico.BIT_AND)
+			 ||	token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.SUMA)
+			 ||	token.esIgual(TipoToken.OP_LOGICO,OpLogico.NOT)
+			 ||	token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)
+			 ||	token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.RESTA)
 			 || token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)	
 			 || token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.DECREMENTO)
 			 || token.esIgual(TipoToken.PAL_RESERVADA, 50) //sizeof
 			 || token.esIgual(TipoToken.PAL_RESERVADA, 1) //alignof		
 			 || token.esIgual(TipoToken.PAL_RESERVADA, 39) //noexcept
 			 || token.esIgual(TipoToken.PAL_RESERVADA, 63) //typeid
-			 || tipo()
-			 || primary_expression()); 
+			 || (token.esIgual(TipoToken.PAL_RESERVADA) && 
+						gestorTS.esTipoSimple((Integer)token.getAtributo()))
+			 || token.esIgual(TipoToken.PAL_RESERVADA, 57) //this
+			 || literal()
+			 || token.esIgual(TipoToken.IDENTIFICADOR));
 	}
 
 

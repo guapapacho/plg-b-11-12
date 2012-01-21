@@ -988,7 +988,6 @@ public class AnalizadorSintactico {
 		}
 		else if (tipo()) { //INS_DEC2
 			parse.add(47); 
-			nextToken();
 			ins_dec2();
 		} 
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) { //INS_VACIA
@@ -1098,12 +1097,20 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * 53. MAS_COSAS → INICIALIZACION  DECLARACIONES
+	 * TODO
+	 * no se si esta bien 53. MAS_COSAS → = INICIALIZACION  DECLARACIONES
+	 * 53. MAS_COSAS --> = EXPRESSION ;
 	 */
 	private void mas_cosas() {
 		parse.add(53);
-		inicializacion();
-		declaraciones();
+//		inicializacion();
+//		declaraciones();
+		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
+			nextToken();
+			expression();	
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta el \"=\"");
+		}
 	}
 	
 	

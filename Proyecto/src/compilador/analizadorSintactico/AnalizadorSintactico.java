@@ -477,6 +477,17 @@ public class AnalizadorSintactico {
 		}
 		return false;
 	}
+	
+	private boolean tipo_simple() {
+		if(token.esIgual(TipoToken.PAL_RESERVADA) && 
+				gestorTS.esTipoSimple((Integer)token.getAtributo())){
+			parse.add(7);
+			tipo = new Tipo(EnumTipo.DEFINIDO, (gestorTS.getTipoSimple((Integer)token.getAtributo())));
+			nextToken();
+			return true;
+		}
+		return false;
+	}
 
 
 	/**	
@@ -1932,9 +1943,21 @@ public class AnalizadorSintactico {
 			parse.add(150);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 			nextToken();
-		} 
-		// decltype
-		else {
+		} else if (token.esIgual(TipoToken.PAL_RESERVADA, 16)) {
+			parse.add(151);
+			nextToken();
+			if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+				nextToken();
+				expression();
+				if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
+					nextToken();
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \")\"");
+				}
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"(\"");
+			}
+		} else {
 			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta identificador o decltype");
 		}
 	}
@@ -1945,7 +1968,7 @@ public class AnalizadorSintactico {
 	 * 153. POSTFIX-EXPRESSION → TIPO POSTFIX-2 RESTO_POSTFIX_EXP
 	 * 154. POSTFIX-EXPRESSION → PRIMARY-EXPRESSION RESTO_POSTFIX_EXP
 	 *
-	 * 168. POSTFIX-EXPRESSION → SIMPLE-TYPE-SPECIFIER ( POSTFIX-2
+	 * 168. POSTFIX-EXPRESSION → TIPO_SIMPLE ( POSTFIX-2
 	 * 170. POSTFIX-EXPRESSION →  ~ POSTFIX-EXPRESSION
 	 */
 	private void postfix_expression() {
@@ -1972,14 +1995,22 @@ public class AnalizadorSintactico {
 			parse.add(170);
 			nextToken();
 			postfix_expression();
-		}
-		//168
-		else {
+		} else if(tipo_simple()) {
+			parse.add(168);
+			nextToken();
+			if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+				nextToken();
+				postfix2();
+			} else {
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"(\"");
+			}
+		} else {
 			primary_expression();
 			resto_postfix_exp();
 		}
 	}
 	
+
 	
 	/**
 	 * 155. RESTO_POSTFIX_EXP → [ EXPRESSION ]
@@ -2052,17 +2083,21 @@ public class AnalizadorSintactico {
 		if (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {	
 			parse.add(166);
 			nextToken();
-			//decltype
-			if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+			if (token.esIgual(TipoToken.PAL_RESERVADA, 16)) {
 				nextToken();
-				expression();
-				if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
+				if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 					nextToken();
+					expression();
+					if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
+						nextToken();
+					} else {
+						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \")\"");
+					}
 				} else {
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \")\"");
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"(\"");
 				}
 			} else {
-				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"(\"");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta la palabra \"decltype\"");
 			}
 		} else {
 			unqualified_id();

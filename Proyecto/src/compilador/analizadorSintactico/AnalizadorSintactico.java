@@ -1880,7 +1880,7 @@ public class AnalizadorSintactico {
 	 * 146. PRIMARY-EXPRESSION → UNQUALIFIED-ID
 	 * 147. PRIMARY-EXPRESSION → ( EXPRESSION )
 	 */
-	private void primary_expression() {
+	private boolean primary_expression() {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(147);
 			nextToken();
@@ -1889,6 +1889,7 @@ public class AnalizadorSintactico {
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \")\"");
+				return false;
 			}
 		} else if (token.esIgual(TipoToken.PAL_RESERVADA, 57)) {
 			parse.add(145);
@@ -1900,6 +1901,7 @@ public class AnalizadorSintactico {
 			parse.add(146);
 			unqualified_id();
 		}
+		return true;
 	}
 	
 	
@@ -2379,10 +2381,7 @@ public class AnalizadorSintactico {
 	}
 
 	/**
-	 * 247. EXPRESSION → ASSIGNMENT-EXPRESSION RESTO_EXP
-	 * 
-	 * Esta regla no estoy segura de si deberia hacerse. En el ISO no aparece
-	 * 248. EXPRESSION → lambda
+	 * 246. EXPRESSION → ASSIGNMENT-EXPRESSION RESTO_EXP
 	 */
 	private void expression() {
 		parse.add(247);
@@ -2390,14 +2389,10 @@ public class AnalizadorSintactico {
 		resto_exp();
 	}
 	
-	private void expressionOpt() {
-		// TODO Auto-generated method stub
-		
-	}
 	
 	/**
-	 * 249. RESTO_EXP → , EXPRESSION
-	 * 250. RESTO_EXP→ lambda
+	 * 247. RESTO_EXP → , EXPRESSION
+	 * 248. RESTO_EXP→ lambda
 	 */
 	private void resto_exp() {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
@@ -2409,6 +2404,46 @@ public class AnalizadorSintactico {
 			parse.add(250);
 		}
 	}
+	
+	/**
+	 * 249. EXPRESSIONOPT → EXPRESSION 
+	 * 250. EXPRESSIONOPT → lambda
+	 */
+	private void expressionOpt() {
+		if(primeroDeExpression()) {
+			parse.add(251);
+			expression();
+		}
+		else
+		{
+			parse.add(252);
+		}
+			
+		
+	}
+	
+	/**
+	 * Metodo que comprueba si el token actual corresponde a un terminal de expression
+	 */
+	private boolean primeroDeExpression() {
+		return (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)
+			 || token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.MULTIPLICACION)
+			 || token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.SUMA)
+			 || token.esIgual(TipoToken.OP_LOGICO, OpLogico.BIT_AND)
+			 || token.esIgual(TipoToken.OP_LOGICO, OpLogico.NOT)
+			 || token.esIgual(TipoToken.OP_LOGICO, OpLogico.SOBRERO)
+			 || token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)	
+			 || token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.DECREMENTO)
+			 || token.esIgual(TipoToken.PAL_RESERVADA, 50) //sizeof
+			 || token.esIgual(TipoToken.PAL_RESERVADA, 1) //alignof		
+			 || token.esIgual(TipoToken.PAL_RESERVADA, 39) //noexcept
+			 || token.esIgual(TipoToken.PAL_RESERVADA, 63) //typeid
+			 || tipo()
+			 || primary_expression()); 
+	}
+
+
+
 	
 //	/**
 //	 * Main de pruebas.

@@ -1887,7 +1887,6 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(211);
-			//nextToken();
 		}
 	}
 	
@@ -1916,7 +1915,6 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(215);
-			//nextToken();
 		}
 		
 	}
@@ -1983,7 +1981,6 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(223);
-			//nextToken();
 		}		
 	}
 	
@@ -2005,7 +2002,6 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(226);
-			//nextToken();
 		}		
 	}
 	
@@ -2027,7 +2023,6 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(229);
-			//nextToken();
 		}
 	}
 	
@@ -2048,7 +2043,6 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(232);
-			//nextToken();
 		}
 	}
 	
@@ -2070,20 +2064,20 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(235);
-			//nextToken();
 		}
 	}
 	
 	//Este metodo nunca se usa /////
 	//deberia llamarse desde assignment_expression(), pero no lo hace ya que se ha factorizado por la izquierda
 	//ya que tanto conditional_expresion como assignment_expression tienen la regla log_or_expression
-	/**	236. CONDITIONAL_EXPRESION → LOGICAL_OR_EXPRESSION */
+	/**	236. CONDITIONAL_EXPRESION → LOGICAL_OR_EXPRESSION RESTO_CONDITIONAL*/
 	private void conditional_expression(){///////////////////////////////////////
 		parse.add(236);
 		log_or_expression(); 
+		resto_conditional();
 	}
 	
-	/**	237. RESTO_CONDITIONAL
+	/**	
 		238. RESTO_CONDITIONAL →  ? EXPRESSION  :  ASSIGNMENT_EXPRESSION
 		239. RESTO_CONDITIONAL → lambda
 	 */
@@ -2102,7 +2096,6 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(239);
-			//nextToken(); lees el siguiente token solo cuando reconoces un terminal, lambda no lo consideramos como terminal
 		}		
 	}
 	

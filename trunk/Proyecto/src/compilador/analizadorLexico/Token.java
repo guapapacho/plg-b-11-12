@@ -72,15 +72,22 @@ public class Token {
      */
     private Object atributo;
     
+    /**
+     * Atributo de la clase que guarda si lo hay el comentario que precede 
+     * al token
+     */
+    private String comentario;
+    
     
     /**
      * Constructora de la clase
      * @param tipo
      * @param atributo
      */
-	public Token(TipoToken tipo, Object atributo) {
+	public Token(TipoToken tipo, Object atributo, String comentario) {
 		this.tipo = tipo;
 		this.atributo = atributo;
+		this.comentario = comentario;
 	}
 	
     /**
@@ -97,6 +104,14 @@ public class Token {
 	 */
 	public Object getAtributo() {
 		return atributo;
+	}
+	
+	/**
+	 * Getter token
+	 * @return el comentario del token
+	 */
+	public String getComentario() {
+		return comentario;
 	}
 	
 	public boolean esIgual(TipoToken t, Object ob) {

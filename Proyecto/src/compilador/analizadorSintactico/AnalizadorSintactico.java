@@ -1,6 +1,7 @@
 package compilador.analizadorSintactico;
 
  
+import java.io.StringBufferInputStream;
 import java.util.Vector;
 
 import compilador.analizadorLexico.*;
@@ -2566,7 +2567,7 @@ public class AnalizadorSintactico {
 		
 	/**	221. AND-EXPRESSION → EQUALITY-EXPRESSION RESTO_AND*/
 	private void and_expression(){
-		parse.add(208);
+		parse.add(221);
 		equality_expression(); //Debe leer el siguiente token
 		resto_and();
 	}
@@ -2811,7 +2812,7 @@ public class AnalizadorSintactico {
 //		AnalizadorSintactico s = new AnalizadorSintactico(a);
 //		for (int i : s.getParse()) 
 //			System.out.print(i+" ");
-//		
+		
 //	}
 
 

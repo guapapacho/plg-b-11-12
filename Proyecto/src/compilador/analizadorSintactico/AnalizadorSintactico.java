@@ -2532,6 +2532,7 @@ public class AnalizadorSintactico {
 	
 	/**	219. RESTO-EQUALITY → igualdad EQUALITY-EXPRESSION
 	 * 	220. RESTO-EQUALITY → distinto EQUALITY-EXPRESSION
+	 *  169 .RESTO-EQUALITY → lambda
 	 */
 	
 	private void resto_equality() {
@@ -2546,7 +2547,7 @@ public class AnalizadorSintactico {
 			equality_expression();
 		}
 		else {
-			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba \"=\" o \"!=\" ");
+			parse.add(169);
 		}
 		
 	}

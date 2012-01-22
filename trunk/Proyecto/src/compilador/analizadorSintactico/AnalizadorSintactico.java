@@ -1912,6 +1912,7 @@ public class AnalizadorSintactico {
 	/**
 	 * 148. UNQUALIFIED-ID → id
 	 * 149. UNQUALIFIED-ID →  ~ RESTO_UNQ
+	 * 258. UNQUALIFIED-ID →  lambda
 	 */
 	private void unqualified_id() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
@@ -1922,7 +1923,7 @@ public class AnalizadorSintactico {
 			parse.add(149);
 			resto_unq();
 		} else {
-			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta identificador u op_logico \"~\"");
+			parse.add(258);
 		}
 	}
 	

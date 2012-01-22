@@ -1956,9 +1956,8 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 152. POSTFIX-EXPRESSION → typeid ( EXPRESSION ) RESTO_POSTFIX_EXP
-	 * 153. POSTFIX-EXPRESSION → ID POSTFIX-2 RESTO_POSTFIX_EXP
+	 * 153. POSTFIX-EXPRESSION → ID RESTO_PE RESTO_POSTFIX_EXP
 	 * 154. POSTFIX-EXPRESSION → PRIMARY-EXPRESSION RESTO_POSTFIX_EXP
-	 *
 	 * 168. POSTFIX-EXPRESSION → TIPO_SIMPLE POSTFIX-4 POSTFIX-2 RESTO_POSTFIX_EXP
 	 * 170. POSTFIX-EXPRESSION →  ~ POSTFIX-EXPRESSION
 	 */
@@ -1978,9 +1977,10 @@ public class AnalizadorSintactico {
 			} else {
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"(\"");
 			}
-		} else if (tipo()) {
+		} else if (token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(153);
-			postfix2();
+			nextToken();
+			resto_pe();
 			resto_postfix_exp();
 		} else if  (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {
 			parse.add(170);
@@ -1998,7 +1998,19 @@ public class AnalizadorSintactico {
 		}
 	}
 	
-
+	/**
+	 * 164. RESTO_PE → ( POSTFIX-3
+	 * 165. RESTO_PE → lambda
+	 */
+	private void resto_pe() {
+		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+			parse.add(164);
+			nextToken();
+			postfix3();
+		} else {
+			parse.add(165);
+		}	
+	}
 	
 	/**
 	 * 155. RESTO_POSTFIX_EXP → [ EXPRESSION ]
@@ -2327,11 +2339,11 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * 139. RESTO_CAST → TIPO ) CAST_EXPRESSION
+	 * 139. RESTO_CAST → TIPO_SIMPLE ) CAST_EXPRESSION
 	 * 140. RESTO_CAST → EXPRESSION )
 	 */
 	private void resto_cast(){
-		if(tipo()){
+		if(tipo_simple()){
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
 				parse.add(139);

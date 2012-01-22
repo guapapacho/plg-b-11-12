@@ -1094,9 +1094,10 @@ public class AnalizadorSintactico {
 		}
 	}
 	/**
-	 * 52. INS_DEC2 → ID MAS_COSAS
+	 * 52. INS_DEC2 → PUNT ID MAS_COSAS
 	 */
 	private void ins_dec2() {
+		punt();
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(52);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());

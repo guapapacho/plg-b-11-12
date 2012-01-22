@@ -2550,6 +2550,9 @@ public class AnalizadorSintactico {
 			nextToken();
 			equality_expression();
 		}
+		else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba \"=\" o \"!=\" ");
+		}
 		
 	}
 		

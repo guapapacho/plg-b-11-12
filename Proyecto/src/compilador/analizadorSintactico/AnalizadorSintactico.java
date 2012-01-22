@@ -1027,7 +1027,7 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 				nextToken();
-				if (token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.IGUALDAD)) {
+				if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)) {
 					nextToken();
 					if (esLiteral()) {
 						nextToken();

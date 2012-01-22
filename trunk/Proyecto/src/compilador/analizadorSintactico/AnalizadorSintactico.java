@@ -2314,29 +2314,45 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 194. CAST-EXPRESSION → UNARY-EXPRESSION
-	 * 195. CAST-EXPRESSION → ( TIPO ) CAST-EXPRESSION
+	 * 195. CAST-EXPRESSION → ( RESTO_CAST
 	 */
 	private void cast_expression(){
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
+			parse.add(195);
 			nextToken();
-			if(tipo()){
-				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
-					nextToken();
-					parse.add(195);
-					cast_expression();
-				}else{
-					// error
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba `)` ");
-				}
-			}else{
-				// error
-				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba un identificador o tipo pre-definido ");
-			}
-		}else {
+			resto_cast();
+		} else {
 			parse.add(194);
 			unary_expression();
 		}
 	}
+	
+	/**
+	 * 139. RESTO_CAST → TIPO ) CAST_EXPRESSION
+	 * 140. RESTO_CAST → EXPRESSION )
+	 */
+	private void resto_cast(){
+		if(tipo()){
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+				nextToken();
+				parse.add(139);
+				cast_expression();
+			}else{
+				// error
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba '(' ");
+			}
+		}else{
+			parse.add(140);
+			expression();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+				nextToken();
+			} else{
+				// error
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba ')' ");
+			}
+		}
+	}
+	
 	
 	/**
 	 * 196. PM-EXPRESSION → CAST-EXPRESSION

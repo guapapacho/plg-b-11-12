@@ -1,7 +1,6 @@
 package compilador.analizadorSintactico;
 
  
-import java.io.StringBufferInputStream;
 import java.util.Vector;
 
 import compilador.analizadorLexico.*;
@@ -28,6 +27,8 @@ public class AnalizadorSintactico {
 	 */
 	private Vector<Integer> parse;
 	
+	private Vector<Token> ventana;
+	
 	private Tipo tipo;
 	private EntradaTS entradaTS;
 	
@@ -35,6 +36,7 @@ public class AnalizadorSintactico {
 		this.lexico = lexico;
 		parse = new Vector<Integer>();
 		tokens = new Vector<Token>();
+		ventana = new Vector<Token>();
 		nextToken();
 		gestorTS = GestorTablasSimbolos.getGestorTS();
 		gestorErr = GestorErrores.getGestorErrores();
@@ -44,8 +46,13 @@ public class AnalizadorSintactico {
 	}
 	
 	public void nextToken() {
-		token = lexico.scan();
-		tokens.add(token);
+		if(ventana.size() > 0) {
+			// recupera el primer elemento y lo borra de la cola.
+			token = ventana.remove(0);
+		} else {
+			token = lexico.scan();
+			tokens.add(token);
+		}
 	}
 	
 	private void idConst() {
@@ -904,9 +911,6 @@ public class AnalizadorSintactico {
 		}
 	}
 	
-	
-	
-
 	/**
 	 * 39. INICIALIZACION → OP_ASIGNACION EXPRESSION
 	 * 40. INICIALIZACION → [NUM_ENTERO] DIMENSION INIC_DIM
@@ -968,7 +972,8 @@ public class AnalizadorSintactico {
 			nextToken();
 			return instruccion2();
 			}
-		else */if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /*struct*/ )){ //INS_REG
+		else */
+		if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /*struct*/ )){ //INS_REG
 			parse.add(43);
 			nextToken();
 			//ins_reg();
@@ -990,8 +995,23 @@ public class AnalizadorSintactico {
 			ins_dec();
 		}
 		else if (tipo()) { //INS_DEC2
-			parse.add(47); 
-			ins_dec2();
+			
+			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				parse.add(47); 
+				ins_dec2();
+			} else {
+				ventana.add(tokens.lastElement()); // el ultimo token
+				token = tokens.get(tokens.size()-2); // el penultimo token (tipo (id))
+				parse.add(133); // creo que deberia añadir otra regla
+				expression();
+				if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
+					nextToken();
+				}else{
+					//error
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+							"Falta separador \";\"");
+				}
+			}
 		} 
 		else if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) { //INS_VACIA
 			parse.add(48);

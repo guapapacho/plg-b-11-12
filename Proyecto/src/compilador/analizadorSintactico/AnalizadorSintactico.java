@@ -2759,7 +2759,7 @@ public class AnalizadorSintactico {
 			 || (token.esIgual(TipoToken.PAL_RESERVADA) && 
 						gestorTS.esTipoSimple((Integer)token.getAtributo()))
 			 || token.esIgual(TipoToken.PAL_RESERVADA, 57) //this
-			 || literal()
+			 || esLiteral()
 			 || token.esIgual(TipoToken.IDENTIFICADOR));
 	}
 

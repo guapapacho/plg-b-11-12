@@ -136,8 +136,12 @@ public class AnalizadorSintactico {
 	
 	public String getStringParse() {
 		String string = "";
-		for(Integer regla : parse) 
-			string += regla + " ";
+		int i = 0;
+		while(i < parse.size()) {
+			for(int j=0; j<24 && i<parse.size(); j++, i++) 
+				string += parse.get(i) + " ";
+			string += "\n";
+		}
 		return string+"\n";
 	}
 	

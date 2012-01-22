@@ -952,7 +952,7 @@ public class AnalizadorSintactico {
 	 * 46. INSTRUCCION → const INS_DEC
 	 * 47. INSTRUCCION → TIPO INS_DEC2
 	 * 48. INSTRUCCION → ;
-	 * 133.INSTRUCCION → EXPRESSION
+	 * 133.INSTRUCCION → EXPRESSION ;
 	 */
 	
 	private boolean instruccion() {
@@ -993,6 +993,13 @@ public class AnalizadorSintactico {
 		} else{
 			parse.add(133);
 			expression();
+			if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
+				nextToken();
+			}else{
+				//error
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
+						"Falta separador \";\"");
+			}
 		}
 		/*
 		
@@ -2187,6 +2194,8 @@ public class AnalizadorSintactico {
 	 * 182. UNARY_EXPRESSION → sizeof RESTO_UNARY
 	 * 183. UNARY_EXPRESSION → alignof (type-id)
 	 * 184. UNARY_EXPRESSION → noexcept NOEXCEPT_EXPRESSION
+	 * 142. UNARY_EXPRESSION → new TIPO ( RESTO_NEW
+	 * 143. UNARY_EXPRESSION → delete RESTO_DELETE
 	 * 185. UNARY_EXPRESSION → POSTFIX_EXPRESSION
 	 */
 	private void unary_expression(){
@@ -2237,7 +2246,28 @@ public class AnalizadorSintactico {
 			parse.add(184);
 			nextToken();
 			noexcept_expression();
-		} else{
+		} else if(token.esIgual(TipoToken.PAL_RESERVADA)
+				&& (Integer)token.getAtributo()==38 /*new*/ ){
+			parse.add(142);
+			nextToken();
+			if(tipo()){
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
+					nextToken();
+					resto_new();
+				}else{
+					//error
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba `)` ");
+				}
+			}else{
+				//error
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba un identificador o tipo pre-definido ");
+			}
+		}else if(token.esIgual(TipoToken.PAL_RESERVADA)
+				&& (Integer)token.getAtributo()==18 /*delete*/ ){
+			parse.add(143);
+			nextToken();
+			resto_delete();
+		}else{
 			parse.add(185);
 			postfix_expression();
 		}
@@ -2305,6 +2335,75 @@ public class AnalizadorSintactico {
 		}
 	}
 
+	/**
+	 * 251.RESTO_NEW → )
+	 * 252.RESTO_NEW → EXPRESSION_LIST )
+	 */
+	private void resto_new(){
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+			parse.add(251);
+			nextToken();
+		}else{
+			parse.add(252);
+			expression_list();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+				nextToken();
+			}else{
+				// error
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba ')' ");
+			}
+				
+		}
+		
+	}
+	
+	/**
+	 * 253. EXPRESSION_LIST → EXPRESSION RESTO_LISTA_EXP
+	 */
+	private void expression_list(){
+		parse.add(253);
+		expression();
+		resto_lista_exp();
+	}
+	
+	/**
+	 * 254. RESTO_LISTA_EXP → , EXPRESSION_LIST
+	 * 255. RESTO_LISTA_EXP → lambda
+	 */
+	private void resto_lista_exp(){
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){
+			parse.add(254);
+			nextToken();
+			expression_list();
+		}else{
+			parse.add(255);
+		}
+	}
+	
+	/**
+	 * 256. RESTO_DELETE → ID
+	 * 257. RESTO_DELETE → [ ] ID 
+	 */
+	private void resto_delete(){
+		if (token.esIgual(TipoToken.IDENTIFICADOR)) {
+			parse.add(256);
+			nextToken();
+		}else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)){
+			parse.add(257);
+			nextToken();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_CORCHETE)){
+				nextToken();
+			}else{
+				//error
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba ']' ");
+			}			
+		}else{
+			//error
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba '[' ");		
+		}
+	}
+	
+	
 	/**
 	 * 193. NOEXCEPT-EXPRESSION → ( EXPRESSION ) 
 	 */

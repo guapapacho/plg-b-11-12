@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringBufferInputStream;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 import javax.swing.JButton;
@@ -39,7 +40,6 @@ public class Compilador extends JFrame {
 	/**
 	 * @param args
 	 */
-	
 	private JPanel panelPrincipal_1;
 	private JMenuBar barraMenu=null;
 	private JMenu ficheroMenu=null;
@@ -213,7 +213,8 @@ public class Compilador extends JFrame {
 		sp1.setVerticalScrollBarPolicy(sp1.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp1.setHorizontalScrollBarPolicy(sp1.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		sp2=new JScrollPane();
-		sp2.setBounds(525, 68, 700, 700);
+		/** CON EL ULTIMO PARAMETRO DE ESTA FUN DISMINUYES EL TAMAÑO DEL PANEL DERECHO */
+		sp2.setBounds(525, 68, 400, 600);
 		sp2.setVerticalScrollBarPolicy(sp2.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp2.setHorizontalScrollBarPolicy(sp2.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		

@@ -503,6 +503,7 @@ public class AnalizadorSintactico {
 	 * 10. COSAS → void ID ( LISTA_PARAM ) COSAS3 COSAS
 	 * 11. COSAS → enum ID { LISTANOMBRES } ; COSAS
 	 * 12. COSAS → struct RESTO_ST COSAS
+	 * 13. COSAS → lambda
 	 */
 	private void cosas() {
 		if(!token.esIgual(TipoToken.EOF)) {
@@ -586,7 +587,8 @@ public class AnalizadorSintactico {
 				resto_st();
 				cosas();
 			} else {
-				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "");
+				parse.add(13);
+				//gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "");
 			}
 		} 
 		
@@ -706,14 +708,14 @@ public class AnalizadorSintactico {
 	private void paso() {
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.BIT_AND)) {
 			parse.add(123);
-			Object valor = token.getAtributo(); 
-			System.out.println("Paso parametro: " + valor);
+		/*	Object valor = token.getAtributo(); 
+			System.out.println("Paso parametro: " + valor); */
 			nextToken();
 		}
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)) {
 			parse.add(124);
-			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-			System.out.println("Paso parametro: " + valor);
+		/*	Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+			System.out.println("Paso parametro: " + valor); */
 			nextToken();
 		}
 		else{
@@ -830,7 +832,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			if(!literal()){
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-						"Inicializacion de array incorrecta, se esperaba token literal");
+						"Falta token literal");
 			}
 			else{
 				inicDim4();
@@ -862,7 +864,7 @@ public class AnalizadorSintactico {
 	 * 36. INIC_CONST → lambda
 	 */
 	private void inic_const() {
-		System.out.println("declaracion constante " + entradaTS.getLexema());
+//		System.out.println("declaracion constante " + entradaTS.getLexema());
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 			parse.add(35);
 			nextToken();
@@ -871,7 +873,7 @@ public class AnalizadorSintactico {
 				inic_const();
 			} else {
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-						"Declaracion de constantes incorrecta, se espera un identificador");
+						"Falta un identificador");
 			}	
 		}
 		else { ///Si es lambda
@@ -885,7 +887,7 @@ public class AnalizadorSintactico {
 	 * 38. DECLARACIONES → lambda
 	 */
 	private void declaraciones() {
-		System.out.println("declaracion variable " + entradaTS.getLexema());
+//		System.out.println("declaracion variable " + entradaTS.getLexema());
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 			parse.add(37);
 			nextToken();
@@ -906,22 +908,22 @@ public class AnalizadorSintactico {
 	
 
 	/**
-	 * 39. INICIALIZACION → = LITERAL
+	 * 39. INICIALIZACION → OP_ASIGNACION EXPRESSION
 	 * 40. INICIALIZACION → [NUM_ENTERO] DIMENSION INIC_DIM
 	 * 41. INICIALIZACION → lambda
 	 */
 	private void inicializacion() {
-		//39. INICIALIZACION → = LITERAL
-		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
+		if(token.esIgual(TipoToken.OP_ASIGNACION)) {
 			parse.add(39);
 			nextToken();
-			if(esLiteral()){
+			expression();
+			/*if(esLiteral()){
 				nextToken();
 			}
 			else{
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
 						"Inicialización incorrecta, se espera un literal");
-			}
+			}*/
 			
 		}
 		//40. INICIALIZACION → [NUM_ENTERO] DIMENSION INIC_DIM

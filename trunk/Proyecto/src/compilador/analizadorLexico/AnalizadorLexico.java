@@ -808,7 +808,7 @@ public class AnalizadorLexico {
 					transita(107);
 				} else if(preanalisis=='/'){	// // // empieza un comentario de una linea
 					transita(110);
-				} else if(esDelim()){			// /
+				} else if(esDelim() || digito() || letra()){			// /
 					asterisco = true;
 					return new Token(TipoToken.OP_ARITMETICO,OpAritmetico.DIVISION, comentario);
 				} else {

@@ -2480,7 +2480,7 @@ public class AnalizadorSintactico {
 	
 	private void relational_expression(){
 		parse.add(208);
-		shift_expression(); //Debe leer el siguiente token
+		shift_expression(); 
 		resto_relational();
 	}
 

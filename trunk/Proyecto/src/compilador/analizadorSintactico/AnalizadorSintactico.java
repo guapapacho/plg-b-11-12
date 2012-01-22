@@ -991,7 +991,7 @@ public class AnalizadorSintactico {
 			parse.add(47); 
 			ins_dec2();
 		} 
-		if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) { //INS_VACIA
+		else if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) { //INS_VACIA
 			parse.add(48);
 			nextToken();
 		} else{
@@ -1016,44 +1016,6 @@ public class AnalizadorSintactico {
 		return true;
 	}
 	
-	
-	/** 
-	 * 49. INSTRUCCION2 → ( LISTA_ATB ) ; 
-	 * 50. INSTRUCCION2 → OP_ASIGNACION EXPRESION
-	 */
-	private boolean instruccion2(){
-		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) { //INS_FUNCION
-			parse.add(49);
-			nextToken();
-			lista_atb();
-			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
-				System.out.println("llamada a funcion " + entradaTS.getLexema());
-				nextToken();
-				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
-					nextToken();
-					return true;
-				}
-				else{
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
-					"Falta separador \";\"");
-				}
-			} else {
-				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
-						"Falta separador \")\"");
-				return false;
-			}
-		} else if (token.esIgual(TipoToken.OP_ASIGNACION)) { //INS_ASIG
-			parse.add(50);
-			nextToken();
-			//llamada a EXPRESION
-		} 
-		else {
-			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
-			"Se espera \"(\" o un operador de asignacion");
-			return false;
-		}
-		return true;
-	}
 	
 	/**
 	 * 51. INS_DEC → TIPO ID = LITERAL INIC_CONST ;

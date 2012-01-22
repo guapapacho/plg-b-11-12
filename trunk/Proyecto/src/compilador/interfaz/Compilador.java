@@ -57,6 +57,7 @@ public class Compilador extends JFrame {
 	private FileReader fr=null;
 	private BufferedReader br=null;
 	private InputStream in=null;
+	private java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
 	
 	
 	/**
@@ -71,8 +72,9 @@ public class Compilador extends JFrame {
 	 * Metodo que configura la interfaz de usuario
 	 */
 	public void crearInterfaz() {
-		this.setSize(930, 630);
-		this.setLocation(150, 100);
+		//this.setSize(930, 630);
+		//this.setLocation(150, 100);
+		this.setSize(screenSize.width, screenSize.height);
 		this.setJMenuBar(getBarraMenu());
 		this.setContentPane(getPanelPrincipal());
 		this.setTitle("Traductor C++ - Pascal");
@@ -207,11 +209,11 @@ public class Compilador extends JFrame {
 		l2.setText("Código de salida");
 		l2.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
 		sp1=new JScrollPane();
-		sp1.setBounds(39, 68, 350, 466);
+		sp1.setBounds(39, 68, 350, 700);
 		sp1.setVerticalScrollBarPolicy(sp1.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp1.setHorizontalScrollBarPolicy(sp1.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		sp2=new JScrollPane();
-		sp2.setBounds(525, 68, 800, 466);
+		sp2.setBounds(525, 68, 700, 700);
 		sp2.setVerticalScrollBarPolicy(sp2.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp2.setHorizontalScrollBarPolicy(sp2.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		

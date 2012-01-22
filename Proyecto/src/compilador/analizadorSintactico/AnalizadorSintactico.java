@@ -1040,12 +1040,13 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * 51. INS_DEC → TIPO ID OpAsignacion LITERAL INIC_CONST ;
+	 * 51. INS_DEC → TIPO PUNT ID OpAsignacion LITERAL INIC_CONST ;
 	 */
 	private void ins_dec() {
 		if (tipo()) {
 			parse.add(51);
 			nextToken();
+			punt();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 				nextToken();
@@ -1079,6 +1080,19 @@ public class AnalizadorSintactico {
 		
 	}
 	
+	
+	/**
+	 * 49.PUNT → *
+	 * 50.PUNT → lambda
+	 */
+	private void punt() {
+		if (token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.MULTIPLICACION)) {
+			parse.add(49);
+			nextToken();
+		} else {
+			parse.add(50);
+		}
+	}
 	/**
 	 * 52. INS_DEC2 → ID MAS_COSAS
 	 */

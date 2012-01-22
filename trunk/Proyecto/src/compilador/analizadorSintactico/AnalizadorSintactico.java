@@ -949,23 +949,24 @@ public class AnalizadorSintactico {
 	}
 
 	/**
-	 * 42. INSTRUCCION → ID INSTRUCCION2
+	 * 42. INSTRUCCION → ID INSTRUCCION2 <-- SE PUEDE QUITAR!!
 	 * 43. INSTRUCCION → struct RESTO_ST
 	 * 44. INSTRUCCION → cin INS_LECT
 	 * 45. INSTRUCCION → cout INS_ESC
 	 * 46. INSTRUCCION → const INS_DEC
 	 * 47. INSTRUCCION → TIPO INS_DEC2
 	 * 48. INSTRUCCION → ;
+	 * 133.INSTRUCCION → EXPRESSION
 	 */
 	
 	private boolean instruccion() {
-		if(token.esIgual(TipoToken.IDENTIFICADOR)) { 
+		/*if(token.esIgual(TipoToken.IDENTIFICADOR)) { 
 			parse.add(42);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 			nextToken();
 			return instruccion2();
 			}
-		else if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /*struct*/ )){ //INS_REG
+		else */if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /*struct*/ )){ //INS_REG
 			parse.add(43);
 			nextToken();
 			//ins_reg();
@@ -993,12 +994,18 @@ public class AnalizadorSintactico {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) { //INS_VACIA
 			parse.add(48);
 			nextToken();
-		} else {
+		} else{
+			parse.add(133);
+			expression();
+		}
+		/*
+		
+		else {
 			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
 			"Falta separador \";\"");
 			return false;
 		}
-		
+		*/
 		return true;
 	}
 	

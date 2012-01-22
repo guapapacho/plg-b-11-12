@@ -214,6 +214,7 @@ public class AnalizadorSintactico {
 				parse.add(108);
 				nextToken();
 				if (token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)) {
+					nextToken();
 					lista_clase();
 					cuerpo_clase();
 				} else {
@@ -223,6 +224,7 @@ public class AnalizadorSintactico {
 				parse.add(109);
 				nextToken();
 				if (token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)) {
+					nextToken();
 					lista_clase();
 					cuerpo_clase();
 				} else {
@@ -232,6 +234,7 @@ public class AnalizadorSintactico {
 				parse.add(110);
 				nextToken();
 				if (token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)) {
+					nextToken();
 					lista_clase();
 					cuerpo_clase();
 				} else {
@@ -296,21 +299,21 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * 115.LISTA_CLASE → void RESTO_METODO LISTA_CLASE
+	 * 115.LISTA_CLASE → void RESTO_LINEA LISTA_CLASE
 	 * 116.LISTA_CLASE → TIPO RESTO_LINEA
+	 * 141.LISTA_CLASE → lambda
 	 */
 	private void lista_clase() {
 		if (token.esIgual(TipoToken.PAL_RESERVADA, 69)) {
 			parse.add(115);
 			nextToken();
-			resto_metodo();
+			resto_linea();
 			lista_clase();
 		} else if (tipo()) {
 			parse.add(116);
-			nextToken();
 			resto_linea();
 		} else {
-			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta tipo de retorno (o void)");
+			parse.add(141);
 		}
 	}
 	
@@ -354,7 +357,7 @@ public class AnalizadorSintactico {
 	private void resto_metodo() {
 		parse.add(120);
 		lista_param();
-		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 			nextToken();
 			resto_metodo2();
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
@@ -677,14 +680,10 @@ public class AnalizadorSintactico {
 	private void lista_param() {
 		if(tipo()){
 			parse.add(20);
+			paso();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 				id();
-				if(paso()){
-					restoLista();
-				}
-				else{
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Paso de parametros incorrecto");
-				}
+				restoLista();
 			}
 			else{
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta identificador de lista de parametros");	
@@ -699,25 +698,21 @@ public class AnalizadorSintactico {
 	 *	124.PASO → *
 	 *  125.PASO → lambda
 	 */
-	private boolean paso() {
-		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.AND)) {
+	private void paso() {
+		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.BIT_AND)) {
 			parse.add(123);
 			Object valor = token.getAtributo(); 
 			System.out.println("Paso parametro: " + valor);
 			nextToken();
-			return true;
 		}
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)) {
 			parse.add(124);
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("Paso parametro: " + valor);
 			nextToken();
-			return true;
 		}
 		else{
 			parse.add(125);
-			nextToken();
-			return true;
 		}
 	}
 

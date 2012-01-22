@@ -1897,7 +1897,7 @@ public class AnalizadorSintactico {
 			nextToken();
 		} else if(literal()) {
 			parse.add(144);
-			nextToken();
+			//nextToken();
 		} else {
 			parse.add(146);
 			unqualified_id();
@@ -1986,13 +1986,10 @@ public class AnalizadorSintactico {
 			postfix_expression();
 		} else if(tipo_simple()) {
 			parse.add(168);
-			nextToken();
-			if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
-				nextToken();
-				postfix2();
-			} else {
-				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"(\"");
-			}
+			//nextToken();
+			postfix4();
+			postfix2();
+			resto_postfix_exp();
 		} else {
 			primary_expression();
 			resto_postfix_exp();

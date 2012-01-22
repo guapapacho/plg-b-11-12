@@ -1018,7 +1018,7 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * 51. INS_DEC → TIPO ID = LITERAL INIC_CONST ;
+	 * 51. INS_DEC → TIPO ID OpAsignacion LITERAL INIC_CONST ;
 	 */
 	private void ins_dec() {
 		if (tipo()) {
@@ -1037,21 +1037,21 @@ public class AnalizadorSintactico {
 						} else {
 							//error
 							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
-									"Se esperaba un separador \";\"");
+									"Falta separador \";\"");
 						}
 					} else {
 						//error
 						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
-								"Se esperaba un valor literal");
+								"Falta valor literal");
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
-							"Se esperaba el operador de comparacion \"=\"");
+							"Falta operador \"=\"");
 				}
 			} else {
 				// error
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
-						"Se esperaba un identificador");
+						"Falta identificador");
 			}
 		}
 		

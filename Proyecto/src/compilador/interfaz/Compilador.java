@@ -57,6 +57,16 @@ public class Compilador extends JFrame {
 	private BufferedReader br=null;
 	private InputStream in=null;
 	private java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+	private int puntox1=screenSize.width/32;
+	private int puntoy1=screenSize.height/16;
+	private int puntox2=(int) (screenSize.width / (3.5));
+	private int puntoy2=puntoy1*13;
+	private int puntox3= screenSize.width / 3;
+	private int puntoy3=puntoy1*6;
+	private int puntox4= (int) (screenSize.width /(2.25));
+	private int puntoy4;
+	private int puntox5=(screenSize.width/4)*2;
+	private int puntoy5;
 	
 	
 	/**
@@ -71,9 +81,9 @@ public class Compilador extends JFrame {
 	 * Metodo que configura la interfaz de usuario
 	 */
 	public void crearInterfaz() {
-		this.setSize(1250, 630);
-		this.setLocation(50, 50);
-//		this.setSize(screenSize.width, screenSize.height);
+		//this.setSize(1250, 630);
+		//this.setLocation(50, 50);
+		this.setSize(screenSize.width, screenSize.height);
 		this.setJMenuBar(getBarraMenu());
 		this.setContentPane(getPanelPrincipal());
 		this.setTitle("Traductor C++ - Pascal");
@@ -196,7 +206,7 @@ public class Compilador extends JFrame {
 		panelPrincipal_1=new JPanel();
 		panelPrincipal_1.setLayout(null);
 		l0=new JLabel();
-		l0.setBounds(445, 7, 250, 34);
+		l0.setBounds(puntox2, 7, 250, 34);
 		l0.setFont(new java.awt.Font("Verdana", Font.BOLD, 18));
 		l0.setText("Analizador sintáctico");
 		l1=new JLabel();
@@ -208,12 +218,12 @@ public class Compilador extends JFrame {
 		l2.setText("Código de salida");
 		l2.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
 		sp1=new JScrollPane();
-		sp1.setBounds(39, 68, 450, 470);
+		sp1.setBounds(puntox1, puntoy1, puntox2, puntoy2);
 		sp1.setVerticalScrollBarPolicy(sp1.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp1.setHorizontalScrollBarPolicy(sp1.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		sp2=new JScrollPane();
 		/** CON EL ULTIMO PARAMETRO DE ESTA FUN DISMINUYES EL TAMAÑO DEL PANEL DERECHO */
-		sp2.setBounds(625, 68, 570, 470);
+		sp2.setBounds(puntox4, puntoy1, puntox5, puntoy2);
 		sp2.setVerticalScrollBarPolicy(sp2.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp2.setHorizontalScrollBarPolicy(sp2.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
@@ -246,7 +256,7 @@ public class Compilador extends JFrame {
 	 */
 	public JButton getBotonTokens() {
 		botonTokens=new JButton();
-		botonTokens.setBounds(500, 275, 116, 50);
+		botonTokens.setBounds(puntox3, puntoy3, puntox1*3, 50);
 		botonTokens.setText("Parse");
 		botonTokens.setFont(new java.awt.Font("Verdana", Font.BOLD, 11));
 		botonTokens.revalidate();

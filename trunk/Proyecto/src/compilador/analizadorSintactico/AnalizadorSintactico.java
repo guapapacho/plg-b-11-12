@@ -63,9 +63,8 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
 			nextToken();
 			if(literal()) {
-				@SuppressWarnings("unused")
 				Object valor = token.getAtributo(); // TODO depende del tipo... a ver que se hace con el...
-//				System.out.println("inicializacion constante " + entradaTS.getLexema() + " con " + valor);
+				System.out.println("inicializacion constante " + entradaTS.getLexema() + " con " + valor);
 			} else {
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
 						"Constante mal inicializada");
@@ -88,36 +87,35 @@ public class AnalizadorSintactico {
 	/**
 	 * Metodo que devuelve el LITERAL y lee el siguiente token
 	 */
-	@SuppressWarnings("unused") // para la variable valor
 	private boolean literal() {		
 		//TODO hacer algo con los valores, si hace falta...
-		if(token.esIgual(TipoToken.LIT_CADENA)) {		
+		if(token.esIgual(TipoToken.LIT_CADENA)) {
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-//			System.out.println("LITERAL CADENA: " + valor);
+			System.out.println("LITERAL CADENA: " + valor);
 			nextToken();
 			return true;
 		}
 		else if(token.esIgual(TipoToken.LIT_CARACTER)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-//			System.out.println("LITERAL CARACTER: " + valor);
+			System.out.println("LITERAL CARACTER: " + valor);
 			nextToken();
 			return true;
 		} 
 		else if (token.esIgual(TipoToken.NUM_ENTERO)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-//			System.out.println("NUMERO ENTERO: " + valor);
+			System.out.println("NUMERO ENTERO: " + valor);
 			nextToken();
 			return true;
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-//			System.out.println("NUMERO REAL: " + valor);
+			System.out.println("NUMERO REAL: " + valor);
 			nextToken();
 			return true;
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL_EXPO)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-//			System.out.println("NUMERO REAL EXPO: " + valor);
+			System.out.println("NUMERO REAL EXPO: " + valor);
 			nextToken();
 			return true;
 		}
@@ -125,7 +123,7 @@ public class AnalizadorSintactico {
 				( (Integer)token.getAtributo() == 27 /*false*/ || 
 				  (Integer)token.getAtributo() == 60 /*true*/)){
 			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-//			System.out.println("BOOLEANO: " + valor);
+			System.out.println("BOOLEANO: " + valor);
 			nextToken();
 			return true;
 		}
@@ -147,8 +145,8 @@ public class AnalizadorSintactico {
 		String string = "";
 		int i = 0;
 		while(i < parse.size()) {
-			for(int j=0; j<20 && i<parse.size(); j++, i++) 
-				string += parse.get(i) + " ";
+			for(int j=0; j<17 && i<parse.size(); j++, i++) 
+				string += parse.get(i) + ", ";
 			string += "\n";
 		}
 		return string+"\n";
@@ -173,8 +171,6 @@ public class AnalizadorSintactico {
 		parse.add(1);
 		libreria();
 		resto_programa();
-		if(!token.esIgual(TipoToken.EOF))
-			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"");
 	}
 	
 	/**
@@ -443,8 +439,9 @@ public class AnalizadorSintactico {
 			} else {
 				parse.add(3);
 			}
+		} else {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Fin de fichero inesperado");
 		}
-		
 	}
 
 	/**
@@ -693,7 +690,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 			parse.add(18);
 			nextToken();
-//			System.out.println("cabecera funcion " + entradaTS.getLexema());
+			System.out.println("cabecera funcion " + entradaTS.getLexema());
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(19);
 			nextToken();
@@ -705,7 +702,7 @@ public class AnalizadorSintactico {
 		
 	}
 
-	/**20. LISTA_PARAM → TIPO PASO ID RESTO_LISTA
+	/**20. LISTA_PARAM → TIPO ID PASO RESTO_LISTA
 	 * 21. LISTA_PARAM → lambda
 	 */
 	private void lista_param() {
@@ -1151,55 +1148,55 @@ public class AnalizadorSintactico {
 	
 	
 	
-//	/**
-//	 * 54. LISTA_ATB → ATRIBUTO RESTO_ATB
-//	 * 55. LISTA_ATB → lambda
-//	 */
-//	private void lista_atb() {							//TOFIX aqui no habria que meter algun error?
-//		if(!token.esIgual(TipoToken.EOF)) {
-//			parse.add(54);
-//			atributo();
-//			resto_atb();
-//		} else {
-//			// 55. LISTA_ATB → lambda 
-//			parse.add(55);
-//		}
-//	}
+	/**
+	 * 54. LISTA_ATB → ATRIBUTO RESTO_ATB
+	 * 55. LISTA_ATB → lambda
+	 */
+	private void lista_atb() {							//TOFIX aqui no habria que meter algun error?
+		if(!token.esIgual(TipoToken.EOF)) {
+			parse.add(54);
+			atributo();
+			resto_atb();
+		} else {
+			// 55. LISTA_ATB → lambda 
+			parse.add(55);
+		}
+	}
 	
-//	/**
-//	 * 56. RESTO_ATB → , ATRIBUTO RESTO_ATB
-//	 * 57. RESTO_ATB → lambda
-//	 */
-//	private void resto_atb() {							//TOFIX aqui no habria que meter algun error?
-//		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
-//			parse.add(56);
-//			nextToken();
-//			atributo();
-//			resto_atb();
-//		} else {
-//			parse.add(57);
-//		}
-//	}
+	/**
+	 * 56. RESTO_ATB → , ATRIBUTO RESTO_ATB
+	 * 57. RESTO_ATB → lambda
+	 */
+	private void resto_atb() {							//TOFIX aqui no habria que meter algun error?
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
+			parse.add(56);
+			nextToken();
+			atributo();
+			resto_atb();
+		} else {
+			parse.add(57);
+		}
+	}
 	
 	/**
 	 * 58. ATRIBUTO → LITERAL
 	 * 59. ATRIBUTO → ID
 	 */
-//	private void atributo() {
-//		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-//			parse.add(59);
-//			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
-//			nextToken();
-//		} else if(esLiteral()){
-//			parse.add(58);
-//			//no se si hay que hacer algo mas...
-//			nextToken();
-//		} else {
-//			// error
-//			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
-//					"Falta identificador o literal que identifique al atributo");
-//		}
-//	}
+	private void atributo() {
+		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+			parse.add(59);
+			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+			nextToken();
+		} else if(esLiteral()){
+			parse.add(58);
+			//no se si hay que hacer algo mas...
+			nextToken();
+		} else {
+			// error
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), 
+					"Falta identificador o literal que identifique al atributo");
+		}
+	}
 	
 	
 	
@@ -2230,14 +2227,14 @@ public class AnalizadorSintactico {
 			nextToken();
 			cast_expression();
 		}
-		else if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.DECREMENTO)){
+		else if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)){
 			parse.add(180);
 			nextToken();
 			cast_expression();
 		}
 		else if(unary_operator()){
 			parse.add(181);
-			//nextToken();
+			nextToken();
 			cast_expression();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA)
@@ -2319,7 +2316,6 @@ public class AnalizadorSintactico {
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba un identificador o tipo pre-definido ");
 			}
 		}else{
-			parse.add(187);
 			unary_expression();
 		}
 	}
@@ -2437,9 +2433,9 @@ public class AnalizadorSintactico {
 	private void noexcept_expression(){
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			nextToken();
-			parse.add(193);
 			expression();
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)){
+				parse.add(193);
 				nextToken();
 			}else{
 				// error
@@ -2799,12 +2795,12 @@ public class AnalizadorSintactico {
 	//Este metodo nunca se usa /////
 	//deberia llamarse desde assignment_expression(), pero no lo hace ya que se ha factorizado por la izquierda
 	//ya que tanto conditional_expresion como assignment_expression tienen la regla log_or_expression
-//	/**	236. CONDITIONAL_EXPRESION → LOGICAL_OR_EXPRESSION RESTO_CONDITIONAL*/
-//	private void conditional_expression(){///////////////////////////////////////
-//		parse.add(236);
-//		log_or_expression(); 
-//		resto_conditional();
-//	}
+	/**	236. CONDITIONAL_EXPRESION → LOGICAL_OR_EXPRESSION RESTO_CONDITIONAL*/
+	private void conditional_expression(){///////////////////////////////////////
+		parse.add(236);
+		log_or_expression(); 
+		resto_conditional();
+	}
 	
 	/**	
 		238. RESTO_CONDITIONAL →  ? EXPRESSION  :  ASSIGNMENT_EXPRESSION
@@ -2838,6 +2834,9 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
+	 * (( 242. RESTO_ASSIG → ? EXPRESSION : ASSIGNMENT_EXPRESSION
+	 *    244. RESTO_ASSIG → lambda ))
+	 * 
 	 * 242. RESTO_ASSIG → RESTO_CONDITIONAL
 	 * 243. RESTO_ASSIG → op_asignacion ASSIGNMENT_EXPRESSION
 	 */
@@ -2857,7 +2856,7 @@ public class AnalizadorSintactico {
 	 * 246. EXPRESSION → ASSIGNMENT-EXPRESSION RESTO_EXP
 	 */
 	private void expression() {
-		parse.add(246);
+		parse.add(247);
 		assignment_expression();
 		resto_exp();
 	}
@@ -2869,12 +2868,12 @@ public class AnalizadorSintactico {
 	 */
 	private void resto_exp() {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
-			parse.add(247);
+			parse.add(249);
 			nextToken();
 			expression();
 		}	
 		else {
-			parse.add(248);
+			parse.add(250);
 		}
 	}
 	
@@ -2884,12 +2883,12 @@ public class AnalizadorSintactico {
 	 */
 	private void expressionOpt() {
 		if(primeroDeExpression()) {
-			parse.add(249);
+			parse.add(251);
 			expression();
 		}
 		else
 		{
-			parse.add(250);
+			parse.add(252);
 		}
 			
 		

@@ -67,7 +67,7 @@ public class Compilador extends JFrame {
 	private int puntox5=(screenSize.width/4)*2;
 	private int puntox6=screenSize.width/10;
 	private int puntox7=(screenSize.width/3)*2;
-	private int puntoy4= screenSize.height/32;
+	private int puntoy4= screenSize.height/40;
 	
 	
 	/**

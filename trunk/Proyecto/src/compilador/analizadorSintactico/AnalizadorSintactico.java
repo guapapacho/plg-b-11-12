@@ -331,10 +331,24 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * 117.RESTO_LINEA → ID RESTO_LINEA2
+	 * 117.RESTO_LINEA → PUNT ID RESTO_LINEA2
 	 */
 	private void resto_linea() {
-		if (token.esIgual(TipoToken.IDENTIFICADOR)) {
+		boolean puntero = punt();
+		if(puntero) { // no puede ser un metodo, tiene que ser una variable
+			nextToken();
+			if (token.esIgual(TipoToken.IDENTIFICADOR)) {
+				parse.add(117);
+				nextToken();
+				if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
+					parse.add(119);
+					nextToken();
+					lista_clase();
+				} else {
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \";\" o \"(\"");
+				}
+			}
+		} else if (token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(117);
 			nextToken();
 			resto_linea2();
@@ -995,7 +1009,8 @@ public class AnalizadorSintactico {
 			ins_dec();
 		}
 		else if (tipo()) { //INS_DEC2
-			
+			if(punt())
+				nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				parse.add(47); 
 				ins_dec2();
@@ -1003,6 +1018,7 @@ public class AnalizadorSintactico {
 				ventana.add(tokens.lastElement()); // el ultimo token
 				token = tokens.get(tokens.size()-2); // el penultimo token (tipo (id))
 				parse.add(133); // creo que deberia añadir otra regla
+				
 				expression();
 				if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
 					nextToken();
@@ -1045,8 +1061,9 @@ public class AnalizadorSintactico {
 	private void ins_dec() {
 		if (tipo()) {
 			parse.add(51);
-			nextToken();
-			punt();
+			//nextToken();
+			if(punt())
+				nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 				nextToken();
@@ -1085,19 +1102,22 @@ public class AnalizadorSintactico {
 	 * 49.PUNT → *
 	 * 50.PUNT → lambda
 	 */
-	private void punt() {
+	private boolean punt() {
 		if (token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.MULTIPLICACION)) {
 			parse.add(49);
-			nextToken();
+//			nextToken();
+			return true;
 		} else {
 			parse.add(50);
+			return false;
 		}
 	}
 	/**
 	 * 52. INS_DEC2 → PUNT ID MAS_COSAS
 	 */
 	private void ins_dec2() {
-		punt();
+		if(punt())
+			nextToken();
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(52);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());

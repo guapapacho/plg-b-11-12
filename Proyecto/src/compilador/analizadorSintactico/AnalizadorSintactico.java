@@ -2230,14 +2230,14 @@ public class AnalizadorSintactico {
 			nextToken();
 			cast_expression();
 		}
-		else if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)){
+		else if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.DECREMENTO)){
 			parse.add(180);
 			nextToken();
 			cast_expression();
 		}
 		else if(unary_operator()){
 			parse.add(181);
-			nextToken();
+			//nextToken();
 			cast_expression();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA)
@@ -2319,6 +2319,7 @@ public class AnalizadorSintactico {
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba un identificador o tipo pre-definido ");
 			}
 		}else{
+			parse.add(187);
 			unary_expression();
 		}
 	}
@@ -2436,9 +2437,9 @@ public class AnalizadorSintactico {
 	private void noexcept_expression(){
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			nextToken();
+			parse.add(193);
 			expression();
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)){
-				parse.add(193);
 				nextToken();
 			}else{
 				// error

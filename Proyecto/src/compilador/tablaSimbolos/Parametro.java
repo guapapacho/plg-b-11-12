@@ -2,41 +2,41 @@ package compilador.tablaSimbolos;
 
 /**
  * Clase que guarda el tipo y el modo en el que se
- * paso el argumento de una función
+ * paso el parametro de una función
  * @author Grupo 1
  *
  */
-public class Argumento {
+public class Parametro {
 	
 	/**
-	 * Enumerado para el tipo de argumento
+	 * Enumerado para el tipo de parametro
 	 */
-	public enum TipoArg {
+	public enum TipoParam {
 		ENTERO, REAL, BOOL; //TODO añadir los demas tipos
 	}
 
 	/**
-	 * Enumerado para el paso de argumento
+	 * Enumerado para el paso de parametro
 	 */
-	public enum PasoArg {
+	public enum PasoParam {
 		REFERENCIA, VALOR;
 	}
 	
 	/** Tipo del argumento */
-	private TipoArg tipo;
+	private TipoParam tipo;
 	/** Paso del argumento */
-	private PasoArg paso;
+	private PasoParam paso;
 	
-	public Argumento(TipoArg tipo, PasoArg paso) {
+	public Parametro(TipoParam tipo, PasoParam paso) {
 		this.tipo = tipo;
 		this.paso = paso;
 	}
 
-	public TipoArg getTipo() {
+	public TipoParam getTipo() {
 		return tipo;
 	}
 
-	public PasoArg getPaso() {
+	public PasoParam getPaso() {
 		return paso;
 	}
 

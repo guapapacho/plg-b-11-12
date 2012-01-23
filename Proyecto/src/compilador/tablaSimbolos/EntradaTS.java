@@ -1,7 +1,7 @@
 package compilador.tablaSimbolos;
 
 import java.util.Vector;
-import compilador.tablaSimbolos.Argumento.TipoArg;
+import compilador.tablaSimbolos.Parametro.TipoParam;
 
 /**
  * Clase que guarda una entrada de la tabla de simbolos
@@ -15,19 +15,19 @@ public class EntradaTS {
 	private Tipo tipo;
 	/** Si es constante o no */
 	private boolean constante;
-	/** Argumentos del identificador si es una funcion, si no, un array vacio */
-	private Vector<Argumento> args;
+	/** Parametros del identificador si es una funcion, si no, un array vacio */
+	private Vector<Parametro> params;
 	/** Tipo de retorno */
-	private TipoArg retorno;
+	private TipoParam retorno;
 
 	public EntradaTS(String lexema) {
-		this(lexema, null, new Vector<Argumento>(), null, false);
+		this(lexema, null, new Vector<Parametro>(), null, false);
 	}
 	
-	public EntradaTS(String lexema, Tipo tipo, Vector<Argumento> args, TipoArg retorno, boolean constante) {
+	public EntradaTS(String lexema, Tipo tipo, Vector<Parametro> params, TipoParam retorno, boolean constante) {
 		this.lexema = lexema;
 		this.tipo = tipo;
-		this.args = args;
+		this.params = params;
 		this.retorno = retorno;
 		this.constante = constante;
 	}
@@ -52,7 +52,7 @@ public class EntradaTS {
 		return retorno;
 	}
 
-	public void setRetorno(TipoArg retorno) {
+	public void setRetorno(TipoParam retorno) {
 		this.retorno = retorno;
 	}
 
@@ -60,16 +60,16 @@ public class EntradaTS {
 		return lexema;
 	}
 
-	public Vector<Argumento> getArgs() {
-		return args;
+	public Vector<Parametro> getParams() {
+		return params;
 	}
 
-	public void addArg(Argumento arg) {
-		args.add(arg);
+	public void addParam(Parametro param) {
+		params.add(param);
 	}
 	
 	public int getNumArgs() {
-		return args.size();
+		return params.size();
 	}
 	
 }

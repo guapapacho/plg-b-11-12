@@ -702,7 +702,7 @@ public class AnalizadorSintactico {
 		
 	}
 
-	/**20. LISTA_PARAM → TIPO ID PASO RESTO_LISTA
+	/**20. LISTA_PARAM → TIPO PASO ID RESTO_LISTA
 	 * 21. LISTA_PARAM → lambda
 	 */
 	private void lista_param() {

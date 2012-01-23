@@ -2834,9 +2834,6 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * (( 242. RESTO_ASSIG → ? EXPRESSION : ASSIGNMENT_EXPRESSION
-	 *    244. RESTO_ASSIG → lambda ))
-	 * 
 	 * 242. RESTO_ASSIG → RESTO_CONDITIONAL
 	 * 243. RESTO_ASSIG → op_asignacion ASSIGNMENT_EXPRESSION
 	 */
@@ -2856,7 +2853,7 @@ public class AnalizadorSintactico {
 	 * 246. EXPRESSION → ASSIGNMENT-EXPRESSION RESTO_EXP
 	 */
 	private void expression() {
-		parse.add(247);
+		parse.add(246);
 		assignment_expression();
 		resto_exp();
 	}
@@ -2868,12 +2865,12 @@ public class AnalizadorSintactico {
 	 */
 	private void resto_exp() {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
-			parse.add(249);
+			parse.add(247);
 			nextToken();
 			expression();
 		}	
 		else {
-			parse.add(250);
+			parse.add(248);
 		}
 	}
 	
@@ -2883,12 +2880,12 @@ public class AnalizadorSintactico {
 	 */
 	private void expressionOpt() {
 		if(primeroDeExpression()) {
-			parse.add(251);
+			parse.add(249);
 			expression();
 		}
 		else
 		{
-			parse.add(252);
+			parse.add(250);
 		}
 			
 		

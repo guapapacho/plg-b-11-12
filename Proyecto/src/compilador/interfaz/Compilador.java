@@ -11,7 +11,6 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringBufferInputStream;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 import javax.swing.JButton;
@@ -72,9 +71,9 @@ public class Compilador extends JFrame {
 	 * Metodo que configura la interfaz de usuario
 	 */
 	public void crearInterfaz() {
-		//this.setSize(930, 630);
-		//this.setLocation(150, 100);
-		this.setSize(screenSize.width, screenSize.height);
+		this.setSize(1250, 630);
+		this.setLocation(50, 50);
+//		this.setSize(screenSize.width, screenSize.height);
 		this.setJMenuBar(getBarraMenu());
 		this.setContentPane(getPanelPrincipal());
 		this.setTitle("Traductor C++ - Pascal");
@@ -197,24 +196,24 @@ public class Compilador extends JFrame {
 		panelPrincipal_1=new JPanel();
 		panelPrincipal_1.setLayout(null);
 		l0=new JLabel();
-		l0.setBounds(345, 11, 250, 34);
+		l0.setBounds(445, 7, 250, 34);
 		l0.setFont(new java.awt.Font("Verdana", Font.BOLD, 18));
 		l0.setText("Analizador sintáctico");
 		l1=new JLabel();
-		l1.setBounds(145, 26, 163, 34);
+		l1.setBounds(185, 26, 163, 34);
 		l1.setText("Código de entrada");
 		l1.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
 		l2=new JLabel();
-		l2.setBounds(640, 26, 146, 34);
+		l2.setBounds(840, 26, 146, 34);
 		l2.setText("Código de salida");
 		l2.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
 		sp1=new JScrollPane();
-		sp1.setBounds(39, 68, 350, 700);
+		sp1.setBounds(39, 68, 450, 470);
 		sp1.setVerticalScrollBarPolicy(sp1.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp1.setHorizontalScrollBarPolicy(sp1.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		sp2=new JScrollPane();
 		/** CON EL ULTIMO PARAMETRO DE ESTA FUN DISMINUYES EL TAMAÑO DEL PANEL DERECHO */
-		sp2.setBounds(525, 68, 400, 600);
+		sp2.setBounds(625, 68, 570, 470);
 		sp2.setVerticalScrollBarPolicy(sp2.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp2.setHorizontalScrollBarPolicy(sp2.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
@@ -247,7 +246,7 @@ public class Compilador extends JFrame {
 	 */
 	public JButton getBotonTokens() {
 		botonTokens=new JButton();
-		botonTokens.setBounds(399, 275, 116, 50);
+		botonTokens.setBounds(500, 275, 116, 50);
 		botonTokens.setText("Parse");
 		botonTokens.setFont(new java.awt.Font("Verdana", Font.BOLD, 11));
 		botonTokens.revalidate();

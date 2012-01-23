@@ -236,9 +236,9 @@ public class Compilador extends JFrame {
 		
 		ta1=new JTextArea();
 		ta1.setText("#include <Alina.h> \n#include \"cris.h\" " +
-				"int a=2,b[3]={1,2,3},c; " +
-				"\nconst bool i=3; \nconst float k=true; \nint f(int a, int b); " +
-				"\nfloat g=3; \ndouble h();");
+				"\n\nint a,b[3]={1,2,3},c=7; " +
+				"\nconst bool i=true; \nconst float k=1.2; \n\nint f(int a, int b); " +
+				"\n\nfloat g=3; \n\ndouble h();");
 		ta1.setFont(new java.awt.Font("Verdana", Font.BOLD, 12));
 		sp1.setViewportView(ta1);
 		panelPrincipal_1.add(sp2);
@@ -280,6 +280,7 @@ public class Compilador extends JFrame {
 						ta2.append(anSin.getStringTokens());
 						ta2.append("\nParse:\n");
 						ta2.append(anSin.getStringParse());
+						ta2.append("Total:\n"+anSin.getParse().size()+" reglas aplicadas.\n");
 						ta2.append("\nErrores:");
 						ta2.append(gestor.muestraListaErrores());
 					}

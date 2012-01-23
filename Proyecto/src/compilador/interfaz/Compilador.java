@@ -65,8 +65,9 @@ public class Compilador extends JFrame {
 	private int puntoy3=puntoy1*6;
 	private int puntox4= (int) (screenSize.width /(2.25));
 	private int puntox5=(screenSize.width/4)*2;
-	private int puntox6=screenSize.width/8;
+	private int puntox6=screenSize.width/10;
 	private int puntox7=(screenSize.width/3)*2;
+	private int puntoy4= screenSize.height/32;
 	
 	
 	/**
@@ -210,11 +211,11 @@ public class Compilador extends JFrame {
 		l0.setFont(new java.awt.Font("Verdana", Font.BOLD, 18));
 		l0.setText("Analizador sintáctico");
 		l1=new JLabel();
-		l1.setBounds(puntox6, 26, 163, 34);
+		l1.setBounds(puntox6, puntoy4, 163, 34);
 		l1.setText("Código de entrada");
 		l1.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
 		l2=new JLabel();
-		l2.setBounds(puntox7, 26, 146, 34);
+		l2.setBounds(puntox7, puntoy4, 146, 34);
 		l2.setText("Código de salida");
 		l2.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
 		sp1=new JScrollPane();

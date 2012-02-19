@@ -3,6 +3,7 @@ package compilador.interfaz;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,6 +25,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.text.*;
 
 import compilador.analizadorLexico.AnalizadorLexico;
 import compilador.analizadorSintactico.AnalizadorSintactico;
@@ -44,10 +47,12 @@ public class Compilador extends JFrame {
 	private JMenu ficheroMenu=null;
 	private JMenuItem abrir=null;
 	private JMenuItem guardar=null;
+	private JTextArea ta0=null;
 	private JTextArea ta1=null;
 	private JTextArea ta2=null;
 	private JScrollPane sp1 =null;
 	private JScrollPane sp2 =null;
+	private JScrollPane sp0 =null;
 	private JLabel l0=null;
 	private JLabel l1=null;
 	private JLabel l2=null;
@@ -68,6 +73,9 @@ public class Compilador extends JFrame {
 	private int puntox6=screenSize.width/10;
 	private int puntox7=(screenSize.width/3)*2;
 	private int puntoy4= screenSize.height/40;
+	private int puntox8=puntox1-30;
+	private JTextPane tp0 = new JTextPane();
+	private MutableAttributeSet attr = new SimpleAttributeSet(); 
 	
 	
 	/**
@@ -218,10 +226,18 @@ public class Compilador extends JFrame {
 		l2.setBounds(puntox7, puntoy4, 146, 34);
 		l2.setText("Código de salida");
 		l2.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
+		
+		sp0=new JScrollPane();
+		//sp0.setBounds(puntox8, puntoy1-3, 30, puntoy2+3);
+		sp0.setBounds(puntox8, puntoy1, 30, puntoy2);
+		sp0.setVerticalScrollBarPolicy(sp0.VERTICAL_SCROLLBAR_NEVER);
+		sp0.setHorizontalScrollBarPolicy(sp0.HORIZONTAL_SCROLLBAR_NEVER);
+		
 		sp1=new JScrollPane();
 		sp1.setBounds(puntox1, puntoy1, puntox2, puntoy2);
 		sp1.setVerticalScrollBarPolicy(sp1.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp1.setHorizontalScrollBarPolicy(sp1.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		
 		sp2=new JScrollPane();
 		/** CON EL ULTIMO PARAMETRO DE ESTA FUN DISMINUYES EL TAMAÑO DEL PANEL DERECHO */
 		sp2.setBounds(puntox4, puntoy1, puntox5, puntoy2);
@@ -233,6 +249,7 @@ public class Compilador extends JFrame {
 		panelPrincipal_1.add(l2);
 		panelPrincipal_1.add(getBotonTokens());
 		panelPrincipal_1.add(sp1);
+		panelPrincipal_1.add(sp0);
 		
 		ta1=new JTextArea();
 		ta1.setText("#include <Alina.h> \n#include \"cris.h\" " +
@@ -247,8 +264,41 @@ public class Compilador extends JFrame {
 		ta2.setFont(new java.awt.Font("Verdana", Font.BOLD, 12));
 		sp2.setViewportView(ta2);
 		ta2.setEditable(false);
+		
+		/*StyleConstants.setForeground(attr,Color.RED);
+		tp0.setCharacterAttributes(attr, false); 
+		rellenarTP0();
+		tp0.setFont(new java.awt.Font("Verdana", Font.ITALIC, 12));
+		sp0.setViewportView(tp0);
+		tp0.setEditable(false);
+		*/		
+		
+		ta0 = new JTextArea();
+		ta0.setFont(new java.awt.Font("Verdana", Font.BOLD, 12));
+		rellenarTP0();
+		sp0.setViewportView(ta0);
+		ta0.setEditable(false);
+		
 		panelPrincipal_1.validate();
+		//System.out.println("Esquinas del panel 1: "+puntox1+" "+puntox2+" "+puntoy1+" "+puntoy2);
 		return panelPrincipal_1;
+	}
+	
+	private void rellenarTP0(){
+		String out = ""; 
+		int j = 1;
+		char[] c = ta1.getText().toCharArray();
+		for(int i=1; i<c.length; i++){
+			if(c[i]=='\n'){
+				out += j;
+				out += '\n';
+				j++;
+			}
+		}
+		out += j;
+		out += '\n';
+		//tp0.setText(out);
+		ta0.setText(out);
 	}
 	
 	/**
@@ -283,6 +333,7 @@ public class Compilador extends JFrame {
 						ta2.append("Total:\n"+anSin.getParse().size()+" reglas aplicadas.\n");
 						ta2.append("\nErrores:");
 						ta2.append(gestor.muestraListaErrores());
+						rellenarTP0();
 					}
 				}
 			});

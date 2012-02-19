@@ -195,6 +195,14 @@ public class AnalizadorSintactico {
 						}
 					} else {
 						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"}\"");
+// AÑADIR??------------>>>						
+//						if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
+//							nextToken();
+//						}
+//						else{
+//							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \";\"");
+//						}
+// <<<<------------------						
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Falta el separador \"{\"");

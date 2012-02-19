@@ -102,6 +102,8 @@ public class GestorErrores {
 	    	return salida;
     	}
     	else {
+    		salida = salida + errors.get(0);
+    		/*
     		salida=salida+"Hubo: "+errors.size()+" errores\n";
     		Iterator<TError> iterator = errors.iterator();
     		while (iterator.hasNext()){
@@ -109,7 +111,7 @@ public class GestorErrores {
     			err2=iterator.next();
     			salida=salida+err2+" \n";
     			
-    		}
+    		}*/
     		return salida;
     	}
     }

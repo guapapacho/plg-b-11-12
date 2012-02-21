@@ -165,12 +165,15 @@ public class AnalizadorSintactico {
 	}	
 	
 	/**
-	 * 1. PROGRAMA → LIBRERIA RESTO_PROGRAMA
+	 * 1. PROGRAMA → LIBRERIA RESTO_PROGRAMA eof
 	 */
 	private void programa() {
 		parse.add(1);
 		libreria();
 		resto_programa();
+		if (!token.esIgual(TipoToken.EOF)) {
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Palabra o termino \""+lexico.getLexema()+"\" inesperado.");
+		}
 	}
 	
 	/**

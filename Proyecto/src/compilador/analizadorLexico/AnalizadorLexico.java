@@ -41,6 +41,11 @@ public class AnalizadorLexico {
 	 * Atributo que indica el caracter actual que leemos de la entrada
 	 */
 	private char preanalisis;
+	/**
+	 * Atributo que guarda el lexema de cada token
+	 */
+	private String lexema;
+
 	
 	/**
 	 * Atributo que indica el estado del automata en el que nos encontramos
@@ -78,6 +83,10 @@ public class AnalizadorLexico {
 		this.gestorErrores = GestorErrores.getGestorErrores();
 		this.gestorTS = GestorTablasSimbolos.getGestorTS();
 	}
+	
+	public String getLexema(){
+		return lexema;
+	}
 
 	/**
 	 * Metodo que devuelve el siguiente token
@@ -86,7 +95,7 @@ public class AnalizadorLexico {
 	public Token scan(){
 		estado = 0;
 		Token token = null;
-		String lexema = "";
+		lexema = "";
 		if(!asterisco)
 			preanalisis = getChar();
 		asterisco = false;

@@ -85,7 +85,9 @@ public class AnalizadorLexico {
 	}
 	
 	public String getLexema(){
-		return lexema;
+		if(lexema!="")
+			return lexema;
+		else return preanalisis+"";
 	}
 
 	/**

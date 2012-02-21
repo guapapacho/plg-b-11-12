@@ -580,7 +580,12 @@ public class AnalizadorSintactico {
 							cosas3();
 							cosas();
 						} else {
-							gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta separador \")\"");
+							if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)||token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
+								gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta separador \")\"");
+							}
+							else{
+								gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Palabra o termino \""+lexico.getLexema()+"\" inesperado.");
+							}
 						}
 					} else {
 						gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta separador \"(\"");
@@ -677,7 +682,12 @@ public class AnalizadorSintactico {
 				nextToken();
 				cosas3();
 			} else {
-				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta separador \")\"");
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)||token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta separador \")\"");
+				}
+				else{
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Palabra o termino \""+lexico.getLexema()+"\" inesperado.");
+				}
 			}
 		} 
 		//17. COSAS2 → INICIALIZACION  DECLARACIONES ;

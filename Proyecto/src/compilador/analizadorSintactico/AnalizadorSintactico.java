@@ -447,9 +447,9 @@ public class AnalizadorSintactico {
 			} else {
 				parse.add(3);
 			}
-		} else {
+		} /*else {
 			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Fin de fichero inesperado");
-		}
+		}*/
 	}
 
 	/**

@@ -25,7 +25,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.text.*;
 
 import compilador.analizadorLexico.AnalizadorLexico;
@@ -50,9 +53,11 @@ public class Compilador extends JFrame {
 	private JTextArea ta0=null;
 	private JTextArea ta1=null;
 	private JTextArea ta2=null;
+	private JTextArea ta3=null;
+	private JScrollPane sp0 =null;
 	private JScrollPane sp1 =null;
 	private JScrollPane sp2 =null;
-	private JScrollPane sp0 =null;
+	private JScrollPane sp3 =null;
 	private JLabel l0=null;
 	private JLabel l1=null;
 	private JLabel l2=null;
@@ -244,12 +249,25 @@ public class Compilador extends JFrame {
 		sp2.setVerticalScrollBarPolicy(sp2.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp2.setHorizontalScrollBarPolicy(sp2.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
+		sp3=new JScrollPane();
+		sp3.setBounds(puntox3, puntoy3 - 50, 60, 20);
+		sp3.setVerticalScrollBarPolicy(sp3.VERTICAL_SCROLLBAR_AS_NEEDED);
+		sp3.setHorizontalScrollBarPolicy(sp3.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		
+		ta3 = new JTextArea();
+		//ta3.setBounds(100, 25, 20, 20);
+		ta3.setFont(new java.awt.Font("Verdana", Font.PLAIN, 11));
+		sp3.setViewportView(ta3);
+		//ta3.setEditable(false);
+		//ta3.setText("prueba");
+		
 		panelPrincipal_1.add(l0);
 		panelPrincipal_1.add(l1);
 		panelPrincipal_1.add(l2);
 		panelPrincipal_1.add(getBotonTokens());
 		panelPrincipal_1.add(sp1);
-		panelPrincipal_1.add(sp0);
+//		panelPrincipal_1.add(sp0);
+		panelPrincipal_1.add(sp3);
 		
 		ta1=new JTextArea();
 		ta1.setText("#include <Alina.h> \n#include \"cris.h\" " +
@@ -265,23 +283,41 @@ public class Compilador extends JFrame {
 		sp2.setViewportView(ta2);
 		ta2.setEditable(false);
 		
-		/*StyleConstants.setForeground(attr,Color.RED);
-		tp0.setCharacterAttributes(attr, false); 
-		rellenarTP0();
-		tp0.setFont(new java.awt.Font("Verdana", Font.ITALIC, 12));
-		sp0.setViewportView(tp0);
-		tp0.setEditable(false);
-		*/		
-		
 		ta0 = new JTextArea();
 		ta0.setFont(new java.awt.Font("Verdana", Font.BOLD, 12));
 		rellenarTP0();
 		sp0.setViewportView(ta0);
 		ta0.setEditable(false);
 		
+		ta1.addCaretListener(new CaretListener() {
+            // Each time the caret is moved, it will trigger the listener and its method caretUpdate.
+            // It will then pass the event to the update method including the source of the event (which is our textarea control)
+            public void caretUpdate(CaretEvent e) {
+                JTextArea editArea = (JTextArea)e.getSource();
+                // Lets start with some default values for the line and column.
+                int linenum = 1;
+                int columnnum = 1;
+                // We create a try catch to catch any exceptions. We will simply ignore such an error for our demonstration.
+                try {
+                    int caretpos = editArea.getCaretPosition();
+                    linenum = editArea.getLineOfOffset(caretpos);
+                    columnnum = caretpos - editArea.getLineStartOffset(linenum);
+                    linenum += 1;
+                }
+                catch(Exception ex) { }
+                // Once we know the position of the line and the column, pass it to a helper function for updating the status bar.
+                actualizarPos(linenum, columnnum);
+            }
+		});
+		
+		
 		panelPrincipal_1.validate();
 		//System.out.println("Esquinas del panel 1: "+puntox1+" "+puntox2+" "+puntoy1+" "+puntoy2);
 		return panelPrincipal_1;
+	}
+
+	private void actualizarPos(int x, int y){
+		ta3.setText(Integer.toString(x)+" : "+Integer.toString(y));
 	}
 	
 	private void rellenarTP0(){

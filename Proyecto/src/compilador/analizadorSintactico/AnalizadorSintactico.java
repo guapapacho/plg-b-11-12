@@ -2054,6 +2054,7 @@ public class AnalizadorSintactico {
 			postfix2();
 			resto_postfix_exp();
 		} else {
+			parse.add(154);
 			primary_expression();
 			resto_postfix_exp();
 		}

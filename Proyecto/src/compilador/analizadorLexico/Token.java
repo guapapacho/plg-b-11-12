@@ -122,4 +122,47 @@ public class Token {
 		return tipo.equals(t);		
 	}
 	
+	public String atrString(){
+		String s=new String("");
+		
+		switch(tipo){
+		case EOF:	s="EOF";
+		 break;
+		case LIT_CARACTER:	s=(String)atributo;
+		 break;
+		case LIT_CADENA:	s=(String)atributo;
+		 break;
+		case PAL_RESERVADA:	s="PAL_RES"; //TODO:<<--CORREGIR!!
+		 break;
+		case IDENTIFICADOR:	s=(String)atributo;
+		 break;
+		case NUM_REAL:		s=String.valueOf((Double)atributo);
+		 break;
+		case NUM_REAL_EXPO:	s="NUM_EXP"; //TODO:<<--CORREGIR!!
+		 break;
+		case NUM_ENTERO:	s=String.valueOf((Integer)atributo);
+		 break;
+		case SEPARADOR:		s="";//s=(String)atributo;
+		 break;		
+		case OP_ARITMETICO: s="";
+		 break;
+		case OP_LOGICO: s="";
+		 break;
+		case OP_COMPARACION: s="";
+		 break;
+		case OP_ASIGNACION: s="";
+		 break;
+		case COMENT_LINEA: s="";
+		 break;
+		case COMENT_LARGO: s="";
+		 break;
+		case ERROR: s="";
+		 break;
+		default:  s="";
+		 break;
+		}
+		
+		return s;
+	}
+	
 }

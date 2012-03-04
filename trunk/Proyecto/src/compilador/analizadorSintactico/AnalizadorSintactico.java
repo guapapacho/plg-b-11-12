@@ -2266,7 +2266,7 @@ public class AnalizadorSintactico {
 		}
 		else if(unary_operator()){
 			parse.add(181);
-			nextToken();
+			//nextToken();
 			cast_expression();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA)

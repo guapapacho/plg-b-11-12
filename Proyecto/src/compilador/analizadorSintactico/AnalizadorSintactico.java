@@ -1970,7 +1970,6 @@ public class AnalizadorSintactico {
 	/**
 	 * 148. UNQUALIFIED-ID → id
 	 * 149. UNQUALIFIED-ID →  ~ RESTO_UNQ
-	 * 258. UNQUALIFIED-ID →  lambda
 	 */
 	private void unqualified_id() {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
@@ -1981,7 +1980,7 @@ public class AnalizadorSintactico {
 			parse.add(149);
 			resto_unq();
 		} else {
-			parse.add(258);
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Parte derecha de la asignacion incompleta");
 		}
 	}
 	

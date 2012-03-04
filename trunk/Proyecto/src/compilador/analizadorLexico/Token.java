@@ -132,17 +132,17 @@ public class Token {
 		 break;
 		case LIT_CADENA:	s=(String)atributo;
 		 break;
-		case PAL_RESERVADA:	s="PAL_RES"; //TODO:<<--CORREGIR!!
+		case PAL_RESERVADA:	s=""; //TODO:<<--CORREGIR!!
 		 break;
 		case IDENTIFICADOR:	s=(String)atributo;
 		 break;
 		case NUM_REAL:		s=String.valueOf((Double)atributo);
 		 break;
-		case NUM_REAL_EXPO:	s="NUM_EXP"; //TODO:<<--CORREGIR!!
+		case NUM_REAL_EXPO:	s=(String)atributo; //TODO:<<--CORREGIR!!
 		 break;
 		case NUM_ENTERO:	s=String.valueOf((Integer)atributo);
 		 break;
-		case SEPARADOR:		s="";//s=(String)atributo;
+		case SEPARADOR:		s="";
 		 break;		
 		case OP_ARITMETICO: s="";
 		 break;

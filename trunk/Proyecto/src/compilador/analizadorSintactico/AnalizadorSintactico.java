@@ -13,6 +13,9 @@ public class AnalizadorSintactico {
 
 	/** Token actual obtenido mediante el Analizador lexico */
 	private Token token;
+	
+	private Token tokenAnterior;
+	
 	/** Lista de tokens obtenidos del Analizador lexico */
 	private Vector<Token> tokens;
 	/** Analizador lexico */
@@ -32,6 +35,8 @@ public class AnalizadorSintactico {
 	private Tipo tipo;
 	private EntradaTS entradaTS;
 	
+	private String lexemaAnterior;
+	
 	public AnalizadorSintactico(AnalizadorLexico lexico){
 		this.lexico = lexico;
 		parse = new Vector<Integer>();
@@ -46,6 +51,8 @@ public class AnalizadorSintactico {
 	}
 	
 	public void nextToken() {
+		tokenAnterior = token;
+		//lexemaAnterior = lexico.getLexemaAnterior();
 		if(ventana.size() > 0) {
 			// recupera el primer elemento y lo borra de la cola.
 			token = ventana.remove(0);
@@ -172,7 +179,7 @@ public class AnalizadorSintactico {
 		libreria();
 		resto_programa();
 		if (!token.esIgual(TipoToken.EOF)) {
-			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Palabra o termino \""+lexico.getLexema()+"\" inesperado.");
+			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Palabra o termino \""+token.atrString()+"\" inesperado.");//+lexico.getLexema()+"\" inesperado.");
 		}
 	}
 	
@@ -584,7 +591,7 @@ public class AnalizadorSintactico {
 								gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta separador \")\"");
 							}
 							else{
-								gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Palabra o termino \""+lexico.getLexema()+"\" inesperado.");
+								gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Palabra o termino \""+token.atrString()+"\" inesperado.");//"Palabra o termino \""+lexico.getLexema()+"\" inesperado.");
 							}
 						}
 					} else {
@@ -686,7 +693,7 @@ public class AnalizadorSintactico {
 					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta separador \")\"");
 				}
 				else{
-					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Palabra o termino \""+lexico.getLexema()+"\" inesperado.");
+					gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),"Palabra o termino \""+token.atrString()+"\" inesperado.");
 				}
 			}
 		} 

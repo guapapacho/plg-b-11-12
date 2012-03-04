@@ -46,6 +46,7 @@ public class AnalizadorLexico {
 	 */
 	private String lexema;
 
+	private String lexemaAnterior;
 	
 	/**
 	 * Atributo que indica el estado del automata en el que nos encontramos
@@ -84,6 +85,10 @@ public class AnalizadorLexico {
 		this.gestorTS = GestorTablasSimbolos.getGestorTS();
 	}
 	
+	public String getLexemaAnterior(){
+		return lexemaAnterior;
+	}
+	
 	public String getLexema(){
 		if(lexema!="")
 			return lexema;
@@ -97,6 +102,7 @@ public class AnalizadorLexico {
 	public Token scan(){
 		estado = 0;
 		Token token = null;
+		lexemaAnterior = lexema;
 		lexema = "";
 		if(!asterisco)
 			preanalisis = getChar();
@@ -996,7 +1002,7 @@ public class AnalizadorLexico {
 	}
 
 	public int getColumna() {
-		return numcolumna;
+		return numcolumna-1;
 	}
     
 }

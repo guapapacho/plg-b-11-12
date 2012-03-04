@@ -3,7 +3,6 @@ package compilador.interfaz;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,12 +24,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import javax.swing.text.*;
-
 import compilador.analizadorLexico.AnalizadorLexico;
 import compilador.analizadorSintactico.AnalizadorSintactico;
 import compilador.gestionErrores.GestorErrores;
@@ -79,8 +74,6 @@ public class Compilador extends JFrame {
 	private int puntox7=(screenSize.width/3)*2;
 	private int puntoy4= screenSize.height/40;
 	private int puntox8=puntox1-30;
-	private JTextPane tp0 = new JTextPane();
-	private MutableAttributeSet attr = new SimpleAttributeSet(); 
 	
 	
 	/**
@@ -289,6 +282,7 @@ public class Compilador extends JFrame {
 		sp0.setViewportView(ta0);
 		ta0.setEditable(false);
 		
+		actualizarPos(1, 1);
 		ta1.addCaretListener(new CaretListener() {
             // Each time the caret is moved, it will trigger the listener and its method caretUpdate.
             // It will then pass the event to the update method including the source of the event (which is our textarea control)
@@ -303,6 +297,7 @@ public class Compilador extends JFrame {
                     linenum = editArea.getLineOfOffset(caretpos);
                     columnnum = caretpos - editArea.getLineStartOffset(linenum);
                     linenum += 1;
+                    columnnum += 1;
                 }
                 catch(Exception ex) { }
                 // Once we know the position of the line and the column, pass it to a helper function for updating the status bar.

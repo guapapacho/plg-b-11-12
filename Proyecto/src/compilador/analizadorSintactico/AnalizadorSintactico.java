@@ -4,6 +4,7 @@ package compilador.analizadorSintactico;
 import java.util.Vector;
 
 import compilador.analizadorLexico.*;
+import compilador.analizadorLexico.Token.TipoToken;
 import compilador.analizadorLexico.Token.*;
 import compilador.gestionErrores.GestorErrores;
 import compilador.tablaSimbolos.*;
@@ -2056,7 +2057,8 @@ public class AnalizadorSintactico {
 		} else {
 			parse.add(154);
 			primary_expression();
-			resto_postfix_exp();
+			if(tokenAnterior.esIgual(TipoToken.IDENTIFICADOR))
+				resto_postfix_exp();
 		}
 	}
 	

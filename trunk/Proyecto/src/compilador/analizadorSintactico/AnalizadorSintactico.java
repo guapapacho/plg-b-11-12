@@ -2642,7 +2642,7 @@ public class AnalizadorSintactico {
 	/**	212. RELATIONAL-EXPRESSION → SHIFT-EXPRESSION RESTO-RELATIONAL*/
 	
 	private void relational_expression(){
-		parse.add(208);
+		parse.add(212);
 		shift_expression(); 
 		resto_relational();
 	}

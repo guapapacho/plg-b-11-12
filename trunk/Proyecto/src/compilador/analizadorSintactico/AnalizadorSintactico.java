@@ -70,7 +70,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
 			nextToken();
 			if(literal()) {
-				Object valor = token.getAtributo(); // TODO depende del tipo... a ver que se hace con el...
+//				Object valor = token.getAtributo(); // TODO depende del tipo... a ver que se hace con el...
 //				System.out.println("inicializacion constante " + entradaTS.getLexema() + " con " + valor);
 			} else {
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
@@ -97,31 +97,31 @@ public class AnalizadorSintactico {
 	private boolean literal() {		
 		//TODO hacer algo con los valores, si hace falta...
 		if(token.esIgual(TipoToken.LIT_CADENA)) {
-			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+//			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("LITERAL CADENA: " + valor);
 			nextToken();
 			return true;
 		}
 		else if(token.esIgual(TipoToken.LIT_CARACTER)){
-			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+//			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("LITERAL CARACTER: " + valor);
 			nextToken();
 			return true;
 		} 
 		else if (token.esIgual(TipoToken.NUM_ENTERO)){
-			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+//			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("NUMERO ENTERO: " + valor);
 			nextToken();
 			return true;
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL)){
-			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+//			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("NUMERO REAL: " + valor);
 			nextToken();
 			return true;
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL_EXPO)){
-			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+//			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("NUMERO REAL EXPO: " + valor);
 			nextToken();
 			return true;
@@ -129,7 +129,7 @@ public class AnalizadorSintactico {
 		else if (token.esIgual(TipoToken.PAL_RESERVADA) &&
 				( (Integer)token.getAtributo() == 27 /*false*/ || 
 				  (Integer)token.getAtributo() == 60 /*true*/)){
-			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
+//			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("BOOLEANO: " + valor);
 			nextToken();
 			return true;
@@ -1069,6 +1069,7 @@ public class AnalizadorSintactico {
 				//error
 				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(),
 						"Falta separador \";\"");
+				return false;
 			}
 		}
 		/*
@@ -1169,9 +1170,10 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
 			nextToken();
 			expression();	
-		} else {
-			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta el \"=\"");
 		}
+//		else {
+//			gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Falta el \"=\"");
+//		}
 	}
 	
 	
@@ -2501,7 +2503,7 @@ public class AnalizadorSintactico {
 				cast_expression();
 			}else{
 				// error
-				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba '(' ");
+				gestorErr.insertaErrorSintactico(lexico.getLinea(), lexico.getColumna(), "Se esperaba ')' ");
 			}
 		}else{
 			parse.add(140);

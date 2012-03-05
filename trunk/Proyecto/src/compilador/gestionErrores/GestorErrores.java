@@ -39,8 +39,7 @@ public class GestorErrores {
 			}
 		
 			public String toString() {
-				return "Error "+tipo+" en L: "+linea+" C: "+columna+
-						"\n   mensaje: "+mensaje;
+				return "Error "+tipo+" en L: "+linea+" C: "+columna+" - "+mensaje;
 			//	return "Error "+tipo+": "+lista.get(error)+
 			//			" en: \n la linea "+linea+" y la columna "+columna;
 			}

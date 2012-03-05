@@ -1786,51 +1786,58 @@ public class AnalizadorSintactico {
 	}
 
 	/** 
-	 * 97. RESTO_CASE --> ( ID ) { CUERPO_CASE }
+	 * 97. RESTO_CASE --> ( EXPRESSION ) RESTO_CASE2
 	 */
 	private boolean resto_case() {
 		
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(97);
 			nextToken();
-			 if(token.esIgual(TipoToken.IDENTIFICADOR)){
-					nextToken();
-					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
-						nextToken();
-						if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
-							nextToken();
-							cuerpo_case();
-							if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_CORCHETE)) {
-								nextToken();
-								return true;
-							}
-							else 
-								gestorErr.insertaErrorSintactico(linea, columna,
-								"Lectura terminada incorrectamente, falta '}'");
-						}
-						else
-							gestorErr.insertaErrorSintactico(linea, columna,
-							"Lectura terminada incorrectamente, falta '{'");
-					}
-					else
-						gestorErr.insertaErrorSintactico(linea, columna,
-						"Lectura terminada incorrectamente, falta ')'");
-				}
-			 else
-					gestorErr.insertaErrorSintactico(linea, columna,
-					"Lectura terminada incorrectamente, falta identificador");
-			
+			expression(); 
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+				nextToken();
+				resto_case2();
+			}
+			else
+				gestorErr.insertaErrorSintactico(linea, columna, "Falta ')'");
 		}
 		else
-			gestorErr.insertaErrorSintactico(linea, columna,
-			"Lectura terminada incorrectamente, falta '('");
+			gestorErr.insertaErrorSintactico(linea, columna, "Falta '('");
 		
 	
 	return false;
 	}
+	
+	/** 
+	 * TODO nuevos numeros de regla!
+	 * 97aaaa. RESTO_CASE2 --> { CUERPO_CASE }
+	 * 97bbbb. RESTO_CASE2 --> ; 
+	 */
+	private boolean resto_case2() {
+		
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
+			parse.add(97); // TODO cambiar numero de regla
+			return true;
+		}
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
+			parse.add(97); // TODO cambiar numero de regla
+			nextToken();
+			cuerpo_case();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
+				nextToken();
+				return true;
+			}
+			else 
+				gestorErr.insertaErrorSintactico(linea, columna, "Falta '}'");
+		}
+		else
+			gestorErr.insertaErrorSintactico(linea, columna, "Falta '{'");
+		
+	return false;
+	}
 
-	/** TODO ¡¡¡¡¡SIN TERMINAR!!!
-	 * 98. CUERPO_CASE --> case LITERAL: CUERPO2 CUERPO_CASE
+	/** TODO deberia funcionar con cuerpo si este no tuviese la regla cuerpo -> }
+	 * 98. CUERPO_CASE --> case LITERAL: CUERPO CUERPO_CASE
 	 */
 	private void cuerpo_case() {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,6 /*case*/)) {
@@ -1840,15 +1847,17 @@ public class AnalizadorSintactico {
 			{
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
 					nextToken();
-					cuerpo2();// Aqui podriamos hacer una especie de cuerpo2 que admita break y mas de una instruccuon sin parentesis
+					cuerpo();// Aqui podriamos hacer una especie de cuerpo2 que admita break y mas de una instruccuon sin parentesis
 					cuerpo_case();
 				}	
 			}
 			else 
-				gestorErr.insertaErrorSintactico(linea, columna,
-				"Lectura terminada incorrectamente, falta literal");
+				gestorErr.insertaErrorSintactico(linea, columna, "Falta literal");
 		}
 	}
+	
+	
+	
 	/**
 	 *  99. RESTO_IF --> ( EXPRESSION ) CUERPO2 SENT_ELSE
 	 */
@@ -2265,7 +2274,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			cast_expression();
 		}
-		else if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)){
+		else if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.DECREMENTO)){
 			parse.add(180);
 			nextToken();
 			cast_expression();

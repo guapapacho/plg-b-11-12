@@ -1002,7 +1002,7 @@ public class AnalizadorLexico {
 	}
 
 	public int getColumna() {
-		return numcolumna-1;
+		return numcolumna;
 	}
     
 }

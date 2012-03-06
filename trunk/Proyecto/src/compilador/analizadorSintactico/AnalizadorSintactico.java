@@ -224,7 +224,7 @@ public class AnalizadorSintactico {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"{\"");
 				}
 			} else {
-				gestorErr.insertaErrorSintactico(linea, columna,"Falta el identificador");
+				gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la clase");
 			}
 		} else {
 			parse.add(106);

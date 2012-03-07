@@ -37,31 +37,48 @@ public class Token {
      * Operadores aritmeticos
      */
     public enum OpAritmetico {
-    	SUMA, RESTA, INCREMENTO, DECREMENTO, MULTIPLICACION, DIVISION, PORCENTAJE
+    	SUMA("+"), RESTA("-"), INCREMENTO("++"), DECREMENTO("--"), MULTIPLICACION("*"), DIVISION("/"), PORCENTAJE("%");
+     	
+    	private String description;
+    	private OpAritmetico(String desc) { description = desc; };
+    	public String getDesc() { return description; };
     }
     
     /**
      * Operadores de comparacion
      */
     public enum OpComparacion {
-    	IGUALDAD, DISTINTO, MENOR, MAYOR, MENOR_IGUAL, MAYOR_IGUAL
+    	IGUALDAD("=="), DISTINTO("!="), MENOR("<"), MAYOR(">"), MENOR_IGUAL("<="), MAYOR_IGUAL(">=");
+    	
+    	private String description;
+    	private OpComparacion(String desc) { description = desc; };
+    	public String getDesc() { return description; };
     }
     
     /**
      * Operadores logicos
      */
     public enum OpLogico {
-    	SOBRERO, CIRCUNFLEJO, DOS_MENORES, DOS_MAYORES,			
-    	AND, ANDEQ, BIT_AND, BIT_OR, COMPL, NOT, NOT_EQ, OR, OR_EQ, XOR, XOR_EQ			
+    	SOBRERO("~"), CIRCUNFLEJO("ˆ"), DOS_MENORES("<<"), DOS_MAYORES(">>"),			
+    	AND("&&"), ANDEQ(""), BIT_AND("&"), BIT_OR("|"), COMPL("~"), NOT("!"), NOT_EQ(""), OR("||"), OR_EQ(""), XOR("^"), XOR_EQ("");			
+    
+    	private String description;
+    	private OpLogico(String desc) { description = desc; };
+    	public String getDesc() { return description; };
+    
     }
     
     /**
      * Operadores de asignacion
      */
     public enum OpAsignacion {
-    	ASIGNACION, MAS_IGUAL, MENOS_IGUAL, POR_IGUAL, DIV_IGUAL, PORCENTAJE_IGUAL,
-    	CIRCUNFLEJO_IGUAL, AND_IGUAL, OR_IGUAL, MAYOR_MAYOR_IGUAL, MENOR_MENOR_IGUAL,
-    	PUNTERO
+    	ASIGNACION("="), MAS_IGUAL("+="), MENOS_IGUAL("-="), POR_IGUAL("*="), DIV_IGUAL("/="), PORCENTAJE_IGUAL("%="),
+    	CIRCUNFLEJO_IGUAL("^="), AND_IGUAL("&="), OR_IGUAL("|="), MAYOR_MAYOR_IGUAL(">>="), MENOR_MENOR_IGUAL("<<="),
+    	PUNTERO("*");
+    	
+    	private String description;
+    	private OpAsignacion(String desc) { description = desc; };
+    	public String getDesc() { return description; };
     }
     
     /**
@@ -126,7 +143,7 @@ public class Token {
 	
 	public String atrString(){
 		String s=new String("");
-		GestorTablasSimbolos g = null;
+		GestorTablasSimbolos g = GestorTablasSimbolos.getGestorTS();
 		
 		switch(tipo){
 		case EOF:	s="EOF";
@@ -135,7 +152,7 @@ public class Token {
 		 break;
 		case LIT_CADENA:	s=(String)atributo;
 		 break;
-		case PAL_RESERVADA:	s=g.dameNombrePalRes((Integer)atributo); //TODO:<<--CORREGIR!!
+		case PAL_RESERVADA:	s=g.dameNombrePalRes((Integer)atributo); 
 		 break;
 		case IDENTIFICADOR:	s=(String)(atributo+""); //Si atributo es un char da excepcion
 		 break;
@@ -145,15 +162,15 @@ public class Token {
 		 break;
 		case NUM_ENTERO:	s=String.valueOf((Integer)atributo);
 		 break;
-		case SEPARADOR:		s="";
+		case SEPARADOR:		s=((Separadores)atributo).getDesc();
 		 break;		
-		case OP_ARITMETICO: s="";
+		case OP_ARITMETICO: s=((OpAritmetico)atributo).getDesc();
 		 break;
-		case OP_LOGICO: s="";
+		case OP_LOGICO: s=((OpLogico)atributo).getDesc();
 		 break;
-		case OP_COMPARACION: s="";
+		case OP_COMPARACION: s=((OpComparacion)atributo).getDesc();
 		 break;
-		case OP_ASIGNACION: s="";
+		case OP_ASIGNACION: s=((OpAsignacion)atributo).getDesc();
 		 break;
 		case COMENT_LINEA: s="";
 		 break;

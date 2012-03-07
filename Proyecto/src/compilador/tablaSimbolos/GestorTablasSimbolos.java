@@ -1,6 +1,5 @@
 package compilador.tablaSimbolos;
-
-import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 /**
@@ -149,16 +148,19 @@ public class GestorTablasSimbolos {
 	 * @param id
 	 * @return string de la palabra reservada asociada
 	 */
+
 	public String dameNombrePalRes(Integer id)
 	{
-		String s ="";
-		if(palRes.containsValue(id))
-			while(palRes.keys().hasMoreElements()) {
-				s = palRes.keys().nextElement();
-				if(palRes.get(s).equals(id))
-					return s;
-			}
-		return s;
+		if(palRes.containsValue(id)){
+
+		 for (Enumeration<String> f = palRes.keys(); f.hasMoreElements();)
+		 {	 
+		       String d = f.nextElement();
+				if(palRes.get(d).equals(id))
+					return d;
+		}	
+		}
+		return "";
 	}			
 	
 	/**

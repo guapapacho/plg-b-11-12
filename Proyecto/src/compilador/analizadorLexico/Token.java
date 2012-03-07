@@ -172,9 +172,9 @@ public class Token {
 		 break;
 		case OP_ASIGNACION: s=((OpAsignacion)atributo).getDesc();
 		 break;
-		case COMENT_LINEA: s="";
+		case COMENT_LINEA: s=(String)(atributo+"");
 		 break;
-		case COMENT_LARGO: s="";
+		case COMENT_LARGO: s=(String)(atributo+"");
 		 break;
 		case ERROR: s="";
 		 break;

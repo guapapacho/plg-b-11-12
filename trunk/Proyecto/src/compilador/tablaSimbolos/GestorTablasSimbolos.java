@@ -145,6 +145,10 @@ public class GestorTablasSimbolos {
 		return tipos.get(atributo);
 	}	
 	
+	/**
+	 * @param id
+	 * @return string de la palabra reservada asociada
+	 */
 	public String dameNombrePalRes(Integer id)
 	{
 		String s ="";

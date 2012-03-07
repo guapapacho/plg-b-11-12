@@ -1,5 +1,7 @@
 package compilador.analizadorLexico;
 
+import compilador.tablaSimbolos.GestorTablasSimbolos;
+
 /**
  * 
  * @author Grupo 1 
@@ -124,6 +126,7 @@ public class Token {
 	
 	public String atrString(){
 		String s=new String("");
+		GestorTablasSimbolos g = null;
 		
 		switch(tipo){
 		case EOF:	s="EOF";
@@ -132,7 +135,7 @@ public class Token {
 		 break;
 		case LIT_CADENA:	s=(String)atributo;
 		 break;
-		case PAL_RESERVADA:	s=""; //TODO:<<--CORREGIR!!
+		case PAL_RESERVADA:	s=g.dameNombrePalRes((Integer)atributo); //TODO:<<--CORREGIR!!
 		 break;
 		case IDENTIFICADOR:	s=(String)(atributo+""); //Si atributo es un char da excepcion
 		 break;

@@ -134,7 +134,7 @@ public class Token {
 		 break;
 		case PAL_RESERVADA:	s=""; //TODO:<<--CORREGIR!!
 		 break;
-		case IDENTIFICADOR:	s=(String)atributo;
+		case IDENTIFICADOR:	s=(String)(atributo+""); //Si atributo es un char da excepcion
 		 break;
 		case NUM_REAL:		s=String.valueOf((Double)atributo);
 		 break;

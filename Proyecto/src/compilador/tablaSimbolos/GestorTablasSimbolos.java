@@ -1,5 +1,6 @@
 package compilador.tablaSimbolos;
 
+import java.util.Collection;
 import java.util.Hashtable;
 
 /**
@@ -143,6 +144,18 @@ public class GestorTablasSimbolos {
 	public String getTipoSimple(Integer atributo) {
 		return tipos.get(atributo);
 	}	
+	
+	public String dameNombrePalRes(Integer id)
+	{
+		String s ="";
+		if(palRes.containsValue(id))
+			while(palRes.keys().hasMoreElements()) {
+				s = palRes.keys().nextElement();
+				if(palRes.get(s).equals(id))
+					return s;
+			}
+		return s;
+	}			
 	
 	/**
 	 * Inicializa la tabla de palabras reservadas

@@ -1019,8 +1019,8 @@ public class AnalizadorSintactico {
 				inicializacion();
 				declaraciones();
 			} else {
-				gestorErr.insertaErrorSintactico(linea, columna,
-						"Falta el identificador");;
+				gestorErr.insertaErrorSintactico(linea, columna,"Falta el identificador. Palabra o termino \""+token.atrString()+"\" inesperado.");
+						
 				ruptura=parse.size();
 			}		
 		} else {

@@ -164,6 +164,8 @@ public class AnalizadorSintactico {
 	public String getStringParse() {
 		String string = "";
 		int i = 0;
+		if(ruptura==999)
+			ruptura=parse.size();
 		while(i < ruptura) {
 		//while(i < parse.size()) {
 			for(int j=0; j<17 && i<parse.size(); j++, i++) 
@@ -180,8 +182,13 @@ public class AnalizadorSintactico {
 	
 	public String getStringTokens() {
 		String string = "";
-		for(Token token : tokens) 
+		for(Token token : tokens)
+		/*int i = 0;
+		while(i < ruptura) {
+			token=tokens.get(i);*/
 			string += "\nTipo: " + token.getTipo() + " Atr: " + token.getAtributo();
+/*			i++;
+		}*/
 		return string+"\n";
 	}	
 	
@@ -247,7 +254,7 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * 107.CUERPO_CLASE → friend RESTO_FRIEND
+	 * 107.CUERPO_CLASE → friend RESTO_FRIEND CUERPO CLASE
 	 * 108.CUERPO_CLASE → public : LISTA_CLASE CUERPO_CLASE
 	 * 109.CUERPO_CLASE → private : LISTA_CLASE CUERPO_CLASE
 	 * 110.CUERPO_CLASE → protected : LISTA_CLASE CUERPO_CLASE
@@ -259,6 +266,7 @@ public class AnalizadorSintactico {
 				parse.add(107);
 				nextToken();
 				resto_friend();
+				cuerpo_clase();
 			} else if (token.esIgual(TipoToken.PAL_RESERVADA, 44)) {
 				parse.add(108);
 				nextToken();

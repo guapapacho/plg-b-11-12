@@ -4,7 +4,6 @@ package compilador.analizadorSintactico;
 import java.util.Vector;
 
 import compilador.analizadorLexico.*;
-import compilador.analizadorLexico.Token.TipoToken;
 import compilador.analizadorLexico.Token.*;
 import compilador.gestionErrores.GestorErrores;
 import compilador.tablaSimbolos.*;
@@ -43,6 +42,9 @@ public class AnalizadorSintactico {
 	/** Numero de columna del siguiente al token anterior */
 	private int columna;
 	
+	private int ruptura=999;
+	/** Ubicación del error (si es que lo hay) */ 
+	
 	public AnalizadorSintactico(AnalizadorLexico lexico){
 		this.lexico = lexico;
 		parse = new Vector<Integer>();
@@ -56,8 +58,13 @@ public class AnalizadorSintactico {
 		programa();
 	}
 	
+	public int getRuptura(){
+		return ruptura;
+	}
+	
 	private void nextToken() {
 		tokenAnterior = token;
+		System.out.println("Ruptura: "+ruptura+"\n");		
 		linea = lexico.getLinea();
 		columna = lexico.getColumna();
 		//lexemaAnterior = lexico.getLexemaAnterior();
@@ -157,7 +164,8 @@ public class AnalizadorSintactico {
 	public String getStringParse() {
 		String string = "";
 		int i = 0;
-		while(i < parse.size()) {
+		while(i < ruptura) {
+		//while(i < parse.size()) {
 			for(int j=0; j<17 && i<parse.size(); j++, i++) 
 				string += parse.get(i) + ", ";
 			string += "\n";
@@ -186,6 +194,7 @@ public class AnalizadorSintactico {
 		resto_programa();
 		if (!token.esIgual(TipoToken.EOF)) {
 			gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");//+lexico.getLexema()+"\" inesperado.");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -210,7 +219,9 @@ public class AnalizadorSintactico {
 							gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \";\"");
 						}
 					} else {
-						gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"}\"");
+						//gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"}\"");
+						gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");//"Palabra o termino \""+lexico.getLexema()+"\" inesperado.");					
+						ruptura=parse.size();
 // AÑADIR??------------>>>						
 //						if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
 //							nextToken();
@@ -222,9 +233,11 @@ public class AnalizadorSintactico {
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"{\"");
+					ruptura=parse.size();
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la clase");
+				ruptura=parse.size();
 			}
 		} else {
 			parse.add(106);
@@ -255,6 +268,7 @@ public class AnalizadorSintactico {
 					cuerpo_clase();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \":\"");
+					ruptura=parse.size();
 				}
 			} else if (token.esIgual(TipoToken.PAL_RESERVADA, 42)) {
 				parse.add(109);
@@ -265,6 +279,7 @@ public class AnalizadorSintactico {
 					cuerpo_clase();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \":\"");
+					ruptura=parse.size();
 				}
 			} else if (token.esIgual(TipoToken.PAL_RESERVADA, 43)) {
 				parse.add(110);
@@ -275,12 +290,14 @@ public class AnalizadorSintactico {
 					cuerpo_clase();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \":\"");
+					ruptura=parse.size();
 				}
 			} else {
 				parse.add(111);
 			}
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Fin de fichero inesperado");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -300,6 +317,7 @@ public class AnalizadorSintactico {
 			resto_friend2();
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta tipo de retorno (o void)");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -321,15 +339,19 @@ public class AnalizadorSintactico {
 						cuerpo_clase();
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \";\"");
+						ruptura=parse.size();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
+					ruptura=parse.size();
 				}	
 			} else  {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
+				ruptura=parse.size();
 			}
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el identificador");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -370,6 +392,7 @@ public class AnalizadorSintactico {
 					lista_clase();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \";\" o \"(\"");
+					ruptura=parse.size();
 				}
 			}
 		} else if (token.esIgual(TipoToken.IDENTIFICADOR)) {
@@ -378,6 +401,7 @@ public class AnalizadorSintactico {
 			resto_linea2();
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el identificador");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -397,6 +421,7 @@ public class AnalizadorSintactico {
 			lista_clase();
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \";\" o \"(\"");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -415,9 +440,11 @@ public class AnalizadorSintactico {
 				lista_clase();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \";\"");
+				ruptura=parse.size();
 			}
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -437,6 +464,7 @@ public class AnalizadorSintactico {
 			}
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Fin de fichero inesperado");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -455,7 +483,8 @@ public class AnalizadorSintactico {
 					nextToken();
 					resto_libreria();
 				} else {
-					gestorErr.insertaErrorSintactico(linea, columna,"Falta palabra \"include\""); 
+					gestorErr.insertaErrorSintactico(linea, columna,"Falta palabra \"include\"");
+					ruptura=parse.size();
 				}
 					//gestorErr.insertaErrorSintactico(linea, columna,
 						//"Falta la palabra reservada \"include\"");				
@@ -492,19 +521,24 @@ public class AnalizadorSintactico {
 							//System.out.println("libreria con angulos");
 							libreria();
 						} else {
-							gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \">\"");			
+							gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \">\"");
+							ruptura=parse.size();
 						}
 					} else {
-						gestorErr.insertaErrorSintactico(linea, columna,"Falta extension de libreria");			
+						gestorErr.insertaErrorSintactico(linea, columna,"Falta extension de libreria");
+						ruptura=parse.size();
 					}
 				} else {
-					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \".\"");				
+					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \".\"");
+					ruptura=parse.size();
 				}
 			} else {
-				gestorErr.insertaErrorSintactico(linea, columna,"Falta la libreria");				
+				gestorErr.insertaErrorSintactico(linea, columna,"Falta la libreria");
+				ruptura=parse.size();
 			}	
 		} else {
-			gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \"<\" o \"___\"");				
+			gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \"<\" o \"___\"");
+			ruptura=parse.size();
 		}
 		
 	}
@@ -561,15 +595,18 @@ public class AnalizadorSintactico {
 						inic_const();
 						if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 							gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \";\"");
+							ruptura=parse.size();
 						} else {
 							nextToken();
 							cosas();
 						}
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la variable");
+						ruptura=parse.size();
 					}
 				} else {
-					gestorErr.insertaErrorSintactico(linea, columna,"Falta tipo de la variable");	
+					gestorErr.insertaErrorSintactico(linea, columna,"Falta tipo de la variable");
+					ruptura=parse.size();
 				}
 			} else if(tipo()) {
 				parse.add(9);
@@ -579,6 +616,7 @@ public class AnalizadorSintactico {
 					cosas();			
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la variable");
+					ruptura=parse.size();
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 69)){
 				parse.add(10);
@@ -595,16 +633,20 @@ public class AnalizadorSintactico {
 						} else {
 							if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)||token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 								gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \")\"");
+								ruptura=parse.size();
 							}
 							else{
 								gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");//"Palabra o termino \""+lexico.getLexema()+"\" inesperado.");
+								ruptura=parse.size();
 							}
 						}
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"(\"");
+						ruptura=parse.size();
 					}
 				} else {
-					gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre de la funcion");	
+					gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre de la funcion");
+					ruptura=parse.size();
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 23)){
 				parse.add(11);
@@ -618,18 +660,22 @@ public class AnalizadorSintactico {
 							nextToken();
 							if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 								gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \";\"");
+								ruptura=parse.size();
 							} else {
 								nextToken();
 								cosas();
 							}
 						} else{
 							gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"}\"");
+							ruptura=parse.size();
 						}
 					} else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"{\"");
+						ruptura=parse.size();
 					}
 				} else{
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre de lista");	//No me gusta... :(
+					ruptura=parse.size();
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 54)){
 				parse.add(12);
@@ -674,6 +720,7 @@ public class AnalizadorSintactico {
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta identificador de lista");
+				ruptura=parse.size();
 			}
 		}
 		else{
@@ -697,9 +744,11 @@ public class AnalizadorSintactico {
 			} else {
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)||token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \")\"");
+					ruptura=parse.size();
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");
+					ruptura=parse.size();
 				}
 			}
 		} 
@@ -710,6 +759,7 @@ public class AnalizadorSintactico {
 			declaraciones();		
 			if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \";\"");
+				ruptura=parse.size();
 			}
 			nextToken();
 		}
@@ -732,6 +782,7 @@ public class AnalizadorSintactico {
 		}
 		else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba \";\" o \"{\" ");
+			ruptura=parse.size();
 		}
 		
 	}
@@ -748,7 +799,8 @@ public class AnalizadorSintactico {
 				restoLista();
 			}
 			else{
-				gestorErr.insertaErrorSintactico(linea, columna, "Falta identificador de lista de parametros");	
+				gestorErr.insertaErrorSintactico(linea, columna, "Falta identificador de lista de parametros");
+				ruptura=parse.size();
 			}
 		}
 		else{
@@ -811,10 +863,12 @@ public class AnalizadorSintactico {
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \"]\"");
+					ruptura=parse.size();
 				}
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba un numero entero");
+				ruptura=parse.size();
 			}
 		}
 		else{
@@ -844,6 +898,7 @@ public class AnalizadorSintactico {
 	private void inicDim2() {
 		if(!token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_LLAVE)){
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"{\"");
+			ruptura=parse.size();
 		}
 		else{
 			parse.add(28);
@@ -851,6 +906,7 @@ public class AnalizadorSintactico {
 			inicDim3();
 			if(!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)){
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"}\"");
+				ruptura=parse.size();
 			}
 			else{
 				nextToken();
@@ -875,6 +931,7 @@ public class AnalizadorSintactico {
 		}
 		else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Fin de fichero inesperado");
+			ruptura=parse.size();
 		}
 	}
 
@@ -888,6 +945,7 @@ public class AnalizadorSintactico {
 			if(!literal()){
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Falta token literal");
+				ruptura=parse.size();
 			}
 			else{
 				inicDim4();
@@ -929,6 +987,7 @@ public class AnalizadorSintactico {
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Falta un identificador");
+				ruptura=parse.size();
 			}	
 		}
 		else { ///Si es lambda
@@ -953,6 +1012,7 @@ public class AnalizadorSintactico {
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Falta el identificador");;
+				ruptura=parse.size();
 			}		
 		} else {
 			parse.add(38);
@@ -992,11 +1052,13 @@ public class AnalizadorSintactico {
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \"]\"");
+					ruptura=parse.size();
 				}
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Se espera un numero entero (tamaño del array)");
+				ruptura=parse.size();
 			}
 		} else {
 			parse.add(41);
@@ -1061,6 +1123,7 @@ public class AnalizadorSintactico {
 					//error
 					gestorErr.insertaErrorSintactico(linea, columna,
 							"Falta separador \";\"");
+					ruptura=parse.size();
 				}
 			}
 		} 
@@ -1076,6 +1139,7 @@ public class AnalizadorSintactico {
 				//error
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Falta separador \";\"");
+				ruptura=parse.size();
 				return false;
 			}
 		}
@@ -1114,20 +1178,24 @@ public class AnalizadorSintactico {
 							//error
 							gestorErr.insertaErrorSintactico(linea, columna, 
 									"Falta separador \";\"");
+							ruptura=parse.size();
 						}
 					} else {
 						//error
 						gestorErr.insertaErrorSintactico(linea, columna, 
 								"Falta valor literal");
+						ruptura=parse.size();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna, 
 							"Falta operador \"=\"");
+					ruptura=parse.size();
 				}
 			} else {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, 
 						"Falta identificador");
+				ruptura=parse.size();
 			}
 		}
 		
@@ -1162,6 +1230,7 @@ public class AnalizadorSintactico {
 		} else {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -1258,14 +1327,18 @@ public class AnalizadorSintactico {
 					} else {
 						// error
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta la identificacion de la estructura");
+						ruptura=parse.size();
 					}
-				} else
+				} else{
 					// error
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador cierra llave }");
+					ruptura=parse.size();
+				}
 			}
 			else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador abre llave {");
+				ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 			parse.add(61);
@@ -1280,14 +1353,17 @@ public class AnalizadorSintactico {
 				} else {
 					// error
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta la identificacion de la estructura");
+					ruptura=parse.size();
 				}
 			} else {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador cierra llave }");
+				ruptura=parse.size();
 			}
 		} else{
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador abre llave { o identificacion de la estructura");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -1308,6 +1384,7 @@ public class AnalizadorSintactico {
 			else {
 				//error
 				gestorErr.insertaErrorSintactico(linea, columna, "Los atributos deben estar identificados");
+				ruptura=parse.size();
 			}
 		} else
 			parse.add(63);
@@ -1331,6 +1408,7 @@ public class AnalizadorSintactico {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, 
 						"Se deben identificar todos los atributos");
+				ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 			parse.add(65);
@@ -1339,6 +1417,7 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, 
 					"Se esperaba un separador coma (,) o punto_coma (;)");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -1359,6 +1438,7 @@ public class AnalizadorSintactico {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Se deben identificar todas las variables de la estructura");
+				ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 			parse.add(67);
@@ -1367,6 +1447,7 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, 
 					"Se esperaba un separador coma (,) o punto_coma (;)");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -1384,6 +1465,7 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Lectura incorrecta, se esperaba el operador \">>\"");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -1402,6 +1484,7 @@ public class AnalizadorSintactico {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Lectura terminada incorrectamente, falta ';'");
+				ruptura=parse.size();
 			}
 		}
 		else if(esLiteral()){
@@ -1414,12 +1497,14 @@ public class AnalizadorSintactico {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Lectura terminada incorrectamente, falta ';'");
+				ruptura=parse.size();
 			}
 		}
 		else{
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Lectura incorrecta, se esperaba un literal o una variable");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -1436,6 +1521,7 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Escritura incorrecta, se esperaba el operador \"<<\"");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -1464,6 +1550,7 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Escritura incorrecta, se esperaba un literal, una variable o la palabra reservada \"endl\"");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -1485,6 +1572,7 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Escritura terminada incorrectamente, falta ';'");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -1582,6 +1670,7 @@ public class AnalizadorSintactico {
 				cuerpo();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \"}\"");
+				ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA,5 /*break*/)) {
 			parse.add(128);
@@ -1591,6 +1680,7 @@ public class AnalizadorSintactico {
 				cuerpo();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
+				ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA, 12 /*continue*/)) {
 			parse.add(129);
@@ -1600,6 +1690,7 @@ public class AnalizadorSintactico {
 				cuerpo();
 			} else { 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
+				ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA, 47 /*return*/)) {
 			parse.add(130);
@@ -1610,6 +1701,7 @@ public class AnalizadorSintactico {
 				cuerpo();
 			} else { 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
+				ruptura=parse.size();
 			}
 		}  else if(token.esIgual(TipoToken.PAL_RESERVADA, 31 /*goto*/)) {
 			parse.add(128);
@@ -1621,16 +1713,20 @@ public class AnalizadorSintactico {
 					cuerpo();
 				} else { 
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
+					ruptura=parse.size();
 				}
 			} else { 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el identificador");
+				ruptura=parse.size();
 			}
 		} else {
 			parse.add(132);
 			if(instruccion())
 				cuerpo();
-			else
+			else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Token inesperado... ");
+				ruptura=parse.size();
+			}
 		}	
 	}
 
@@ -1702,10 +1798,14 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
 				cuerpo2();
-			} else
+			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
-		} else
+				ruptura=parse.size();
+			}
+		} else{
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \"(\"");
+			ruptura=parse.size();
+		}
 	}		
 
 	/**
@@ -1724,17 +1824,25 @@ public class AnalizadorSintactico {
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 						nextToken();
 					}	
-					else
+					else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
+						ruptura=parse.size();
+					}
 				}
-				else
+				else{
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
+					ruptura=parse.size();
+				}
 			}
-			else
+			else{
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
+				ruptura=parse.size();
+			}
 		}
-		else
-			gestorErr.insertaErrorSintactico(linea, columna,"Falta palabra \"while\"");		
+		else{
+			gestorErr.insertaErrorSintactico(linea, columna,"Falta palabra \"while\"");
+			ruptura=parse.size();
+		}
 	}	
 		
 	/**
@@ -1754,14 +1862,21 @@ public class AnalizadorSintactico {
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 						nextToken();
 						cuerpo2();
-					} else
+					} else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
-				} else
+						ruptura=parse.size();
+					}
+				} else{
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-			} else
+					ruptura=parse.size();
+				}
+			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-		} else
+				ruptura=parse.size();
+			}
+		} else{
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \"(\"");
+		}
 	}
 
 	/**
@@ -1799,11 +1914,15 @@ public class AnalizadorSintactico {
 				nextToken();
 				resto_case2();
 			}
-			else
+			else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta ')'");
+				ruptura=parse.size();
+			}
 		}
-		else
+		else{
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta '('");
+			ruptura=parse.size();
+		}
 		
 	
 	return false;
@@ -1828,11 +1947,15 @@ public class AnalizadorSintactico {
 				nextToken();
 				return true;
 			}
-			else 
+			else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta '}'");
+				ruptura=parse.size();
+			}
 		}
-		else
+		else{
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta '{'");
+			ruptura=parse.size();
+		}
 		
 	return false;
 	}
@@ -1852,8 +1975,10 @@ public class AnalizadorSintactico {
 					cuerpo_case();
 				}	
 			}
-			else 
+			else{ 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta literal");
+				ruptura=parse.size();
+			}
 		}
 	}
 	
@@ -1872,10 +1997,14 @@ public class AnalizadorSintactico {
 				cuerpo2();
 				sent_else();
 				return true;
-			} else
+			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
-		} else
+				ruptura=parse.size();
+			}
+		} else{
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
+			ruptura=parse.size();
+		}
 		return false;
 	}
 	
@@ -1969,6 +2098,7 @@ public class AnalizadorSintactico {
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
+				ruptura=parse.size();
 				return false;
 			}
 		} else if (token.esIgual(TipoToken.PAL_RESERVADA, 57)) {
@@ -2000,6 +2130,7 @@ public class AnalizadorSintactico {
 		} else {
 			//gestorErr.insertaErrorSintactico(linea, columna,"Parte derecha de la asignacion incompleta");
 			gestorErr.insertaErrorSintactico(linea, columna,"Expresion incompleta.");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -2023,12 +2154,15 @@ public class AnalizadorSintactico {
 					nextToken();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
+					ruptura=parse.size();
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
+				ruptura=parse.size();
 			}
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta identificador o decltype");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -2051,9 +2185,11 @@ public class AnalizadorSintactico {
 					resto_postfix_exp();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
+					ruptura=parse.size();
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
+				ruptura=parse.size();
 			}
 		} else if (token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(153);
@@ -2110,6 +2246,7 @@ public class AnalizadorSintactico {
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"]\"");
+				ruptura=parse.size();
 			}
 		} else if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.PUNTERO)) {
 			parse.add(156);
@@ -2150,6 +2287,7 @@ public class AnalizadorSintactico {
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
+				ruptura=parse.size();
 			}
 		}
 	}
@@ -2172,12 +2310,15 @@ public class AnalizadorSintactico {
 						nextToken();
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
+						ruptura=parse.size();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
+					ruptura=parse.size();
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta la palabra \"decltype\"");
+				ruptura=parse.size();
 			}
 		} else {
 			unqualified_id();
@@ -2209,6 +2350,7 @@ public class AnalizadorSintactico {
 			postfix3();
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -2228,6 +2370,7 @@ public class AnalizadorSintactico {
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
+				ruptura=parse.size();
 			}
 		}
 	}
@@ -2303,14 +2446,17 @@ public class AnalizadorSintactico {
 					}else{
 						// error
 						gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");
+						ruptura=parse.size();
 					}	
 				}else{
 					// error
 					gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador o tipo pre-definido ");
+					ruptura=parse.size();
 				}
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `(` ");
+				ruptura=parse.size();
 			}
 		} else if (token.esIgual(TipoToken.PAL_RESERVADA)
 				&& (Integer)token.getAtributo()==39 /*noexcept*/ ){
@@ -2328,10 +2474,12 @@ public class AnalizadorSintactico {
 				}else{
 					//error
 					gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");
+					ruptura=parse.size();
 				}
 			}else{
 				//error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador o tipo pre-definido ");
+				ruptura=parse.size();
 			}
 		}else if(token.esIgual(TipoToken.PAL_RESERVADA)
 				&& (Integer)token.getAtributo()==18 /*delete*/ ){
@@ -2358,10 +2506,12 @@ public class AnalizadorSintactico {
 				}else{
 					// error
 					gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");
+					ruptura=parse.size();
 				}
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador o tipo pre-definido ");
+				ruptura=parse.size();
 			}
 		}else{
 			unary_expression();
@@ -2422,6 +2572,7 @@ public class AnalizadorSintactico {
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ')' ");
+				ruptura=parse.size();
 			}
 				
 		}
@@ -2467,10 +2618,12 @@ public class AnalizadorSintactico {
 			}else{
 				//error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ']' ");
+				ruptura=parse.size();
 			}			
 		}else{
 			//error
-			gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba '[' ");		
+			gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba '[' ");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -2488,10 +2641,12 @@ public class AnalizadorSintactico {
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");
+				ruptura=parse.size();
 			}
 		}else{
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `(` ");
+			ruptura=parse.size();
 		}
 	}
 	
@@ -2523,6 +2678,7 @@ public class AnalizadorSintactico {
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ')' ");
+				ruptura=parse.size();
 			}
 		}else{
 			parse.add(140);
@@ -2532,6 +2688,7 @@ public class AnalizadorSintactico {
 			} else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ')' ");
+				ruptura=parse.size();
 			}
 		}
 	}
@@ -2552,6 +2709,7 @@ public class AnalizadorSintactico {
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `*` ");
+				ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.PUNTERO)){
 			parse.add(198);
@@ -2865,6 +3023,7 @@ public class AnalizadorSintactico {
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba \":\"");
+				ruptura=parse.size();
 			}
 		}
 		else{

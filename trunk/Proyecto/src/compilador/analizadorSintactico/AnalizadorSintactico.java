@@ -64,7 +64,7 @@ public class AnalizadorSintactico {
 	
 	private void nextToken() {
 		tokenAnterior = token;
-		System.out.println("Ruptura: "+ruptura+"\n");		
+		//System.out.println("Ruptura: "+ruptura+"\n");		
 		linea = lexico.getLinea();
 		columna = lexico.getColumna();
 		//lexemaAnterior = lexico.getLexemaAnterior();
@@ -73,7 +73,8 @@ public class AnalizadorSintactico {
 			token = ventana.remove(0);
 		} else {
 			token = lexico.scan();
-			tokens.add(token);
+			if(ruptura==999)
+				tokens.add(token);
 		}
 	}
 	

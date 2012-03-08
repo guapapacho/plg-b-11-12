@@ -968,7 +968,8 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.OP_ASIGNACION)) {
 			parse.add(39);
 			nextToken();
-			expression();
+			assignment_expression();
+			//expression();
 			/*if(esLiteral()){
 				nextToken();
 			}

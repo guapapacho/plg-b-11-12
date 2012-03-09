@@ -1,5 +1,6 @@
 package compilador.analizadorLexico;
 
+import compilador.tablaSimbolos.EntradaTS;
 import compilador.tablaSimbolos.GestorTablasSimbolos;
 
 /**
@@ -154,7 +155,7 @@ public class Token {
 		 break;
 		case PAL_RESERVADA:	s=g.dameNombrePalRes((Integer)atributo); 
 		 break;
-		case IDENTIFICADOR:	s=(String)(atributo+""); //Si atributo es un char da excepcion
+		case IDENTIFICADOR:	s=((EntradaTS)atributo).getLexema()+""; 
 		 break;
 		case NUM_REAL:		s=String.valueOf((Double)atributo);
 		 break;

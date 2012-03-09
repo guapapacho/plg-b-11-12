@@ -767,7 +767,7 @@ public class AnalizadorSintactico {
 			inicializacion();
 			declaraciones();		
 			if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
-				gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \";\"");
+				gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado. Falta separador \";\"");
 				ruptura=parse.size();
 			}
 			nextToken();

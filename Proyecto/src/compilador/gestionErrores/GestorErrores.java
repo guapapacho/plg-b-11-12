@@ -74,12 +74,14 @@ public class GestorErrores {
         errors.add(new TError(TipoError.LEXICO, lista.get(er), l, n));
     }
 
-    public void insertaErrorSintactico(int er, int l, int n) {
+    public void insertaErrorSintactico(int er, int l, int n) throws Exception {
         errors.add(new TError(TipoError.SINTACTICO, lista.get(er), l, n));
+        throw new Exception("Error sintáctico!");
     }
 
-    public void insertaErrorSintactico(int l, int n,String mensaje) {
+    public void insertaErrorSintactico(int l, int n,String mensaje) throws Exception {
         errors.add(new TError(TipoError.SINTACTICO, mensaje, l, n));
+        throw new Exception("Error sintáctico!");
     }
     
     public ArrayList<TError> devuelveErrores(){

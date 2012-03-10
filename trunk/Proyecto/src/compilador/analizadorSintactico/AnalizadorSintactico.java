@@ -42,9 +42,6 @@ public class AnalizadorSintactico {
 	/** Numero de columna del siguiente al token anterior */
 	private int columna;
 	
-	private int ruptura=999;
-	/** Ubicación del error (si es que lo hay) */ 
-	
 	public AnalizadorSintactico(AnalizadorLexico lexico){
 		this.lexico = lexico;
 		parse = new Vector<Integer>();
@@ -58,10 +55,6 @@ public class AnalizadorSintactico {
 		programa();
 	}
 	
-	public int getRuptura(){
-		return ruptura;
-	}
-	
 	private void nextToken() {
 		tokenAnterior = token;
 		//System.out.println("Ruptura: "+ruptura+"\n");		
@@ -73,12 +66,10 @@ public class AnalizadorSintactico {
 			token = ventana.remove(0);
 		} else {
 			token = lexico.scan();
-			if(ruptura==999)
-				tokens.add(token);
 		}
 	}
 	
-	private void idConst() {
+	private void idConst() throws Exception {
 		entradaTS = (EntradaTS)token.getAtributo();
 		entradaTS.setTipo(tipo);
 		entradaTS.setConstante(true);
@@ -165,10 +156,7 @@ public class AnalizadorSintactico {
 	public String getStringParse() {
 		String string = "";
 		int i = 0;
-		if(ruptura==999)
-			ruptura=parse.size();
-		while(i < ruptura) {
-		//while(i < parse.size()) {
+		while(i < parse.size()) {
 			for(int j=0; j<17 && i<parse.size(); j++, i++) 
 				string += parse.get(i) + ", ";
 			string += "\n";
@@ -198,19 +186,24 @@ public class AnalizadorSintactico {
 	 */
 	private void programa() {
 		parse.add(1);
-		libreria();
-		resto_programa();
-		if (!token.esIgual(TipoToken.EOF)) {
-			gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");//+lexico.getLexema()+"\" inesperado.");
-			ruptura=parse.size();
+		try {
+			libreria();
+			resto_programa();
+			if (!token.esIgual(TipoToken.EOF)) {
+				gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");//+lexico.getLexema()+"\" inesperado.");
+				//ruptura=parse.size();
+			}
+		} catch (Exception e) {
+			// TODO Ha habido un error
 		}
 	}
 	
 	/**
 	 * 105. RESTO_PROGRAMA → class ID { CUERPO_CLASE } ;
 	 * 106. RESTO_PROGRAMA → COSAS
+	 * @throws Exception 
 	 */
-	private void resto_programa() {
+	private void resto_programa() throws Exception {
 		if (token.esIgual(TipoToken.PAL_RESERVADA, 8)) {
 			parse.add(105);
 			nextToken();
@@ -229,7 +222,7 @@ public class AnalizadorSintactico {
 					} else {
 						//gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"}\"");
 						gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");//"Palabra o termino \""+lexico.getLexema()+"\" inesperado.");					
-						ruptura=parse.size();
+						//ruptura=parse.size();
 // AÑADIR??------------>>>						
 //						if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
 //							nextToken();
@@ -241,11 +234,11 @@ public class AnalizadorSintactico {
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"{\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la clase");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else {
 			parse.add(106);
@@ -260,8 +253,9 @@ public class AnalizadorSintactico {
 	 * 109.CUERPO_CLASE → private : LISTA_CLASE CUERPO_CLASE
 	 * 110.CUERPO_CLASE → protected : LISTA_CLASE CUERPO_CLASE
 	 * 111.CUERPO_CLASE → lambda
+	 * @throws Exception 
 	 */
-	private void cuerpo_clase() {
+	private void cuerpo_clase() throws Exception {
 		if (!token.esIgual(TipoToken.EOF)) {
 			if (token.esIgual(TipoToken.PAL_RESERVADA, 30)) {
 				parse.add(107);
@@ -277,7 +271,7 @@ public class AnalizadorSintactico {
 					cuerpo_clase();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \":\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else if (token.esIgual(TipoToken.PAL_RESERVADA, 42)) {
 				parse.add(109);
@@ -288,7 +282,7 @@ public class AnalizadorSintactico {
 					cuerpo_clase();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \":\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else if (token.esIgual(TipoToken.PAL_RESERVADA, 43)) {
 				parse.add(110);
@@ -299,14 +293,14 @@ public class AnalizadorSintactico {
 					cuerpo_clase();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \":\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else {
 				parse.add(111);
 			}
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Fin de fichero inesperado");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
@@ -314,8 +308,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 112.RESTO_FRIEND → void RESTO_FRIEND2
 	 * 113.RESTO_FRIEND → TIPO RESTO_FRIEND2
+	 * @throws Exception 
 	 */
-	private void resto_friend() {
+	private void resto_friend() throws Exception {
 		if (token.esIgual(TipoToken.PAL_RESERVADA, 69)) {
 			parse.add(112);
 			nextToken();
@@ -326,15 +321,16 @@ public class AnalizadorSintactico {
 			resto_friend2();
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta tipo de retorno (o void)");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
 	
 	/**
 	 * 114.RESTO_FRIEND2 → ID ( LISTA_PARAM ) ; CUERPO_CLASE
+	 * @throws Exception 
 	 */
-	private void resto_friend2() {
+	private void resto_friend2() throws Exception {
 		if (token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(114);
 			nextToken();
@@ -348,19 +344,19 @@ public class AnalizadorSintactico {
 						cuerpo_clase();
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \";\"");
-						ruptura=parse.size();
+						//ruptura=parse.size();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}	
 			} else  {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el identificador");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
@@ -369,8 +365,9 @@ public class AnalizadorSintactico {
 	 * 115.LISTA_CLASE → void RESTO_LINEA LISTA_CLASE
 	 * 116.LISTA_CLASE → TIPO RESTO_LINEA
 	 * 141.LISTA_CLASE → lambda
+	 * @throws Exception 
 	 */
-	private void lista_clase() {
+	private void lista_clase() throws Exception {
 		if (token.esIgual(TipoToken.PAL_RESERVADA, 69)) {
 			parse.add(115);
 			nextToken();
@@ -387,8 +384,9 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 117.RESTO_LINEA → PUNT ID RESTO_LINEA2
+	 * @throws Exception 
 	 */
-	private void resto_linea() {
+	private void resto_linea() throws Exception {
 		boolean puntero = punt();
 		if(puntero) { // no puede ser un metodo, tiene que ser una variable
 			nextToken();
@@ -401,7 +399,7 @@ public class AnalizadorSintactico {
 					lista_clase();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \";\" o \"(\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			}
 		} else if (token.esIgual(TipoToken.IDENTIFICADOR)) {
@@ -410,7 +408,7 @@ public class AnalizadorSintactico {
 			resto_linea2();
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el identificador");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
@@ -418,8 +416,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 118.RESTO_LINEA2 → ( RESTO_METODO 
 	 * 119.RESTO_LINEA2 → ; LISTA_CLASE
+	 * @throws Exception 
 	 */
-	private void resto_linea2() {
+	private void resto_linea2() throws Exception {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(118);
 			nextToken();
@@ -430,15 +429,16 @@ public class AnalizadorSintactico {
 			lista_clase();
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \";\" o \"(\"");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
 	
 	/**
 	 * 120.RESTO_METODO → LISTA_PARAM ) RESTO_METODO2 ; LISTA_CLASE
+	 * @throws Exception 
 	 */
-	private void resto_metodo() {
+	private void resto_metodo() throws Exception {
 		parse.add(120);
 		lista_param();
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
@@ -449,11 +449,11 @@ public class AnalizadorSintactico {
 				lista_clase();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \";\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
@@ -461,8 +461,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 121.RESTO_METODO2 → { CUERPO
 	 * 122.RESTO_METODO2 → lambda
+	 * @throws Exception 
 	 */
-	private void resto_metodo2() {
+	private void resto_metodo2() throws Exception {
 		if (!token.esIgual(TipoToken.EOF)) {
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_LLAVE)) {
 				parse.add(121);
@@ -473,15 +474,16 @@ public class AnalizadorSintactico {
 			}
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Fin de fichero inesperado");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
 	/**
 	 *  2. LIBRERIA → #include RESTO_LIBRERIA
 	 *  3. LIBRERIA -> lambda
+	 * @throws Exception 
 	 */
-	private void libreria() {
+	private void libreria() throws Exception {
 		if (!token.esIgual(TipoToken.EOF)) {
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ALMOHADILLA)) {
 				parse.add(2);
@@ -493,7 +495,7 @@ public class AnalizadorSintactico {
 					resto_libreria();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta palabra \"include\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 					//gestorErr.insertaErrorSintactico(linea, columna,
 						//"Falta la palabra reservada \"include\"");				
@@ -509,8 +511,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 4. RESTO_LIBRERIA → LIT_CADENA LIBRERIA
 	 * 5. RESTO_LIBRERIA → <ID.ID> LIBRERIA
+	 * @throws Exception 
 	 */
-	private void resto_libreria() {
+	private void resto_libreria() throws Exception {
 		if(token.esIgual(TipoToken.LIT_CADENA)) {
 			parse.add(4);
 			nextToken();
@@ -531,23 +534,23 @@ public class AnalizadorSintactico {
 							libreria();
 						} else {
 							gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \">\"");
-							ruptura=parse.size();
+							//ruptura=parse.size();
 						}
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna,"Falta extension de libreria");
-						ruptura=parse.size();
+						//ruptura=parse.size();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \".\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta la libreria");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}	
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \"<\" o \"___\"");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 		
 	}
@@ -592,8 +595,9 @@ public class AnalizadorSintactico {
 	 * 11. COSAS → enum ID { LISTANOMBRES } ; COSAS
 	 * 12. COSAS → struct RESTO_ST COSAS
 	 * 13. COSAS → lambda
+	 * @throws Exception 
 	 */
-	private void cosas() {
+	private void cosas() throws Exception {
 		if(!token.esIgual(TipoToken.EOF)) {
 			if(token.esIgual(TipoToken.PAL_RESERVADA, 9)){
 				parse.add(8);
@@ -604,18 +608,18 @@ public class AnalizadorSintactico {
 						inic_const();
 						if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 							gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \";\"");
-							ruptura=parse.size();
+							//ruptura=parse.size();
 						} else {
 							nextToken();
 							cosas();
 						}
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la variable");
-						ruptura=parse.size();
+						//ruptura=parse.size();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta tipo de la variable");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else if(tipo()) {
 				parse.add(9);
@@ -625,7 +629,7 @@ public class AnalizadorSintactico {
 					cosas();			
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la variable");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 69)){
 				parse.add(10);
@@ -642,20 +646,20 @@ public class AnalizadorSintactico {
 						} else {
 							if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)||token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 								gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \")\"");
-								ruptura=parse.size();
+								//ruptura=parse.size();
 							}
 							else{
 								gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");//"Palabra o termino \""+lexico.getLexema()+"\" inesperado.");
-								ruptura=parse.size();
+								//ruptura=parse.size();
 							}
 						}
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"(\"");
-						ruptura=parse.size();
+						//ruptura=parse.size();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre de la funcion");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 23)){
 				parse.add(11);
@@ -669,22 +673,22 @@ public class AnalizadorSintactico {
 							nextToken();
 							if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 								gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \";\"");
-								ruptura=parse.size();
+								//ruptura=parse.size();
 							} else {
 								nextToken();
 								cosas();
 							}
 						} else{
 							gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"}\"");
-							ruptura=parse.size();
+							//ruptura=parse.size();
 						}
 					} else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"{\"");
-						ruptura=parse.size();
+						//ruptura=parse.size();
 					}
 				} else{
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre de lista");	//No me gusta... :(
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 54)){
 				parse.add(12);
@@ -704,8 +708,9 @@ public class AnalizadorSintactico {
 	/** 
 	 * 14. LISTANOMBRES → ID RESTO_ListaNombres
 	 * 15. LISTANOMBRES → lambda
+	 * @throws Exception 
 	 */
-	private void listaNombres() {
+	private void listaNombres() throws Exception {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(14);
 			id();
@@ -718,8 +723,9 @@ public class AnalizadorSintactico {
 	
 	/**	102. RESTO_ListaNombres → , ID RESTO_ListaNombres
 		103. RESTO_ListaNombres → lambda
+	 * @throws Exception 
 	*/
-	private void resto_ln() {
+	private void resto_ln() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 			parse.add(102);
 			nextToken();
@@ -729,7 +735,7 @@ public class AnalizadorSintactico {
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta identificador de lista");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 		else{
@@ -740,8 +746,9 @@ public class AnalizadorSintactico {
 	/**	
 	 * 16. COSAS2 → ( LISTA_PARAM ) COSAS3
 	 * 17. COSAS2 → INICIALIZACION  DECLARACIONES ;
+	 * @throws Exception 
 	 */
-	private void cosas2() {
+	private void cosas2() throws Exception {
 		//16. COSAS2 → ( LISTA_PARAM ) COSAS3
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
 			parse.add(16);
@@ -753,11 +760,11 @@ public class AnalizadorSintactico {
 			} else {
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)||token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \")\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			}
 		} 
@@ -768,7 +775,7 @@ public class AnalizadorSintactico {
 			declaraciones();		
 			if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado. Falta separador \";\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 			nextToken();
 		}
@@ -777,8 +784,9 @@ public class AnalizadorSintactico {
 
 	/**	18. COSAS3 → ;
 		19. COSAS3 → { CUERPO 
+	 * @throws Exception 
 	*/
-	private void cosas3() {
+	private void cosas3() throws Exception {
 		
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 			parse.add(18);
@@ -791,15 +799,16 @@ public class AnalizadorSintactico {
 		}
 		else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba \";\" o \"{\" ");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 		
 	}
 
 	/**20. LISTA_PARAM → TIPO ID PASO RESTO_LISTA
 	 * 21. LISTA_PARAM → lambda
+	 * @throws Exception 
 	 */
-	private void lista_param() {
+	private void lista_param() throws Exception {
 		if(tipo()){
 			parse.add(20);
 			paso();
@@ -809,7 +818,7 @@ public class AnalizadorSintactico {
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta identificador de lista de parametros");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 		else{
@@ -843,8 +852,9 @@ public class AnalizadorSintactico {
 	/** 
 	 * 22. RESTO_LISTA → , LISTA_PARAM 
 	 * 23. RESTO_LISTA → lambda
+	 * @throws Exception 
 	 */
-	private void restoLista() {
+	private void restoLista() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 			parse.add(22);
 			nextToken();
@@ -859,8 +869,9 @@ public class AnalizadorSintactico {
 	/**	
 	 * 24. DIMENSION → [ NUM_ENTERO ] DIMENSION
 	 * 25. DIMENSION → lambda
+	 * @throws Exception 
 	 */
-	private void dimension() {
+	private void dimension() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
 			parse.add(24);
 			nextToken();
@@ -872,12 +883,12 @@ public class AnalizadorSintactico {
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \"]\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba un numero entero");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 		else{
@@ -889,8 +900,9 @@ public class AnalizadorSintactico {
 	/**	
 	 * 26. INIC_DIM → = INIC_DIM2
 	 * 27. INIC_DIM → lambda
+	 * @throws Exception 
 	 */
-	private void inicDim() {
+	private void inicDim() throws Exception {
 		if(token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
 			parse.add(26);
 			nextToken();
@@ -903,11 +915,12 @@ public class AnalizadorSintactico {
 
 
 	/**	28. INIC_DIM2 → { INIC_DIM3 }
+	 * @throws Exception 
 	 */
-	private void inicDim2() {
+	private void inicDim2() throws Exception {
 		if(!token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_LLAVE)){
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"{\"");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 		else{
 			parse.add(28);
@@ -915,7 +928,7 @@ public class AnalizadorSintactico {
 			inicDim3();
 			if(!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)){
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"}\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 			else{
 				nextToken();
@@ -925,8 +938,9 @@ public class AnalizadorSintactico {
 
 	/**	29. INIC_DIM3 → LITERAL INIC_DIM4 
 		30. INIC_DIM3 → INIC_DIM2 INIC_DIM5
+	 * @throws Exception 
 	 */
-	private void inicDim3() {
+	private void inicDim3() throws Exception {
 		if(!token.esIgual(TipoToken.EOF)){
 			if(literal()){ // El metodo literal() lee el siguiente token
 				parse.add(29);
@@ -940,21 +954,22 @@ public class AnalizadorSintactico {
 		}
 		else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Fin de fichero inesperado");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 
 	/**	31. INIC_DIM4 → , LITERAL INIC_DIM4 
 		32. INIC_DIM4 → lambda
+	 * @throws Exception 
 	 */
-	private void inicDim4() {
+	private void inicDim4() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 			parse.add(31);
 			nextToken();
 			if(!literal()){
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Falta token literal");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 			else{
 				inicDim4();
@@ -968,8 +983,9 @@ public class AnalizadorSintactico {
 
 	/**	33. INIC_DIM5 → , INIC_DIM2 INIC_DIM5
 		34. INIC_DIM5 → lambda 
+	 * @throws Exception 
 	 */
-	private void inicDim5() {
+	private void inicDim5() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 			parse.add(33);
 			nextToken();
@@ -984,8 +1000,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 35. INIC_CONST → , ID = LITERAL INIC_CONST
 	 * 36. INIC_CONST → lambda
+	 * @throws Exception 
 	 */
-	private void inic_const() {
+	private void inic_const() throws Exception {
 //		System.out.println("declaracion constante " + entradaTS.getLexema());
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 			parse.add(35);
@@ -996,7 +1013,7 @@ public class AnalizadorSintactico {
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Falta un identificador");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}	
 		}
 		else { ///Si es lambda
@@ -1008,8 +1025,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 37. DECLARACIONES → , ID INICIALIZACION DECLARACIONES
 	 * 38. DECLARACIONES → lambda
+	 * @throws Exception 
 	 */
-	private void declaraciones() {
+	private void declaraciones() throws Exception {
 //		System.out.println("declaracion variable " + entradaTS.getLexema());
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 			parse.add(37);
@@ -1021,7 +1039,7 @@ public class AnalizadorSintactico {
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el identificador. Palabra o termino \""+token.atrString()+"\" inesperado.");
 						
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}		
 		} else {
 			parse.add(38);
@@ -1032,8 +1050,9 @@ public class AnalizadorSintactico {
 	 * 39. INICIALIZACION → OP_ASIGNACION EXPRESSION
 	 * 40. INICIALIZACION → [NUM_ENTERO] DIMENSION INIC_DIM
 	 * 41. INICIALIZACION → lambda
+	 * @throws Exception 
 	 */
-	private void inicializacion() {
+	private void inicializacion() throws Exception {
 		if(token.esIgual(TipoToken.OP_ASIGNACION)) {
 			parse.add(39);
 			nextToken();
@@ -1061,13 +1080,13 @@ public class AnalizadorSintactico {
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \"]\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Se espera un numero entero (tamaño del array)");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else {
 			parse.add(41);
@@ -1083,9 +1102,10 @@ public class AnalizadorSintactico {
 	 * 47. INSTRUCCION → TIPO INS_DEC2
 	 * 48. INSTRUCCION → ;
 	 * 133.INSTRUCCION → EXPRESSION ;
+	 * @throws Exception 
 	 */
 	
-	private boolean instruccion() {
+	private boolean instruccion() throws Exception {
 		/*if(token.esIgual(TipoToken.IDENTIFICADOR)) { 
 			parse.add(42);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
@@ -1132,7 +1152,7 @@ public class AnalizadorSintactico {
 					//error
 					gestorErr.insertaErrorSintactico(linea, columna,
 							"Falta separador \";\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			}
 		} 
@@ -1148,7 +1168,7 @@ public class AnalizadorSintactico {
 				//error
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Falta separador \";\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 				return false;
 			}
 		}
@@ -1166,8 +1186,9 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 51. INS_DEC → TIPO PUNT ID OpAsignacion LITERAL INIC_CONST ;
+	 * @throws Exception 
 	 */
-	private void ins_dec() {
+	private void ins_dec() throws Exception {
 		if (tipo()) {
 			parse.add(51);
 			//nextToken();
@@ -1187,24 +1208,24 @@ public class AnalizadorSintactico {
 							//error
 							gestorErr.insertaErrorSintactico(linea, columna, 
 									"Falta separador \";\"");
-							ruptura=parse.size();
+							//ruptura=parse.size();
 						}
 					} else {
 						//error
 						gestorErr.insertaErrorSintactico(linea, columna, 
 								"Falta valor literal");
-						ruptura=parse.size();
+						//ruptura=parse.size();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna, 
 							"Falta operador \"=\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, 
 						"Falta identificador");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 		
@@ -1227,8 +1248,9 @@ public class AnalizadorSintactico {
 	}
 	/**
 	 * 52. INS_DEC2 → PUNT ID MAS_COSAS
+	 * @throws Exception 
 	 */
-	private void ins_dec2() {
+	private void ins_dec2() throws Exception {
 		if(punt())
 			nextToken();
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
@@ -1239,7 +1261,7 @@ public class AnalizadorSintactico {
 		} else {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
@@ -1247,8 +1269,9 @@ public class AnalizadorSintactico {
 	 * TODO
 	 * no se si esta bien 53. MAS_COSAS → = INICIALIZACION  DECLARACIONES
 	 * 53. MAS_COSAS --> = EXPRESSION ;
+	 * @throws Exception 
 	 */
-	private void mas_cosas() {
+	private void mas_cosas() throws Exception {
 		parse.add(53);
 //		inicializacion();
 //		declaraciones();
@@ -1318,8 +1341,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 60. RESTO_ST → ID { CUERPO_ST } ID NOMBRES
 	 * 61. RESTO_ST → { CUERPO_ST } ID NOMBRES
+	 * @throws Exception 
 	 */
-	private void resto_st() {
+	private void resto_st() throws Exception {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){ 
 			parse.add(60);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
@@ -1336,18 +1360,18 @@ public class AnalizadorSintactico {
 					} else {
 						// error
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta la identificacion de la estructura");
-						ruptura=parse.size();
+						//ruptura=parse.size();
 					}
 				} else{
 					// error
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador cierra llave }");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			}
 			else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador abre llave {");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 			parse.add(61);
@@ -1362,17 +1386,17 @@ public class AnalizadorSintactico {
 				} else {
 					// error
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta la identificacion de la estructura");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador cierra llave }");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else{
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador abre llave { o identificacion de la estructura");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
@@ -1380,8 +1404,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 62. CUERPO_ST → TIPO ID RESTO_VAR CUERPO_ST
 	 * 63. CUERPO_ST → lambda
+	 * @throws Exception 
 	 */
-	private void cuerpo_st() {
+	private void cuerpo_st() throws Exception {
 		if(tipo()) {
 			parse.add(62);
 			if (token.esIgual(TipoToken.IDENTIFICADOR)) {
@@ -1393,7 +1418,7 @@ public class AnalizadorSintactico {
 			else {
 				//error
 				gestorErr.insertaErrorSintactico(linea, columna, "Los atributos deben estar identificados");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else
 			parse.add(63);
@@ -1404,8 +1429,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 64. RESTO_VAR → , ID RESTO_VAR
 	 * 65. RESTO_VAR → ;
+	 * @throws Exception 
 	 */
-	private void resto_var() {
+	private void resto_var() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){ 
 			parse.add(64);
 			nextToken();
@@ -1417,7 +1443,7 @@ public class AnalizadorSintactico {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, 
 						"Se deben identificar todos los atributos");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 			parse.add(65);
@@ -1426,7 +1452,7 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, 
 					"Se esperaba un separador coma (,) o punto_coma (;)");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
@@ -1434,8 +1460,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 66. NOMBRES → , ID NOMBRES
 	 * 67. NOMBRES → ;
+	 * @throws Exception 
 	 */
-	private void nombres() {
+	private void nombres() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){ 
 			parse.add(66);
 			nextToken();
@@ -1447,7 +1474,7 @@ public class AnalizadorSintactico {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Se deben identificar todas las variables de la estructura");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 			parse.add(67);
@@ -1456,15 +1483,16 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, 
 					"Se esperaba un separador coma (,) o punto_coma (;)");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
 		
 	/**
 	 * 68. INS_LECT → >>  RESTO_LECT 
+	 * @throws Exception 
 	 */
-	private void ins_lect() { 
+	private void ins_lect() throws Exception { 
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MAYORES)){
 			parse.add(68);
 			nextToken();
@@ -1474,15 +1502,16 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Lectura incorrecta, se esperaba el operador \">>\"");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
 	/**
 	 * 69. RESTO_LECT → ID ;
 	 * 70. RESTO_LECT → LITERAL  ;
+	 * @throws Exception 
 	 */
-	private void resto_lect() {
+	private void resto_lect() throws Exception {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){ //FALTA ALGO MAS AQUI???
 			parse.add(69);
 			nextToken();
@@ -1493,7 +1522,7 @@ public class AnalizadorSintactico {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Lectura terminada incorrectamente, falta ';'");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 		else if(esLiteral()){
@@ -1506,21 +1535,22 @@ public class AnalizadorSintactico {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Lectura terminada incorrectamente, falta ';'");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 		else{
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Lectura incorrecta, se esperaba un literal o una variable");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
 	/**
 	 * 71. INS_ESC → << RESTO_ESC
+	 * @throws Exception 
 	 */
-	private void ins_esc() {
+	private void ins_esc() throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
 			parse.add(63);
 			nextToken();
@@ -1530,7 +1560,7 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Escritura incorrecta, se esperaba el operador \"<<\"");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
@@ -1538,8 +1568,9 @@ public class AnalizadorSintactico {
 	 * 72. RESTO_ESC →  LITERAL INS_ESC2
 	 * 73. RESTO_ESC →  ID INS_ESC2
 	 * 74. RESTO_ESC →  endl INS_ESC2
+	 * @throws Exception 
 	 */
-	private void resto_esc() {
+	private void resto_esc() throws Exception {
 		if(esLiteral()){
 			parse.add(72);
 			nextToken();
@@ -1559,15 +1590,16 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Escritura incorrecta, se esperaba un literal, una variable o la palabra reservada \"endl\"");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
 	/**
 	 * 75. INS_ESC2 →  << RESTO_ESC2
 	 * 76. INS_ESC2 →  ;
+	 * @throws Exception 
 	 */
-	private void ins_esc2(){
+	private void ins_esc2() throws Exception{
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
 			parse.add(75);
 			nextToken();
@@ -1581,7 +1613,7 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Escritura terminada incorrectamente, falta ';'");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
@@ -1591,8 +1623,9 @@ public class AnalizadorSintactico {
 	 * 78. RESTO_ESC2 → ID  INS_ESC2  
 	 * 79. RESTO_ESC2 → endl INS_ESC2 
 	 * 80. RESTO_ESC2 → lamdba
+	 * @throws Exception 
 	 */
-	private void resto_esc2() {
+	private void resto_esc2() throws Exception {
 		if(esLiteral()){
 			parse.add(77);
 			nextToken();
@@ -1629,8 +1662,9 @@ public class AnalizadorSintactico {
 	 * 130. CUERPO → return EXPRESSIONOPT; CUERPO
 	 * 131. CUERPO → goto ID ; CUERPO
 	 * 132. CUERPO → INSTRUCCION CUERPO
+	 * @throws Exception 
 	 */
-	private void cuerpo()
+	private void cuerpo() throws Exception
 	{
 		if(token.esIgual(TipoToken.PAL_RESERVADA,29 /*for*/))
 		{
@@ -1679,7 +1713,7 @@ public class AnalizadorSintactico {
 				cuerpo();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \"}\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA,5 /*break*/)) {
 			parse.add(128);
@@ -1689,7 +1723,7 @@ public class AnalizadorSintactico {
 				cuerpo();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA, 12 /*continue*/)) {
 			parse.add(129);
@@ -1699,7 +1733,7 @@ public class AnalizadorSintactico {
 				cuerpo();
 			} else { 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA, 47 /*return*/)) {
 			parse.add(130);
@@ -1710,7 +1744,7 @@ public class AnalizadorSintactico {
 				cuerpo();
 			} else { 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}  else if(token.esIgual(TipoToken.PAL_RESERVADA, 31 /*goto*/)) {
 			parse.add(128);
@@ -1722,11 +1756,11 @@ public class AnalizadorSintactico {
 					cuerpo();
 				} else { 
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else { 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el identificador");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else {
 			parse.add(132);
@@ -1734,7 +1768,7 @@ public class AnalizadorSintactico {
 				cuerpo();
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Token inesperado... ");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}	
 	}
@@ -1747,8 +1781,9 @@ public class AnalizadorSintactico {
 	 * 91. CUERPO2 --> switch RESTO_CASE
 	 * 92. CUERPO2 --> { CUERPO 
 	 * 93. CUERPO2 --> INSTRUCCION
+	 * @throws Exception 
 	 */
-	private void cuerpo2() {
+	private void cuerpo2() throws Exception {
 		
 		if(token.esIgual(TipoToken.PAL_RESERVADA,72 /*while*/))
 		{
@@ -1798,8 +1833,9 @@ public class AnalizadorSintactico {
 	
 	/**
 	 *  94. RESTO_WHILE --> (EXPRESSION) do CUERPO2
+	 * @throws Exception 
 	 */
-	private void resto_while() {
+	private void resto_while() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(94);
 			nextToken();
@@ -1809,18 +1845,19 @@ public class AnalizadorSintactico {
 				cuerpo2();
 			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else{
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \"(\"");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}		
 
 	/**
 	 * 95. RESTO_DO --> CUERPO2 while (EXPRESSION);
+	 * @throws Exception 
 	 */
-	private void resto_do() {
+	private void resto_do() throws Exception {
 		parse.add(95); 
 		cuerpo2();
 		if(token.esIgual(TipoToken.PAL_RESERVADA,72 /*while*/))	{
@@ -1835,29 +1872,30 @@ public class AnalizadorSintactico {
 					}	
 					else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-						ruptura=parse.size();
+						//ruptura=parse.size();
 					}
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 		else{
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta palabra \"while\"");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}	
 		
 	/**
 	 * 96. RESTO_FOR → ( FOR-INIT ; EXPRESSIONOPT ; EXPRESSIONOPT ) CUERPO2 
+	 * @throws Exception 
 	 */
-	private void resto_for() {
+	private void resto_for() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(96);
 			nextToken();
@@ -1873,15 +1911,15 @@ public class AnalizadorSintactico {
 						cuerpo2();
 					} else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
-						ruptura=parse.size();
+						//ruptura=parse.size();
 					}
 				} else{
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else{
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \"(\"");
@@ -1892,8 +1930,9 @@ public class AnalizadorSintactico {
 	 * 135. FOR-INIT → id INICIALIZACION
 	 * 136. FOR-INIT → TIPO id INICIALIZACION
 	 * 137. FOR-INIT → EXPRESSIONOPT
+	 * @throws Exception 
 	 */
-	private void for_init() {
+	private void for_init() throws Exception {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(135);
 			nextToken();
@@ -1912,8 +1951,9 @@ public class AnalizadorSintactico {
 
 	/** 
 	 * 97. RESTO_CASE --> ( EXPRESSION ) RESTO_CASE2
+	 * @throws Exception 
 	 */
-	private boolean resto_case() {
+	private boolean resto_case() throws Exception {
 		
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(97);
@@ -1925,12 +1965,12 @@ public class AnalizadorSintactico {
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta ')'");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 		else{
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta '('");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 		
 	
@@ -1941,8 +1981,9 @@ public class AnalizadorSintactico {
 	 * TODO nuevos numeros de regla!
 	 * 97aaaa. RESTO_CASE2 --> { CUERPO_CASE }
 	 * 97bbbb. RESTO_CASE2 --> ; 
+	 * @throws Exception 
 	 */
-	private boolean resto_case2() {
+	private boolean resto_case2() throws Exception {
 		
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 			parse.add(97); // TODO cambiar numero de regla
@@ -1958,12 +1999,12 @@ public class AnalizadorSintactico {
 			}
 			else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta '}'");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 		else{
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta '{'");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 		
 	return false;
@@ -1971,8 +2012,9 @@ public class AnalizadorSintactico {
 
 	/** TODO deberia funcionar con cuerpo si este no tuviese la regla cuerpo -> }
 	 * 98. CUERPO_CASE --> case LITERAL: CUERPO CUERPO_CASE
+	 * @throws Exception 
 	 */
-	private void cuerpo_case() {
+	private void cuerpo_case() throws Exception {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,6 /*case*/)) {
 			parse.add(98);
 			nextToken();
@@ -1986,7 +2028,7 @@ public class AnalizadorSintactico {
 			}
 			else{ 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta literal");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 	}
@@ -1995,8 +2037,9 @@ public class AnalizadorSintactico {
 	
 	/**
 	 *  99. RESTO_IF --> ( EXPRESSION ) CUERPO2 SENT_ELSE
+	 * @throws Exception 
 	 */
-	private boolean resto_if() {
+	private boolean resto_if() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(99);
 			nextToken();
@@ -2008,11 +2051,11 @@ public class AnalizadorSintactico {
 				return true;
 			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else{
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 		return false;
 	}
@@ -2021,8 +2064,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 100. SENT_ELSE --> else CUERPO2 
 	 * 101. SENT_ELSE --> lambda
+	 * @throws Exception 
 	 */
-	private void sent_else() {
+	private void sent_else() throws Exception {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,22 /*else*/)) {
 			parse.add(100);
 			nextToken();
@@ -2097,8 +2141,9 @@ public class AnalizadorSintactico {
 	 * 145. PRIMARY-EXPRESSION → this
 	 * 146. PRIMARY-EXPRESSION → UNQUALIFIED-ID
 	 * 147. PRIMARY-EXPRESSION → ( EXPRESSION )
+	 * @throws Exception 
 	 */
-	private boolean primary_expression() {
+	private boolean primary_expression() throws Exception {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(147);
 			nextToken();
@@ -2107,7 +2152,7 @@ public class AnalizadorSintactico {
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 				return false;
 			}
 		} else if (token.esIgual(TipoToken.PAL_RESERVADA, 57)) {
@@ -2127,8 +2172,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 148. UNQUALIFIED-ID → id
 	 * 149. UNQUALIFIED-ID →  ~ RESTO_UNQ
+	 * @throws Exception 
 	 */
-	private void unqualified_id() {
+	private void unqualified_id() throws Exception {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(148);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
@@ -2139,7 +2185,7 @@ public class AnalizadorSintactico {
 		} else {
 			//gestorErr.insertaErrorSintactico(linea, columna,"Parte derecha de la asignacion incompleta");
 			gestorErr.insertaErrorSintactico(linea, columna,"Expresion incompleta.");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
@@ -2147,8 +2193,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 150. RESTO_UNQ → id
 	 * 151. RESTO_UNQ → decltype ( EXPRESSION )
+	 * @throws Exception 
 	 */
-	private void resto_unq() {
+	private void resto_unq() throws Exception {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(150);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
@@ -2163,15 +2210,15 @@ public class AnalizadorSintactico {
 					nextToken();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta identificador o decltype");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
@@ -2181,8 +2228,9 @@ public class AnalizadorSintactico {
 	 * 154. POSTFIX-EXPRESSION → PRIMARY-EXPRESSION RESTO_POSTFIX_EXP
 	 * 168. POSTFIX-EXPRESSION → TIPO_SIMPLE POSTFIX-4 POSTFIX-2 RESTO_POSTFIX_EXP
 	 * 170. POSTFIX-EXPRESSION →  ~ POSTFIX-EXPRESSION
+	 * @throws Exception 
 	 */
-	private void postfix_expression() {
+	private void postfix_expression() throws Exception {
 		if (token.esIgual(TipoToken.PAL_RESERVADA, 63)) {
 			parse.add(152);
 			nextToken();
@@ -2194,11 +2242,11 @@ public class AnalizadorSintactico {
 					resto_postfix_exp();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else if (token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(153);
@@ -2226,8 +2274,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 164. RESTO_PE → ( POSTFIX-3
 	 * 165. RESTO_PE → lambda
+	 * @throws Exception 
 	 */
-	private void resto_pe() {
+	private void resto_pe() throws Exception {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(164);
 			nextToken();
@@ -2245,8 +2294,9 @@ public class AnalizadorSintactico {
 	 * 159. RESTO_POSTFIX_EXP → incremento
 	 * 160. RESTO_POSTFIX_EXP → ( RESTO_POSTFIX_EXP2
 	 * 161. RESTO_POSTFIX_EXP → lambda
+	 * @throws Exception 
 	 */
-	private void resto_postfix_exp() {
+	private void resto_postfix_exp() throws Exception {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_CORCHETE)) {
 			parse.add(155);
 			nextToken();
@@ -2255,7 +2305,7 @@ public class AnalizadorSintactico {
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"]\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.PUNTERO)) {
 			parse.add(156);
@@ -2284,8 +2334,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 162. RESTO_POSTFIX_EXP2 → )
 	 * 163. RESTO_POSTFIX_EXP2 → INITIALIZER-LIST )
+	 * @throws Exception 
 	 */
-	private void resto_postfix_exp2() {
+	private void resto_postfix_exp2() throws Exception {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 			parse.add(162);
 			nextToken();
@@ -2296,7 +2347,7 @@ public class AnalizadorSintactico {
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 	}
@@ -2305,8 +2356,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 166. RESTO_POSTFIX_EXP3 → ~ decltype ( EXPRESSION )
 	 * 167. RESTO_POSTFIX_EXP3 → UNQUALIFIED-ID
+	 * @throws Exception 
 	 */
-	private void resto_postfix_exp3() {
+	private void resto_postfix_exp3() throws Exception {
 		if (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {	
 			parse.add(166);
 			nextToken();
@@ -2319,15 +2371,15 @@ public class AnalizadorSintactico {
 						nextToken();
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
-						ruptura=parse.size();
+						//ruptura=parse.size();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta la palabra \"decltype\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else {
 			unqualified_id();
@@ -2351,15 +2403,16 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 173. POSTFIX-2 → ( POSTFIX-3
+	 * @throws Exception 
 	 */
-	private void postfix2() {
+	private void postfix2() throws Exception {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(173);
 			nextToken();
 			postfix3();
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
@@ -2367,8 +2420,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 174. POSTFIX-3 →  )
 	 * 175. POSTFIX-3 → INITIALIZER-LIST )
+	 * @throws Exception 
 	 */
-	private void postfix3() {
+	private void postfix3() throws Exception {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 			parse.add(174);
 			nextToken();
@@ -2379,7 +2433,7 @@ public class AnalizadorSintactico {
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 	}
@@ -2388,8 +2442,9 @@ public class AnalizadorSintactico {
 		
 	/**
 	 * 176. INITIALIZER-LIST → ASSIGNMENT-EXPRESSION RESTO_INIT 
+	 * @throws Exception 
 	 */
-	private void initializer_list(){
+	private void initializer_list() throws Exception{
 		parse.add(176);
 		assignment_expression();
 		resto_init();
@@ -2398,8 +2453,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 177. RESTO_INIT → , INITIALIZER_LIST
 	 * 178. RESTO_INIT → lambda
+	 * @throws Exception 
 	 */
-	private void resto_init(){
+	private void resto_init() throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){
 			parse.add(177);
 			nextToken();
@@ -2420,8 +2476,9 @@ public class AnalizadorSintactico {
 	 * 142. UNARY_EXPRESSION → new TIPO ( RESTO_NEW
 	 * 143. UNARY_EXPRESSION → delete RESTO_DELETE
 	 * 185. UNARY_EXPRESSION → POSTFIX_EXPRESSION
+	 * @throws Exception 
 	 */
-	private void unary_expression(){
+	private void unary_expression() throws Exception{
 		if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)){
 			parse.add(179);
 			nextToken();
@@ -2455,17 +2512,17 @@ public class AnalizadorSintactico {
 					}else{
 						// error
 						gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");
-						ruptura=parse.size();
+						//ruptura=parse.size();
 					}	
 				}else{
 					// error
 					gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador o tipo pre-definido ");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `(` ");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else if (token.esIgual(TipoToken.PAL_RESERVADA)
 				&& (Integer)token.getAtributo()==39 /*noexcept*/ ){
@@ -2483,12 +2540,12 @@ public class AnalizadorSintactico {
 				}else{
 					//error
 					gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			}else{
 				//error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador o tipo pre-definido ");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}else if(token.esIgual(TipoToken.PAL_RESERVADA)
 				&& (Integer)token.getAtributo()==18 /*delete*/ ){
@@ -2504,8 +2561,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 186. RESTO_UNARY → ( TIPO )
 	 * 187. RESTO_UNARY → UNARY-EXPRESSION
+	 * @throws Exception 
 	 */
-	private void resto_unary(){
+	private void resto_unary() throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
 			nextToken();
 			if(tipo()){
@@ -2515,12 +2573,12 @@ public class AnalizadorSintactico {
 				}else{
 					// error
 					gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");
-					ruptura=parse.size();
+					//ruptura=parse.size();
 				}
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador o tipo pre-definido ");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}else{
 			unary_expression();
@@ -2568,8 +2626,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 251.RESTO_NEW → )
 	 * 252.RESTO_NEW → EXPRESSION_LIST )
+	 * @throws Exception 
 	 */
-	private void resto_new(){
+	private void resto_new() throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 			parse.add(251);
 			nextToken();
@@ -2581,7 +2640,7 @@ public class AnalizadorSintactico {
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ')' ");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 				
 		}
@@ -2590,8 +2649,9 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 253. EXPRESSION_LIST → EXPRESSION RESTO_LISTA_EXP
+	 * @throws Exception 
 	 */
-	private void expression_list(){
+	private void expression_list() throws Exception{
 		parse.add(253);
 		expression();
 		resto_lista_exp();
@@ -2600,8 +2660,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 254. RESTO_LISTA_EXP → , EXPRESSION_LIST
 	 * 255. RESTO_LISTA_EXP → lambda
+	 * @throws Exception 
 	 */
-	private void resto_lista_exp(){
+	private void resto_lista_exp() throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){
 			parse.add(254);
 			nextToken();
@@ -2614,8 +2675,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 256. RESTO_DELETE → ID
 	 * 257. RESTO_DELETE → [ ] ID 
+	 * @throws Exception 
 	 */
-	private void resto_delete(){
+	private void resto_delete() throws Exception{
 		if (token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(256);
 			nextToken();
@@ -2627,20 +2689,21 @@ public class AnalizadorSintactico {
 			}else{
 				//error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ']' ");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}			
 		}else{
 			//error
 			gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba '[' ");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
 	
 	/**
 	 * 193. NOEXCEPT-EXPRESSION → ( EXPRESSION ) 
+	 * @throws Exception 
 	 */
-	private void noexcept_expression(){
+	private void noexcept_expression() throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			nextToken();
 			expression();
@@ -2650,20 +2713,21 @@ public class AnalizadorSintactico {
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}else{
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `(` ");
-			ruptura=parse.size();
+			//ruptura=parse.size();
 		}
 	}
 	
 	/**
 	 * 194. CAST-EXPRESSION → UNARY-EXPRESSION
 	 * 195. CAST-EXPRESSION → ( RESTO_CAST
+	 * @throws Exception 
 	 */
-	private void cast_expression(){
+	private void cast_expression() throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(195);
 			nextToken();
@@ -2677,8 +2741,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 139. RESTO_CAST → TIPO_SIMPLE ) CAST_EXPRESSION
 	 * 140. RESTO_CAST → EXPRESSION )
+	 * @throws Exception 
 	 */
-	private void resto_cast(){
+	private void resto_cast() throws Exception{
 		if(tipo_simple()){
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
@@ -2687,7 +2752,7 @@ public class AnalizadorSintactico {
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ')' ");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}else{
 			parse.add(140);
@@ -2697,7 +2762,7 @@ public class AnalizadorSintactico {
 			} else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ')' ");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 	}
@@ -2707,8 +2772,9 @@ public class AnalizadorSintactico {
 	 * 196. PM-EXPRESSION → CAST-EXPRESSION
 	 * 197. PM-EXPRESSION → .* CAST-EXPRESSION
 	 * 198. PM-EXPRESSION → -> CAST-EXPRESSION
+	 * @throws Exception 
 	 */
-	private void pm_expression(){
+	private void pm_expression() throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO)){
 			nextToken();
 			if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
@@ -2718,7 +2784,7 @@ public class AnalizadorSintactico {
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `*` ");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.PUNTERO)){
 			parse.add(198);
@@ -2733,8 +2799,9 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 199. MULTIPLICATIVE-EXPRESSION → PM-EXPRESSION RESTO-MULT
+	 * @throws Exception 
 	 */
-	private void multiplicative_expression(){
+	private void multiplicative_expression() throws Exception{
 		parse.add(199);
 		pm_expression();
 		resto_mult();
@@ -2745,8 +2812,9 @@ public class AnalizadorSintactico {
 	 * 201. RESTO-MULT → / MULTIPLICATIVE-EXPRESSION
 	 * 202. RESTO-MULT → % MULTIPLICATIVE-EXPRESSION
 	 * 203. RESTO-MULT → lambda
+	 * @throws Exception 
 	 */
-	private void resto_mult(){
+	private void resto_mult() throws Exception{
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 			nextToken();
 			parse.add(200);
@@ -2767,8 +2835,9 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 204. ADDITIVE_EXPRESSION  → MULTIPLICATIVE-EXPRESSION  RESTO _ADD
+	 * @throws Exception 
 	 */
-	private void additive_expression(){
+	private void additive_expression() throws Exception{
 		parse.add(204);
 		multiplicative_expression();
 		resto_add();
@@ -2778,8 +2847,9 @@ public class AnalizadorSintactico {
 	 * 205. RESTO_ADD → + ADDITIVE_EXPRESSION
 	 * 206. RESTO_ADD → - ADDITIVE_EXPRESSION
 	 * 207. RESTO_ADD → lambda
+	 * @throws Exception 
 	 */
-	private void resto_add(){
+	private void resto_add() throws Exception{
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.SUMA)){
 			parse.add(205);
 			nextToken();
@@ -2798,8 +2868,9 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 208. SHIFT-EXPRESSION → ADDITIVE_EXPRESSION RESTO_SHIFT
+	 * @throws Exception 
 	 * */
-	private void shift_expression(){
+	private void shift_expression() throws Exception{
 		parse.add(208);
 		additive_expression(); //Debe leer el siguiente token
 		resto_shift();
@@ -2808,9 +2879,10 @@ public class AnalizadorSintactico {
 	/** 209. RESTO_SHIFT →  <<  SHIFT-EXPRESSION
 	 * 210. RESTO_SHIFT →  >> SHIFT-EXPRESSION
 	 * 211. RESTO_SHIFT → lambda
+	 * @throws Exception 
 	 * */
 	
-	private void resto_shift() {
+	private void resto_shift() throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.DOS_MENORES)){
 			parse.add(209);
 			nextToken();
@@ -2826,9 +2898,10 @@ public class AnalizadorSintactico {
 		}
 	}
 	
-	/**	212. RELATIONAL-EXPRESSION → SHIFT-EXPRESSION RESTO-RELATIONAL*/
+	/**	212. RELATIONAL-EXPRESSION → SHIFT-EXPRESSION RESTO-RELATIONAL
+	 * @throws Exception */
 	
-	private void relational_expression(){
+	private void relational_expression() throws Exception{
 		parse.add(212);
 		shift_expression(); 
 		resto_relational();
@@ -2837,8 +2910,9 @@ public class AnalizadorSintactico {
 	/**	213. RESTO-RELATIONAL → < RESTO2-RELATIONAL
 		214. RESTO-RELATIONAL → > RESTO2-RELATIONAL
 		215. RESTO-RELATIONAL → lambda
+	 * @throws Exception 
 	 */
-	private void resto_relational() {
+	private void resto_relational() throws Exception {
 		if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MENOR)){
 			parse.add(213);
 			nextToken();
@@ -2857,9 +2931,10 @@ public class AnalizadorSintactico {
 	
 	/**	216. RESTO2-RELATIONAL → = SHIFT-EXPRESSION
 		217. RESTO2-RELATIONAL → SHIFT-EXPRESSION
+	 * @throws Exception 
 	*/
 	
-	private void resto2_relational() {
+	private void resto2_relational() throws Exception {
 		if(token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
 			parse.add(216);
 			nextToken();
@@ -2872,9 +2947,10 @@ public class AnalizadorSintactico {
 		
 	}
 	
-	/** 218. EQUALITY-EXPRESSION → RELATIONAL-EXPRESSION RESTO_EQUALITY*/
+	/** 218. EQUALITY-EXPRESSION → RELATIONAL-EXPRESSION RESTO_EQUALITY
+	 * @throws Exception */
 	
-	private void equality_expression(){
+	private void equality_expression() throws Exception{
 		parse.add(218);
 		relational_expression(); //Debe leer el siguiente token
 		resto_equality();
@@ -2884,9 +2960,10 @@ public class AnalizadorSintactico {
 	/**	219. RESTO-EQUALITY → igualdad EQUALITY-EXPRESSION
 	 * 	220. RESTO-EQUALITY → distinto EQUALITY-EXPRESSION
 	 *  169 .RESTO-EQUALITY → lambda
+	 * @throws Exception 
 	 */
 	
-	private void resto_equality() {
+	private void resto_equality() throws Exception {
 		if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.IGUALDAD)){
 			parse.add(219);
 			nextToken();
@@ -2903,8 +2980,9 @@ public class AnalizadorSintactico {
 		
 	}
 		
-	/**	221. AND-EXPRESSION → EQUALITY-EXPRESSION RESTO_AND*/
-	private void and_expression(){
+	/**	221. AND-EXPRESSION → EQUALITY-EXPRESSION RESTO_AND
+	 * @throws Exception */
+	private void and_expression() throws Exception{
 		parse.add(221);
 		equality_expression(); //Debe leer el siguiente token
 		resto_and();
@@ -2912,8 +2990,9 @@ public class AnalizadorSintactico {
 	
 	/**	222. RESTO-AND → & AND-EXPRESSION
 	 *	223. RESTO-AND → lambda
+	 * @throws Exception 
 	 */
-	private void resto_and() {
+	private void resto_and() throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.BIT_AND)){
 			parse.add(222);
 			nextToken();
@@ -2924,8 +3003,9 @@ public class AnalizadorSintactico {
 		}		
 	}
 	
-	/**	224. EXCLUSIVE-OR-EXPRESSION → AND-EXPRESSION RESTO-EXCLUSIVE*/
-	private void exclusive_or_expression(){
+	/**	224. EXCLUSIVE-OR-EXPRESSION → AND-EXPRESSION RESTO-EXCLUSIVE
+	 * @throws Exception */
+	private void exclusive_or_expression() throws Exception{
 		parse.add(224);
 		and_expression(); 
 		resto_exclusive();
@@ -2933,8 +3013,9 @@ public class AnalizadorSintactico {
 
 	/**	225. RESTO-EXCLUSIVE → ^ EXCLUSIVE-OR-EXPRESSION
 		226. RESTO-EXCLUSIVE → lambda
+	 * @throws Exception 
 	 */
-	private void resto_exclusive() {
+	private void resto_exclusive() throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.CIRCUNFLEJO)){
 			parse.add(225);
 			nextToken();
@@ -2945,8 +3026,9 @@ public class AnalizadorSintactico {
 		}		
 	}
 	
-	/**	227. INCL-OR-EXPRESSION → EXCL-OR-EXPRESSION RESTO_INCL-OR*/
-	private void incl_or_expression(){
+	/**	227. INCL-OR-EXPRESSION → EXCL-OR-EXPRESSION RESTO_INCL-OR
+	 * @throws Exception */
+	private void incl_or_expression() throws Exception{
 		parse.add(227);
 		exclusive_or_expression(); 
 		resto_incl_or();
@@ -2954,8 +3036,9 @@ public class AnalizadorSintactico {
 
 	/**	228. RESTO-INCL-OR → | INCL-OR-EXPRESSION
 		229. RESTO-INCL-OR → lambda
+	 * @throws Exception 
 	*/
-	private void resto_incl_or() {
+	private void resto_incl_or() throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.BIT_OR)){
 			parse.add(228);
 			nextToken();
@@ -2966,16 +3049,18 @@ public class AnalizadorSintactico {
 		}
 	}
 	
-	/**	230. LOG-AND-EXPRESSION → INCL-OR-EXPRESSION RESTO_LOG-AND*/
-	private void log_and_expression(){
+	/**	230. LOG-AND-EXPRESSION → INCL-OR-EXPRESSION RESTO_LOG-AND
+	 * @throws Exception */
+	private void log_and_expression() throws Exception{
 		parse.add(230);
 		incl_or_expression(); 
 		resto_log_and();
 	}
 	
 	/**	231. RESTO-LOG-AND → && LOG-AND-EXPRESSION
-		232. RESTO-LOG-AND → lambda*/
-	private void resto_log_and() {
+		232. RESTO-LOG-AND → lambda
+	 * @throws Exception */
+	private void resto_log_and() throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.AND)){
 			parse.add(231);
 			nextToken();
@@ -2986,8 +3071,9 @@ public class AnalizadorSintactico {
 		}
 	}
 	
-	/**	233. LOG-OR-EXPRESSION → LOG-AND-EXPRESSION RESTO_LOG-OR*/
-	private void log_or_expression(){
+	/**	233. LOG-OR-EXPRESSION → LOG-AND-EXPRESSION RESTO_LOG-OR
+	 * @throws Exception */
+	private void log_or_expression() throws Exception{
 		parse.add(233);
 		log_and_expression(); 
 		resto_log_or();
@@ -2995,8 +3081,9 @@ public class AnalizadorSintactico {
 
 	/**	234. RESTO-LOG-OR → || LOG-OR-EXPRESSION
 		235. RESTO-LOG-OR → lambda
+	 * @throws Exception 
 	*/
-	private void resto_log_or() {
+	private void resto_log_or() throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.OR)){
 			parse.add(234);
 			nextToken();
@@ -3020,8 +3107,9 @@ public class AnalizadorSintactico {
 	/**	
 		238. RESTO_CONDITIONAL →  ? EXPRESSION  :  ASSIGNMENT_EXPRESSION
 		239. RESTO_CONDITIONAL → lambda
+	 * @throws Exception 
 	 */
-	private void resto_conditional() {//////////////////////////////////////////////
+	private void resto_conditional() throws Exception {//////////////////////////////////////////////
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.INTEROGACION)){
 			parse.add(238);
 			nextToken();
@@ -3032,7 +3120,7 @@ public class AnalizadorSintactico {
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba \":\"");
-				ruptura=parse.size();
+				//ruptura=parse.size();
 			}
 		}
 		else{
@@ -3042,8 +3130,9 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 241. ASSIGNMENT_EXPRESSION → LOGICAL-OR-EXPRESSION RESTO_ASSIG
+	 * @throws Exception 
 	 */
-	private void assignment_expression() {
+	private void assignment_expression() throws Exception {
 		parse.add(241);
 		log_or_expression();
 		resto_asig();
@@ -3052,8 +3141,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 242. RESTO_ASSIG → RESTO_CONDITIONAL
 	 * 243. RESTO_ASSIG → op_asignacion ASSIGNMENT_EXPRESSION
+	 * @throws Exception 
 	 */
-	private void resto_asig() {
+	private void resto_asig() throws Exception {
 		if(token.esIgual(TipoToken.OP_ASIGNACION)){
 			parse.add(243);
 			nextToken();
@@ -3067,8 +3157,9 @@ public class AnalizadorSintactico {
 
 	/**
 	 * 246. EXPRESSION → ASSIGNMENT-EXPRESSION RESTO_EXP
+	 * @throws Exception 
 	 */
-	private void expression() {
+	private void expression() throws Exception {
 		parse.add(246);
 		assignment_expression();
 		resto_exp();
@@ -3078,8 +3169,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 247. RESTO_EXP → , EXPRESSION
 	 * 248. RESTO_EXP→ lambda
+	 * @throws Exception 
 	 */
-	private void resto_exp() {
+	private void resto_exp() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 			parse.add(247);
 			nextToken();
@@ -3093,8 +3185,9 @@ public class AnalizadorSintactico {
 	/**
 	 * 249. EXPRESSIONOPT → EXPRESSION 
 	 * 250. EXPRESSIONOPT → lambda
+	 * @throws Exception 
 	 */
-	private void expressionOpt() {
+	private void expressionOpt() throws Exception {
 		if(primeroDeExpression()) {
 			parse.add(249);
 			expression();

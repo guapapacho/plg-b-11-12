@@ -52,7 +52,11 @@ public class AnalizadorSintactico {
 		gestorErr = GestorErrores.getGestorErrores();
 		tipo = null;
 		entradaTS = null;
-		programa();
+		try {
+			programa();
+		} catch (Exception e) {
+			// TODO Ha habido un error
+		}
 	}
 	
 	private void nextToken() {
@@ -184,18 +188,15 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 1. PROGRAMA → LIBRERIA RESTO_PROGRAMA eof
+	 * @throws Exception 
 	 */
-	private void programa() {
+	private void programa() throws Exception {
 		parse.add(1);
-		try {
-			libreria();
-			resto_programa();
-			if (!token.esIgual(TipoToken.EOF)) {
-				gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");//+lexico.getLexema()+"\" inesperado.");
-				//ruptura=parse.size();
-			}
-		} catch (Exception e) {
-			// TODO Ha habido un error
+		libreria();
+		resto_programa();
+		if (!token.esIgual(TipoToken.EOF)) {
+			gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");//+lexico.getLexema()+"\" inesperado.");
+			//ruptura=parse.size();
 		}
 	}
 	

@@ -66,6 +66,7 @@ public class AnalizadorSintactico {
 			token = ventana.remove(0);
 		} else {
 			token = lexico.scan();
+			tokens.add(token);
 		}
 	}
 	

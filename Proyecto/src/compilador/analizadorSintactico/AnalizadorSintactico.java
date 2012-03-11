@@ -2184,6 +2184,7 @@ public class AnalizadorSintactico {
 			nextToken();
 		} else if (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {
 			parse.add(149);
+			nextToken();
 			resto_unq();
 		} else {
 			//gestorErr.insertaErrorSintactico(linea, columna,"Parte derecha de la asignacion incompleta");

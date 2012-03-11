@@ -43,7 +43,7 @@ public class AnalizadorSintactico {
 	private int linea;
 	/** Numero de columna del siguiente al token anterior */
 	private int columna;
-	
+		
 	public AnalizadorSintactico(AnalizadorLexico lexico){
 		this.lexico = lexico;
 		parse = new Vector<Integer>();
@@ -1278,29 +1278,19 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * TODO
-	 * no se si esta bien 53. MAS_COSAS → = INICIALIZACION  DECLARACIONES
-	 * 53. MAS_COSAS --> = EXPRESSION ;
-	 * 53b. MAC_COSAS --> ;
+	 * 53. MAS_COSAS --> INICIALIZACION DECLARACIONES ;
+	 * ............ANTERIOR:........ 53. MAS_COSAS --> = EXPRESSION ;
 	 * @throws Exception 
 	 */
 	private void mas_cosas() throws Exception {
 		parse.add(53);
-//		inicializacion();
-//		declaraciones();
-		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
-			nextToken();
-			expression();	
-		}
+		inicializacion();
+		declaraciones();
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
 			nextToken();
 		}else{
-			gestorErr.insertaErrorSintactico(linea, columna,
-					"Falta separador \";\"");
+			gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");//+lexico.getLexema()+"\" inesperado.");
 		}
-//		else {
-//			gestorErr.insertaErrorSintactico(linea, columna, "Falta el \"=\"");
-//		}
 	}
 	
 	

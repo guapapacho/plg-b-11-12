@@ -35,7 +35,9 @@ public class AnalizadorSintactico {
 	private Tipo tipo;
 	private EntradaTS entradaTS;
 	
-	private String lexemaAnterior;
+//	private String lexemaAnterior;
+	
+	private int numDefaults;
 	
 	/** Numero de linea del token anterior */
 	private int linea;
@@ -1785,7 +1787,9 @@ public class AnalizadorSintactico {
 			if(instruccion())
 				cuerpo();
 			else{
-				 if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE) || token.esIgual(TipoToken.PAL_RESERVADA,6 /*case*/)) {
+				 if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE) 
+						 || token.esIgual(TipoToken.PAL_RESERVADA,6 /*case*/)
+						 || token.esIgual(TipoToken.PAL_RESERVADA,17 /*default*/)) {
 					parse.add(86); //lambda
 				 } else {
 					gestorErr.insertaErrorSintactico(linea, columna, "Token inesperado... ");
@@ -2010,7 +2014,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private boolean resto_case2() throws Exception {
-		
+		numDefaults = 0;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 			parse.add(97); // TODO cambiar numero de regla
 			return true;
@@ -2037,7 +2041,8 @@ public class AnalizadorSintactico {
 	}
 
 	/** TODO deberia funcionar con cuerpo si este no tuviese la regla cuerpo -> }
-	 * 98. CUERPO_CASE --> case LITERAL: CUERPO CUERPO_CASE
+	 * 98. CUERPO_CASE --> case LITERAL : CUERPO CUERPO_CASE
+	 * TODO 98aaa. CUERPO_CASE --> default : CUERPO CUERPO_CASE 
 	 * @throws Exception 
 	 */
 	private void cuerpo_case() throws Exception {
@@ -2050,11 +2055,28 @@ public class AnalizadorSintactico {
 					nextToken();
 					cuerpo();
 					cuerpo_case();
-				}	
+				} else {
+					gestorErr.insertaErrorSintactico(linea, columna, "Falta ':'");
+				}
 			}
 			else{ 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta literal");
 				//ruptura=parse.size();
+			}
+		} else if(token.esIgual(TipoToken.PAL_RESERVADA,17 /*default*/)){
+			if(numDefaults < 1) {
+				parse.add(98); //TODO cambiar num regla
+				numDefaults++;
+				nextToken();
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
+					nextToken();
+					cuerpo();
+					cuerpo_case();
+				} else {
+					gestorErr.insertaErrorSintactico(linea, columna, "Falta ':'");
+				}
+			} else {
+				gestorErr.insertaErrorSintactico(linea, columna, "'default' aparece más de una vez.");
 			}
 		}
 	}

@@ -1658,7 +1658,7 @@ public class AnalizadorSintactico {
 	 * 84. CUERPO --> if RESTO_IF CUERPO
 	 * 85. CUERPO --> switch RESTO_CASE CUERPO
 	 * 86. CUERPO --> }
-	 * 104. CUERPO → { CUERPO } CUERPO
+	 * 104. CUERPO → { CUERPO CUERPO
 	 * 128. CUERPO → break ; CUERPO
 	 * 129. CUERPO → continue ; CUERPO
 	 * 130. CUERPO → return EXPRESSIONOPT; CUERPO
@@ -1710,13 +1710,14 @@ public class AnalizadorSintactico {
 			parse.add(104);
 			nextToken();
 			cuerpo();
-			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
+			cuerpo();
+			/*if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 				nextToken();
 				cuerpo();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \"}\"");
 				//ruptura=parse.size();
-			}
+			}*/
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA,5 /*break*/)) {
 			parse.add(128);
 			nextToken();

@@ -1279,6 +1279,7 @@ public class AnalizadorSintactico {
 	 * TODO
 	 * no se si esta bien 53. MAS_COSAS → = INICIALIZACION  DECLARACIONES
 	 * 53. MAS_COSAS --> = EXPRESSION ;
+	 * 53b. MAC_COSAS --> ;
 	 * @throws Exception 
 	 */
 	private void mas_cosas() throws Exception {
@@ -1288,6 +1289,12 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
 			nextToken();
 			expression();	
+		}
+		if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
+			nextToken();
+		}else{
+			gestorErr.insertaErrorSintactico(linea, columna,
+					"Falta separador \";\"");
 		}
 //		else {
 //			gestorErr.insertaErrorSintactico(linea, columna, "Falta el \"=\"");

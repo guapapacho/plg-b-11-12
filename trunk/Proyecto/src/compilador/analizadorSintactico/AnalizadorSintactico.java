@@ -1922,10 +1922,10 @@ public class AnalizadorSintactico {
 			for_init();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				nextToken();
-				expression();
+				expressionOpt();
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 					nextToken();
-					expression();
+					expressionOpt();
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 						nextToken();
 						cuerpo2();

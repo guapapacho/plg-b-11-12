@@ -1797,7 +1797,7 @@ public class AnalizadorSintactico {
 						 || token.esIgual(TipoToken.PAL_RESERVADA,17 /*default*/)) {
 					parse.add(86); //lambda
 				 } else {
-					gestorErr.insertaErrorSintactico(linea, columna, "Token inesperado... ");
+					gestorErr.insertaErrorSintactico(linea, columna, "Token inesperado.");
 					//ruptura=parse.size();
 				 }
 			}

@@ -2963,6 +2963,8 @@ public class AnalizadorSintactico {
 
 	/**	213. RESTO-RELATIONAL → < RESTO2-RELATIONAL
 		214. RESTO-RELATIONAL → > RESTO2-RELATIONAL
+		216. RESTO-RELATIONAL → >= RESTO2-RELATIONAL //TODO cambiar las reglas en la memoria
+		217. RESTO-RELATIONAL → <= RESTO2-RELATIONAL //TODO cambiar las reglas en la memoria
 		215. RESTO-RELATIONAL → lambda
 	 * @throws Exception 
 	 */
@@ -2970,12 +2972,22 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MENOR)){
 			parse.add(213);
 			nextToken();
-			resto2_relational();
+			shift_expression();
 		}
 		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR)){
 			parse.add(214);
 			nextToken();
-			resto2_relational();
+			shift_expression();
+		}
+		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR_IGUAL)){
+			parse.add(216);
+			nextToken();
+			shift_expression();
+		}
+		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MENOR_IGUAL)){
+			parse.add(217);
+			nextToken();
+			shift_expression();
 		}
 		else{
 			parse.add(215);
@@ -2983,23 +2995,23 @@ public class AnalizadorSintactico {
 		
 	}
 	
-	/**	216. RESTO2-RELATIONAL → = SHIFT-EXPRESSION
-		217. RESTO2-RELATIONAL → SHIFT-EXPRESSION
-	 * @throws Exception 
-	*/
-	
-	private void resto2_relational() throws Exception {
-		if(token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
-			parse.add(216);
-			nextToken();
-			shift_expression();
-		}
-		else{
-			parse.add(217);
-			shift_expression();
-		}
-		
-	}
+//	/**	216. RESTO2-RELATIONAL → = SHIFT-EXPRESSION
+//		217. RESTO2-RELATIONAL → SHIFT-EXPRESSION
+//	 * @throws Exception 
+//	*/
+//	
+//	private void resto2_relational() throws Exception {
+//		if(token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
+//			parse.add(216);
+//			nextToken();
+//			shift_expression();
+//		}
+//		else{
+//			parse.add(217);
+//			shift_expression();
+//		}
+//		
+//	}
 	
 	/** 218. EQUALITY-EXPRESSION → RELATIONAL-EXPRESSION RESTO_EQUALITY
 	 * @throws Exception */

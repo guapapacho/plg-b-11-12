@@ -816,11 +816,13 @@ public class AnalizadorSintactico {
 		
 	}
 
-	/**20. LISTA_PARAM → TIPO ID PASO RESTO_LISTA
+	/**20. LISTA_PARAM → CONSTANTE TIPO ID PASO RESTO_LISTA
 	 * 21. LISTA_PARAM → lambda
 	 * @throws Exception 
 	 */
 	private void lista_param() throws Exception {
+		
+		constante();
 		if(tipo()){
 			parse.add(20);
 			paso();
@@ -837,6 +839,19 @@ public class AnalizadorSintactico {
 			parse.add(21);
 		}
 	} 
+	
+	/**
+	 * 259. CONSTANTE → const
+	 * 260. CONSTANTE → lambda
+	 */
+	private void constante() {
+		if(token.esIgual(TipoToken.PAL_RESERVADA, 9)){
+			parse.add(259);
+			nextToken();
+		} else {
+			parse.add(260);
+		}
+	}
 
 	/** 123.PASO → & 
 	 *	124.PASO → *

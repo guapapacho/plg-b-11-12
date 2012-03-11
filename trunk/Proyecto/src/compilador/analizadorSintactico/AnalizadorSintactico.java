@@ -461,7 +461,7 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * 121.RESTO_METODO2 → { CUERPO
+	 * 121.RESTO_METODO2 → { CUERPO }
 	 * 122.RESTO_METODO2 → lambda
 	 * @throws Exception 
 	 */
@@ -471,6 +471,10 @@ public class AnalizadorSintactico {
 				parse.add(121);
 				nextToken();
 				cuerpo();
+				if (!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)) {
+					gestorErr.insertaErrorSintactico(linea, columna,"Falta }");
+				}
+				nextToken();
 			} else {
 				parse.add(122);
 			}
@@ -785,7 +789,7 @@ public class AnalizadorSintactico {
 	
 
 	/**	18. COSAS3 → ;
-		19. COSAS3 → { CUERPO 
+		19. COSAS3 → { CUERPO }
 	 * @throws Exception 
 	*/
 	private void cosas3() throws Exception {
@@ -798,6 +802,10 @@ public class AnalizadorSintactico {
 			parse.add(19);
 			nextToken();
 			cuerpo();
+			if (!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)) {
+				gestorErr.insertaErrorSintactico(linea, columna,"Falta }");
+			}
+			nextToken();
 		}
 		else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba \";\" o \"{\" ");
@@ -1163,13 +1171,13 @@ public class AnalizadorSintactico {
 			nextToken();
 		} else{
 			parse.add(133);
-			expression();
+			expressionOpt();
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
 				nextToken();
 			}else{
 				//error
-				gestorErr.insertaErrorSintactico(linea, columna,
-						"Falta separador \";\"");
+//				gestorErr.insertaErrorSintactico(linea, columna,
+//						"Falta separador \";\"");
 				//ruptura=parse.size();
 				return false;
 			}
@@ -1657,8 +1665,8 @@ public class AnalizadorSintactico {
 	 * 83. CUERPO --> while RESTO_WHILE CUERPO
 	 * 84. CUERPO --> if RESTO_IF CUERPO
 	 * 85. CUERPO --> switch RESTO_CASE CUERPO
-	 * 86. CUERPO --> }
-	 * 104. CUERPO → { CUERPO CUERPO
+	 * 86. CUERPO --> lambda
+	 * 104. CUERPO → { CUERPO } CUERPO
 	 * 128. CUERPO → break ; CUERPO
 	 * 129. CUERPO → continue ; CUERPO
 	 * 130. CUERPO → return EXPRESSIONOPT; CUERPO
@@ -1702,22 +1710,22 @@ public class AnalizadorSintactico {
 			nextToken();
 			resto_case();
 			cuerpo();
-		}
-		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
-			parse.add(86);
-			nextToken();
+//		}
+//		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
+//			parse.add(86);
+//			nextToken();
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(104);
 			nextToken();
 			cuerpo();
-			cuerpo();
-			/*if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
+//			cuerpo();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 				nextToken();
 				cuerpo();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \"}\"");
 				//ruptura=parse.size();
-			}*/
+			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA,5 /*break*/)) {
 			parse.add(128);
 			nextToken();
@@ -1770,8 +1778,12 @@ public class AnalizadorSintactico {
 			if(instruccion())
 				cuerpo();
 			else{
-				gestorErr.insertaErrorSintactico(linea, columna, "Token inesperado... ");
-				//ruptura=parse.size();
+				 if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE) || token.esIgual(TipoToken.PAL_RESERVADA,6 /*case*/)) {
+					parse.add(86); //lambda
+				 } else {
+					gestorErr.insertaErrorSintactico(linea, columna, "Token inesperado... ");
+					//ruptura=parse.size();
+				 }
 			}
 		}	
 	}
@@ -1782,7 +1794,7 @@ public class AnalizadorSintactico {
 	 * 89. CUERPO2 --> do RESTO_DO
 	 * 90. CUERPO2 --> if RESTO_IF 
 	 * 91. CUERPO2 --> switch RESTO_CASE
-	 * 92. CUERPO2 --> { CUERPO 
+	 * 92. CUERPO2 --> { CUERPO }
 	 * 93. CUERPO2 --> INSTRUCCION
 	 * @throws Exception 
 	 */
@@ -1822,6 +1834,10 @@ public class AnalizadorSintactico {
 			nextToken();
 			parse.add(92);
 			cuerpo();
+			if (!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)) {
+				gestorErr.insertaErrorSintactico(linea, columna,"Falta }");
+			}
+			nextToken();
 		}
 		else {
 			parse.add(93);
@@ -2025,7 +2041,7 @@ public class AnalizadorSintactico {
 			{
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
 					nextToken();
-					cuerpo();// Aqui podriamos hacer una especie de cuerpo2 que admita break y mas de una instruccuon sin parentesis
+					cuerpo();
 					cuerpo_case();
 				}	
 			}

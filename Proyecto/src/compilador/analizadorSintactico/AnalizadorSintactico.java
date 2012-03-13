@@ -1794,7 +1794,8 @@ public class AnalizadorSintactico {
 			else{
 				 if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE) 
 						 || token.esIgual(TipoToken.PAL_RESERVADA,6 /*case*/)
-						 || token.esIgual(TipoToken.PAL_RESERVADA,17 /*default*/)) {
+						 || token.esIgual(TipoToken.PAL_RESERVADA,17 /*default*/)
+						 || token.esIgual(TipoToken.EOF)) {
 					parse.add(86); //lambda
 				 } else {
 					gestorErr.insertaErrorSintactico(linea, columna, "Token inesperado.");

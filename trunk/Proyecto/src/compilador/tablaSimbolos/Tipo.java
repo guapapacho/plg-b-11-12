@@ -6,7 +6,7 @@ public class Tipo {
 	 * Enumerado para el tipo de un identificador
 	 */
 	public enum EnumTipo {
-		PROGRAMA, PROCEDIMIENTO, FUNCION, SIMPLE, DEFINIDO; // TODO añadir otros tipos
+		PROGRAMA, PROCEDIMIENTO, FUNCION, SIMPLE, DEFINIDO, ENTERO, REAL, LOGICO, CARACTER, PUNTERO_ENTERO, PUNTERO_REAL, PUNTERO_LOGICO, PUNTERO_CARACTER; // TODO añadir otros tipos
 	}
 	
 	private EnumTipo tipo;

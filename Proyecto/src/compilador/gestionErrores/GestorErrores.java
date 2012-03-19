@@ -1,7 +1,6 @@
 package compilador.gestionErrores;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 
 public class GestorErrores {
@@ -79,9 +78,9 @@ public class GestorErrores {
         throw new Exception("Error sintáctico!");
     }
 
-    public void insertaErrorSintactico(int l, int n,String mensaje) throws Exception {
-        errors.add(new TError(TipoError.SINTACTICO, mensaje, l, n));
-        throw new Exception("Error sintáctico!");
+    public void insertaErrorSemantico(int l, int n,String mensaje) throws Exception {
+        errors.add(new TError(TipoError.SEMANTICO, mensaje, l, n));
+        throw new Exception("Error semántico!");
     }
     
     public ArrayList<TError> devuelveErrores(){

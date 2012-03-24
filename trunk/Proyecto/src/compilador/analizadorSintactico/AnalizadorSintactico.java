@@ -819,24 +819,27 @@ public class AnalizadorSintactico {
 	/**20. LISTA_PARAM → CONSTANTE TIPO ID PASO RESTO_LISTA
 	 * 21. LISTA_PARAM → lambda
 	 * @throws Exception 
-	 */
-	private void lista_param() throws Exception {
+	 */	private void lista_param() throws Exception {
 		
-		constante();
-		if(tipo()){
+		if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
+			parse.add(21);
+		}else{
 			parse.add(20);
-			paso();
-			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-				id();
-				restoLista();
-			}
-			else{
-				gestorErr.insertaErrorSintactico(linea, columna, "Falta identificador de lista de parametros");
+			constante();
+			if(tipo()){
+				paso();
+				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+					id();
+					restoLista();
+				}
+				else{
+					gestorErr.insertaErrorSintactico(linea, columna, "Falta identificador de lista de parametros");
+					//ruptura=parse.size();
+				}
+			}else{
+				gestorErr.insertaErrorSintactico(linea, columna, "Falta tipo de lista de parametros");
 				//ruptura=parse.size();
 			}
-		}
-		else{
-			parse.add(21);
 		}
 	} 
 	
@@ -1128,7 +1131,7 @@ public class AnalizadorSintactico {
 	 * 46. INSTRUCCION → const INS_DEC
 	 * 47. INSTRUCCION → TIPO INS_DEC2
 	 * 48. INSTRUCCION → ;
-	 * 133.INSTRUCCION → EXPRESSION ;
+	 * 133.INSTRUCCION → EXPRESSION_OPT ;
 	 * @throws Exception 
 	 */
 	
@@ -1162,8 +1165,8 @@ public class AnalizadorSintactico {
 			ins_dec();
 		}
 		else if (tipo()) { //INS_DEC2
-			if(punt())
-				nextToken();
+			/*if(punt())
+				nextToken();*/
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				parse.add(47); 
 				ins_dec2();

@@ -6,7 +6,7 @@ public class ExpresionTipo {
 	private TipoNoBasico tipoNoBasico;
 	
 	public enum TipoBasico{logico, caracter, entero, real, error_tipo, vacio}; 
-	public enum TipoNoBasico{vector, producto, registro, union, puntero, }
+	public enum TipoNoBasico{vector, producto, registro, union, puntero, funcion}
 	
 	protected ExpresionTipo(TipoNoBasico tipo){
 		this.basico = false;

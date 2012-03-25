@@ -45,19 +45,19 @@ public class ExpresionTipo {
 	}
 	
 	public static ExpresionTipo expresionTipoDeString(String s){
-		switch (s){
-		case "bool": return new ExpresionTipo(TipoBasico.logico);
-		case "char": return new ExpresionTipo(TipoBasico.caracter);
-		case "char_16t": return new ExpresionTipo(TipoBasico.caracter);
-		case "char_32t": return new ExpresionTipo(TipoBasico.caracter);
-		case "short": return new ExpresionTipo(TipoBasico.entero); //?? 
-		case "long": return new ExpresionTipo(TipoBasico.entero); //?? 
-		case "int": return new ExpresionTipo(TipoBasico.entero);
-		case "double": return new ExpresionTipo(TipoBasico.real);
-		case "float": return new ExpresionTipo(TipoBasico.real);
-		case "String": return new Vector(0,new ExpresionTipo(TipoBasico.caracter)); //longitud 0??
-		default: return null;
-		}
+	
+		if (s.equals("bool")) return new ExpresionTipo(TipoBasico.logico);
+		if (s.equals("char")) return new ExpresionTipo(TipoBasico.caracter);
+		if (s.equals("char_16t")) return new ExpresionTipo(TipoBasico.caracter);
+		if (s.equals("char_32t")) return new ExpresionTipo(TipoBasico.caracter);
+		if (s.equals("short")) return new ExpresionTipo(TipoBasico.entero); //?? 
+		if (s.equals("long")) return new ExpresionTipo(TipoBasico.entero); //?? 
+		if (s.equals("int")) return new ExpresionTipo(TipoBasico.entero);
+		if (s.equals("double")) return new ExpresionTipo(TipoBasico.real);
+		if (s.equals("float")) return new ExpresionTipo(TipoBasico.real);
+		if (s.equals("String")) return new Vector(0,new ExpresionTipo(TipoBasico.caracter)); //longitud 0??
+		return null;
+		
 	}
 	
 }

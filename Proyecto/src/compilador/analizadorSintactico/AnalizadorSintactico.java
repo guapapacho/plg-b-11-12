@@ -584,16 +584,17 @@ public class AnalizadorSintactico {
 	 * 6. TIPO → id		
 	 * 			{ TIPO.tipo := ?? }								
 	 * 7. TIPO → TIPO_SIMPLE
-	 * 			{ TIPO.tipo := vacio }
+	 * 			{ TIPO.tipo := TIPO_SIMPLE.tipo }
 	 */
 	private ExpresionTipo tipo() {
 		ExpresionTipo tipo_s;
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(6);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+			//TODO: tipo_s = Tipo semantico en la TS
 			nextToken();
 			//return true;
-			return new ExpresionTipo(TipoBasico.vacio); //TODO: CORREGIR!!!
+			return new ExpresionTipo(TipoBasico.vacio); 
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && 
 				gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
@@ -1396,7 +1397,10 @@ public class AnalizadorSintactico {
 	}
 	/**
 	 * 52. INS_DEC2 → PUNT ID MAS_COSAS
-	 * 				{ 
+	 * 				{ if(PUNT.tipo != vacio) 
+	 * 				  then MAS_COSAS.tipo_h := puntero(INS_DEC2.tipo_h)
+	 * 				  else MAS_COSAS.tipo_h := INS_DEC2.tipo_h;
+	 * 				  INS_DEC2.tipo_s := MAS_COSAS.tipo_s }
 	 * @throws Exception 
 	 */
 	private ExpresionTipo ins_dec2(ExpresionTipo tipo_h) throws Exception {
@@ -1438,7 +1442,11 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 53. MAS_COSAS --> INICIALIZACION DECLARACIONES ;
-	 * 						{ 
+	 * 						{ INICIALIZACION.tipo_h := MAS_COSAS.tipo_h;
+	 * 						  DECLARACIONES.tipo_h := MAS_COSAS.tipo_h;
+	 * 						  if (TIPO.tipo != error_tipo) & INS_DEC2.tipo != error_tipo)
+	 * 						  then INSTRUCCION.tipo := vacio
+	 * 						  else INSTRUCCION.tipo := error_tipo }
 	 * ............ANTERIOR:........ 53. MAS_COSAS --> = EXPRESSION ;
 	 * @throws Exception 
 	 */
@@ -1458,60 +1466,6 @@ public class AnalizadorSintactico {
 			return null;
 		}
 	}
-	
-	
-	
-//	/**
-//	 * 54. LISTA_ATB → ATRIBUTO RESTO_ATB
-//	 * 55. LISTA_ATB → lambda
-//	 */
-//	private void lista_atb() {							//TOFIX aqui no habria que meter algun error?
-//		if(!token.esIgual(TipoToken.EOF)) {
-//			parse.add(54);
-//			atributo();
-//			resto_atb();
-//		} else {
-//			// 55. LISTA_ATB → lambda 
-//			parse.add(55);
-//		}
-//	}
-	
-//	/**
-//	 * 56. RESTO_ATB → , ATRIBUTO RESTO_ATB
-//	 * 57. RESTO_ATB → lambda
-//	 */
-//	private void resto_atb() {							//TOFIX aqui no habria que meter algun error?
-//		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
-//			parse.add(56);
-//			nextToken();
-//			atributo();
-//			resto_atb();
-//		} else {
-//			parse.add(57);
-//		}
-//	}
-	
-//	/**
-//	 * 58. ATRIBUTO → LITERAL
-//	 * 59. ATRIBUTO → ID
-//	 */
-//	private void atributo() {
-//		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-//			parse.add(59);
-//			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
-//			nextToken();
-//		} else if(esLiteral()){
-//			parse.add(58);
-//			//no se si hay que hacer algo mas...
-//			nextToken();
-//		} else {
-//			// error
-//			gestorErr.insertaErrorSintactico(linea, columna, 
-//					"Falta identificador o literal que identifique al atributo");
-//		}
-//	}
-	
-	
 	
 	/**
 	 * 60. RESTO_ST → ID { CUERPO_ST } ID NOMBRES

@@ -32,6 +32,11 @@ public class AnalizadorSintactico {
 	 * para construir el arbol de derivacion de la cadena de tokens de entrada..
 	 */
 	private Vector<Integer> parse;
+	
+	/**
+	 * Vector para guardar la secuencia ordenadas de las declaraciones que vayamos haciendo
+	 */
+	private Vector<String> declaraciones;
 	/**
 	 * Vector para usado en los casos en los que haga falta ampliar la ventana de tokens
 	 */
@@ -50,6 +55,7 @@ public class AnalizadorSintactico {
 	public AnalizadorSintactico(AnalizadorLexico lexico){
 		this.lexico = lexico;
 		parse = new Vector<Integer>();
+		declaraciones = new Vector<String>();
 		tokens = new Vector<Token>();
 		ventana = new Vector<Token>();
 		nextToken();
@@ -168,6 +174,17 @@ public class AnalizadorSintactico {
 			for(int j=0; j<17 && i<parse.size(); j++, i++) 
 				string += parse.get(i) + ", ";
 			string += "\n";
+		}
+		return string+"\n";
+	}
+	
+	public String muestraDeclaraciones() {
+		String string = "";
+		int i = 0;
+		while(i < declaraciones.size()) {
+			string += declaraciones.get(i);
+			string += "\n";
+			i++;
 		}
 		return string+"\n";
 	}
@@ -609,9 +626,11 @@ public class AnalizadorSintactico {
 				return new ExpresionTipo(TipoBasico.vacio); //TODO: CORREGIR CON EL RESTO DE TIPOS!!!!*/
 			if(tipo_s!=null){
 				if(tipo_s.esTipoBasico())
-					System.out.println("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());
+					//System.out.println("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());
+					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());
 				else
-					System.out.println("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoNoBasico().toString());
+					//System.out.println("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoNoBasico().toString());
+					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoNoBasico().toString());
 				return tipo_s;
 			}else
 				return new ExpresionTipo(TipoBasico.error_tipo);

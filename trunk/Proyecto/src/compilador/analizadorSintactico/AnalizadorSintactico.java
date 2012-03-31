@@ -1415,11 +1415,14 @@ public class AnalizadorSintactico {
 		}
 	}
 	/**
-	 * 52. INS_DEC2 → PUNT ID MAS_COSAS
+	 * 52. INS_DEC2 →
+	 *  if (consulta(id1.lexema) == null //El id no tiene que estar declarado )  
+	 *               PUNT ID MAS_COSAS
 	 * 				{ if(PUNT.tipo != vacio) 
 	 * 				  then MAS_COSAS.tipo_h := puntero(INS_DEC2.tipo_h)
 	 * 				  else MAS_COSAS.tipo_h := INS_DEC2.tipo_h;
-	 * 				  INS_DEC2.tipo_s := MAS_COSAS.tipo_s }
+	 * 				  INS_DEC2.tipo_s := MAS_COSAS.tipo_s 
+	 * else INS_DEC2.tipo = error_tipo }
 	 * @throws Exception 
 	 */
 	private ExpresionTipo ins_dec2(ExpresionTipo tipo_h) throws Exception {
@@ -1463,9 +1466,9 @@ public class AnalizadorSintactico {
 	 * 53. MAS_COSAS --> INICIALIZACION DECLARACIONES ;
 	 * 						{ INICIALIZACION.tipo_h := MAS_COSAS.tipo_h;
 	 * 						  DECLARACIONES.tipo_h := MAS_COSAS.tipo_h;
-	 * 						  if (TIPO.tipo != error_tipo) & INS_DEC2.tipo != error_tipo)
-	 * 						  then INSTRUCCION.tipo := vacio
-	 * 						  else INSTRUCCION.tipo := error_tipo }
+	 * 						  if (INICIALIZACION.tipo != error_tipo) & DECLARACIONES.tipo != error_tipo)
+	 * 						  then MAS_COSAS.tipo := vacio
+	 * 						  else MAS_COSAS.tipo := error_tipo }
 	 * ............ANTERIOR:........ 53. MAS_COSAS --> = EXPRESSION ;
 	 * @throws Exception 
 	 */
@@ -1488,137 +1491,258 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 60. RESTO_ST → ID { CUERPO_ST } ID NOMBRES
+	 * { 
+	 * 	 if  (CUERPO_ST.tipo != error_tipo )
+       	 NOMBRES.tipo_h  = Registro(CUERPO_ST.tipo) 
+         	if (NOMBRES.tipo != error_tipo) and  (consulta(id1.lexema) == null //El id1 no tiene que estar declarado
+           		and consulta(id.lexema) != Registro //El id puede estar declarado pero no como registro) then 
+           		RESTO_ST.tipo = vacio 
+           		inserta(id.entrada, TIPO_SEM, Registro) // Este id identifica al registro pero no se puede usar
+           		inserta(id1.entrada,TIPO_SEM, Registro(CUERPO_ST.tipo) )
+         	else RESTO_ST.tipo = error_tipo
+         else RESTO_ST.tipo = error_tipo 
+        } 
 	 * 61. RESTO_ST → { CUERPO_ST } ID NOMBRES
+	 * {
+	 *  if  (CUERPO_ST.tipo != error_tipo )
+      		NOMBRES.tipo_h  = Registro(CUERPO_ST.tipo) 
+       		if (NOMBRES.tipo != error_tipo) and  (consulta(id.lexema) == null // El id no tiene que estar declarado) then 
+           		RESTO_ST.tipo = vacio 
+           		inserta(id.entrada,TIPO_SEM, Registro(CUERPO_ST.tipo) )
+      		else RESTO_ST.tipo = error_tipo
+ 		else RESTO_ST.tipo = error_tipo  
+ 		} 
+
 	 * @throws Exception 
-	 */
-	private void resto_st() throws Exception {
+	 **/
+	private ExpresionTipo resto_st() throws Exception {
+		ExpresionTipo CUERPO_ST_tipo;
+		ExpresionTipo NOMBRES_tipo_h;
+		ExpresionTipo NOMBRES_tipo;
+		String IDlexema, IDlexema1;
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){ 
+			IDlexema = token.atrString();
 			parse.add(60);
 			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 				nextToken();
-				cuerpo_st();
+				CUERPO_ST_tipo = cuerpo_st();
+				if(CUERPO_ST_tipo.getTipoNoBasico() == TipoNoBasico.producto)
+					NOMBRES_tipo_h = new Registro((Producto)CUERPO_ST_tipo);
+				else if (CUERPO_ST_tipo.getTipoBasico() == TipoBasico.vacio)
+					NOMBRES_tipo_h = new Registro(null);
+				else return new ExpresionTipo(TipoBasico.error_tipo);
+				
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
 					nextToken();
 					if(token.esIgual(TipoToken.IDENTIFICADOR)){
+						IDlexema1 = token.atrString();
 						tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 						nextToken();
-						nombres();
+						NOMBRES_tipo = nombres(NOMBRES_tipo_h);
+						if ((NOMBRES_tipo.getTipoBasico() != TipoBasico.error_tipo) /* && (gestorTS.buscaIdBloqueActual(IDlexema1) != null) //El id1 no tiene que estar declarado
+				           		&& (gestorTS.buscaIdBloqueActual(IDlexema) != null)*/)  { //El id puede estar declarado pero no como registro) then 
+				           		//inserta(id.entrada, TIPO_SEM, Registro) // Este id identifica al registro pero no se puede usar
+				           		//inserta(id1.entrada,TIPO_SEM, Registro(CUERPO_ST.tipo))
+				           		return new ExpresionTipo(TipoBasico.vacio); }
+				        else
+				        	return new ExpresionTipo(TipoBasico.error_tipo);
 					} else {
-						// error
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta la identificacion de la estructura");
-						//ruptura=parse.size();
 					}
 				} else{
-					// error
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador cierra llave }");
-					//ruptura=parse.size();
 				}
 			}
 			else{
-				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador abre llave {");
-				//ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 			parse.add(61);
 			nextToken();
-			cuerpo_st();
+			CUERPO_ST_tipo = cuerpo_st();
+			if(CUERPO_ST_tipo.getTipoNoBasico() == TipoNoBasico.producto)
+				NOMBRES_tipo_h = new Registro((Producto)CUERPO_ST_tipo);
+			else if (CUERPO_ST_tipo.getTipoBasico() == TipoBasico.vacio)
+				NOMBRES_tipo_h = new Registro(null);
+			else return new ExpresionTipo(TipoBasico.error_tipo);	
+			
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
 				nextToken();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
+					IDlexema1 = token.atrString();
 					tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 					nextToken();
-					nombres();
+					NOMBRES_tipo = nombres(NOMBRES_tipo_h);
+					if ((NOMBRES_tipo.getTipoBasico() != TipoBasico.error_tipo)/* &&  
+						(gestorTS.buscaIdBloqueActual(IDlexema1) == null)*/)  {  //El id1 no tiene que estar declarado
+			           		//inserta(id1.entrada,TIPO_SEM, Registro(CUERPO_ST.tipo))
+			           		return new ExpresionTipo(TipoBasico.vacio); }
+			        else
+			        	return new ExpresionTipo(TipoBasico.error_tipo);
 				} else {
-					// error
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta la identificacion de la estructura");
-					//ruptura=parse.size();
 				}
 			} else {
-				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador cierra llave }");
-				//ruptura=parse.size();
 			}
 		} else{
-			// error
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador abre llave { o identificacion de la estructura");
-			//ruptura=parse.size();
 		}
+		return null;
 	}
 	
 	
 	/**
 	 * 62. CUERPO_ST → TIPO ID RESTO_VAR CUERPO_ST
+	 * {
+	 *  RESTO_VAR.tipo_h = TIPO.tipo
+ 		if  (TIPO.tipo != error_tipo) and (RESTO_VAR.tipo != error_tipo) and (CUERPO_ST1.tipo != error_tipo ) and (consulta(id.lexema) == null // El id no tiene que estar declarado  ) then
+     		CUERPO_ST.tipo = Producto(RESTO_VAR.tipo, CUERPO_ST1.tipo)
+ 		else CUERPO_ST.tipo = error_tipo  
+ 		} 
 	 * 63. CUERPO_ST → lambda
+	 * {
+	 * 	RESTO_TIPO.tipo = vacio 
+	 * }
 	 * @throws Exception 
 	 */
-	private void cuerpo_st() throws Exception {
-		//if(tipo()) {
-		if(tipo()!=null){
+	private ExpresionTipo cuerpo_st() throws Exception {
+		ExpresionTipo TIPO_tipo = tipo(); 
+		ExpresionTipo RESTO_VAR_tipo;
+		ExpresionTipo CUERPO_ST_tipo;
+		String IDlexema;
+		if(TIPO_tipo != null){
 			parse.add(62);
 			if (token.esIgual(TipoToken.IDENTIFICADOR)) {
-				tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
-				nextToken();
-				resto_var();
-				cuerpo_st();
+				IDlexema = token.atrString();
+					tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+					nextToken();
+					RESTO_VAR_tipo = resto_var(TIPO_tipo);
+					CUERPO_ST_tipo = cuerpo_st();
+					if(RESTO_VAR_tipo.getTipoBasico() != TipoBasico.error_tipo && CUERPO_ST_tipo.getTipoBasico() != TipoBasico.error_tipo )
+					{ 
+						if(RESTO_VAR_tipo.getTipoNoBasico() == TipoNoBasico.producto && CUERPO_ST_tipo.getTipoNoBasico() == TipoNoBasico.producto)
+							if(!EstaRepetido(IDlexema,(Producto)RESTO_VAR_tipo) && !EstaRepetido(IDlexema,(Producto)CUERPO_ST_tipo)) //(gestorTS.buscaIdBloqueActual(IDlexema) == null)) //No puede haber mas id's con el mismo nombre dentro del struct
+								return new Producto(new Producto(IDlexema,TIPO_tipo),new Producto(RESTO_VAR_tipo,CUERPO_ST_tipo));
+							else
+								return new ExpresionTipo(TipoBasico.error_tipo);
+						
+						if(RESTO_VAR_tipo.getTipoNoBasico() == TipoNoBasico.producto)
+							if(!EstaRepetido(IDlexema,(Producto)RESTO_VAR_tipo))  //(gestorTS.buscaIdBloqueActual(IDlexema) == null)) //No puede haber mas id's con el mismo nombre dentro del struct
+								return new Producto(new Producto(IDlexema,TIPO_tipo),RESTO_VAR_tipo);
+							else
+								return new ExpresionTipo(TipoBasico.error_tipo);
+						
+						if(CUERPO_ST_tipo.getTipoNoBasico() == TipoNoBasico.producto)
+							if(!EstaRepetido(IDlexema,(Producto)CUERPO_ST_tipo) ) //(gestorTS.buscaIdBloqueActual(IDlexema) == null)) //No puede haber mas id's con el mismo nombre dentro del struct
+								return new Producto(new Producto(IDlexema,TIPO_tipo),CUERPO_ST_tipo);
+							else 
+							    return new ExpresionTipo(TipoBasico.error_tipo);
+						
+						return new Producto(IDlexema,TIPO_tipo);
+					}	
+					else 
+						return new ExpresionTipo(TipoBasico.error_tipo);
+				
 			}
 			else {
 				//error
 				gestorErr.insertaErrorSintactico(linea, columna, "Los atributos deben estar identificados");
-				//ruptura=parse.size();
+				return null;
 			}
 		} else
 			parse.add(63);
-		
+			return new ExpresionTipo(TipoBasico.vacio);
 	}
 	
 	
 	/**
 	 * 64. RESTO_VAR → , ID RESTO_VAR
-	 * 65. RESTO_VAR → ;
+	 * { 
+	 *    RESTO_VAR1.tipo_h = RESTO_VAR.tipo_h
+ 		  if (RESTO_VAR1.tipo_s != error_tipo) and  (consulta(id.lexema) == null // El id no tiene que estar declarado  ) then 
+ 		  	RESTO_VAR.TIPO = Producto(Producto(id.lexema,RESTO_VAR.tipo_h), RESTO_VAR1.tipo)
+ 		  else RESTO_VAR.TIPO = error_tipo 
+ 		}
+ 	 * 65. RESTO_VAR → ;
+ 	 * { 
+ 	 *     RESTO_VAR.tipo = vacio
+ 	 *  }
 	 * @throws Exception 
 	 */
-	private void resto_var() throws Exception {
+	private ExpresionTipo resto_var(ExpresionTipo tipo_h) throws Exception {
+		ExpresionTipo RESTO_VAR1_tipo_h = tipo_h;
+		ExpresionTipo RESTO_VAR1_tipo;
+		String IDlexema;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){ 
 			parse.add(64);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				IDlexema = token.atrString();
 				tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 				nextToken();
-				resto_var();
+				RESTO_VAR1_tipo = resto_var(RESTO_VAR1_tipo_h);
+				
+				if(RESTO_VAR1_tipo.getTipoBasico() == TipoBasico.vacio)
+					 return new Producto(IDlexema,tipo_h);
+				else if( RESTO_VAR1_tipo.getTipoNoBasico() == TipoNoBasico.producto && !EstaRepetido(IDlexema,(Producto)RESTO_VAR1_tipo))
+					return new Producto(new Producto(IDlexema,tipo_h),RESTO_VAR1_tipo);
+				else
+					return new ExpresionTipo(TipoBasico.error_tipo);
 			} else {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, 
 						"Se deben identificar todos los atributos");
-				//ruptura=parse.size();
+				return null;
 			}
+			
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 			parse.add(65);
 			nextToken();
+			return new ExpresionTipo(TipoBasico.vacio);
 		} else {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, 
 					"Se esperaba un separador coma (,) o punto_coma (;)");
-			//ruptura=parse.size();
+			return null;
 		}
 	}
 	
 	
 	/**
 	 * 66. NOMBRES → , ID NOMBRES
+	 * { 
+	 *    NOMBRES1.tipo_h = NOMBRES.tipo_h     
+		  if (NOMBRES1.tipo != error_tipo) and (consulta(id.lexema) == null //El id no tiene que estar declarado
+          inserta(ID.entrada,TIPO_SEM, NOMBRES.tipo_h)  
+          NOMBRES.tipo = vacio
+          else NOMBRES.tipo = error_tipo 
+        }
 	 * 67. NOMBRES → ;
+	 * { 
+	 *  NOMBRES.tipo = vacio
+	 * }
+	 * @param nombres_tipo_h 
 	 * @throws Exception 
 	 */
-	private void nombres() throws Exception {
+	private ExpresionTipo nombres(ExpresionTipo nombres_tipo_h) throws Exception {
+		ExpresionTipo NOMBRES1_tipo_h = nombres_tipo_h;
+		ExpresionTipo NOMBRES1_tipo;
+		String IDlexema;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){ 
 			parse.add(66);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				IDlexema = token.atrString();
 				tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 				nextToken();
-				nombres();
+				NOMBRES1_tipo = nombres(NOMBRES1_tipo_h);
+				if(NOMBRES1_tipo.getTipoBasico() != TipoBasico.error_tipo /*&& gestorTS.buscaIdBloqueActual(IDlexema) == null*/) //El id no tiene que estar declarado
+					return new ExpresionTipo(TipoBasico.vacio);
+				else
+					return new ExpresionTipo(TipoBasico.error_tipo);
 			} else {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna,
@@ -1628,12 +1752,13 @@ public class AnalizadorSintactico {
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 			parse.add(67);
 			nextToken();
+			return new ExpresionTipo(TipoBasico.vacio);
 		} else {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, 
 					"Se esperaba un separador coma (,) o punto_coma (;)");
-			//ruptura=parse.size();
 		}
+		return null;
 	}
 	
 		
@@ -1730,7 +1855,7 @@ public class AnalizadorSintactico {
 	 * 72. RESTO_ESC →  LITERAL INS_ESC2
 	 *  {  RESTO_ESC.tipo = INS_ESC2.tipo }
 	 * 73. RESTO_ESC →  ID INS_ESC2
-	 * { if (INS_ESC2.tipo != error_tipo) and (consulta(id.lexema) != null) then    //el id tiene que estar declarado
+	 * { if (consulta(id.lexema) != null) then //el id tiene que estar declarado
            RESTO_ESC.tipo = INS_ESC2.tipo
          else
            RESTO_ESC.tipo = error_tipo }
@@ -3374,5 +3499,17 @@ public class AnalizadorSintactico {
 			 || token.esIgual(TipoToken.IDENTIFICADOR));
 	}
 
+	private boolean EstaRepetido(String lexema, Producto p) {
+		Object tipo = p.getTipo1();
+		while (tipo != null) {
+			if(tipo.equals(lexema)) return true;
+			if (tipo instanceof Producto)
+				tipo = ((Producto) tipo).getTipo1();
+			else
+				break;
+		}
+		return false;
+	}
+	
 
 }

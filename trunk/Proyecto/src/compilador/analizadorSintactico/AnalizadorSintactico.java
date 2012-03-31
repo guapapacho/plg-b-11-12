@@ -1652,7 +1652,6 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Lectura incorrecta, se esperaba el operador \">>\"");
-			//ruptura=parse.size();
 			return null;
 		}
 	}
@@ -1697,7 +1696,6 @@ public class AnalizadorSintactico {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Lectura terminada incorrectamente, falta ';'");
-				//ruptura=parse.size();
 				return null;
 			}
 		}
@@ -1705,26 +1703,26 @@ public class AnalizadorSintactico {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Lectura incorrecta, se esperaba un literal o una variable");
-			//ruptura=parse.size();
 			return null;
 		}
 	}
 	
 	/**
 	 * 71. INS_ESC → << RESTO_ESC
+	 * { INS_ESC.tipo = RESTO_ESC.tipo }
 	 * @throws Exception 
 	 */
-	private void ins_esc() throws Exception {
+	private ExpresionTipo ins_esc() throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
 			parse.add(63);
 			nextToken();
-			resto_esc();
+			return resto_esc();
 		}
 		else{
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Escritura incorrecta, se esperaba el operador \"<<\"");
-			//ruptura=parse.size();
+			return null;
 		}
 	}
 	

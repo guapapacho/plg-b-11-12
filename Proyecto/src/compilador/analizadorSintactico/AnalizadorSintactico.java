@@ -3019,10 +3019,11 @@ public class AnalizadorSintactico {
 	/** 209. RESTO_SHIFT →  <<  SHIFT-EXPRESSION
 	 * 210. RESTO_SHIFT →  >> SHIFT-EXPRESSION
 	 * 211. RESTO_SHIFT → lambda
+	 * 					{ RESTO_SHIFT.tipo := vacio }
 	 * @throws Exception 
 	 * */
 	
-	private void resto_shift() throws Exception {
+	private ExpresionTipo resto_shift() throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.DOS_MENORES)){
 			parse.add(209);
 			nextToken();
@@ -3035,7 +3036,9 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(211);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
+		return null; //TODO: borrar luego!!
 	}
 	
 	/**	212. RELATIONAL-EXPRESSION → SHIFT-EXPRESSION RESTO-RELATIONAL

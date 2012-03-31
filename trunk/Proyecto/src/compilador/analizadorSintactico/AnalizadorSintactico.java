@@ -85,7 +85,7 @@ public class AnalizadorSintactico {
 	
 	private void idConst() throws Exception {
 		entradaTS = (EntradaTS)token.getAtributo();
-		entradaTS.setTipo(tipo);
+//		entradaTS.setTipo(tipo); TODO usando ExpresionTipo
 		entradaTS.setConstante(true);
 		nextToken();
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
@@ -105,7 +105,7 @@ public class AnalizadorSintactico {
 
 	private void id() {
 		entradaTS = (EntradaTS)token.getAtributo();
-		entradaTS.setTipo(tipo);
+//		entradaTS.setTipo(tipo); TODO usando ExpresionTipo
 		entradaTS.setConstante(false);
 		nextToken();
 	}

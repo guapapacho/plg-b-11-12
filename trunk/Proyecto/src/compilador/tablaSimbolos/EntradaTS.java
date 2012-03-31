@@ -1,6 +1,8 @@
 package compilador.tablaSimbolos;
 
 import java.util.Vector;
+
+import compilador.analizadorSemantico.ExpresionTipo;
 import compilador.tablaSimbolos.Parametro.TipoParam;
 
 /**
@@ -12,7 +14,7 @@ public class EntradaTS {
 	/** Lexema del identificador */
 	private String lexema;
 	/** Tipo del identificador */
-	private Tipo tipo;
+	private ExpresionTipo tipo;
 	/** Si es constante o no */
 	private boolean constante;
 	/** Parametros del identificador si es una funcion, si no, un array vacio */
@@ -24,7 +26,7 @@ public class EntradaTS {
 		this(lexema, null, new Vector<Parametro>(), null, false);
 	}
 	
-	public EntradaTS(String lexema, Tipo tipo, Vector<Parametro> params, TipoParam retorno, boolean constante) {
+	public EntradaTS(String lexema, ExpresionTipo tipo, Vector<Parametro> params, TipoParam retorno, boolean constante) {
 		this.lexema = lexema;
 		this.tipo = tipo;
 		this.params = params;
@@ -40,11 +42,11 @@ public class EntradaTS {
 		this.constante = constante;
 	}
 
-	public Tipo getTipo() {
+	public ExpresionTipo getTipo() {
 		return tipo;
 	}
 
-	public void setTipo(Tipo tipo) {
+	public void setTipo(ExpresionTipo tipo) {
 		this.tipo = tipo;
 	}
 

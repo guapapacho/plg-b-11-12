@@ -1638,53 +1638,67 @@ public class AnalizadorSintactico {
 	
 		
 	/**
-	 * 68. INS_LECT → >>  RESTO_LECT 
+	 * 68. INS_LECT → >>  RESTO_LECT
+	 * { INS_LECT.tipo = RESTO_LECT.tipo } 
 	 * @throws Exception 
 	 */
-	private void ins_lect() throws Exception { 
+	private ExpresionTipo ins_lect() throws Exception { 
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MAYORES)){
 			parse.add(68);
 			nextToken();
-			resto_lect();
+			return resto_lect();
 		}
 		else{
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Lectura incorrecta, se esperaba el operador \">>\"");
 			//ruptura=parse.size();
+			return null;
 		}
 	}
 	
 	/**
 	 * 69. RESTO_LECT → ID ;
+	 * { if (consulta(id.lexema) != null) then   //el id tiene que estar declarado
+     			RESTO_LECT.tipo = vacio
+		   else
+     			RESTO_LECT.tipo = error_tipo }
 	 * 70. RESTO_LECT → LITERAL  ;
+	 * { RESTO_LECT.tipo = vacio }
 	 * @throws Exception 
 	 */
-	private void resto_lect() throws Exception {
+	private ExpresionTipo resto_lect() throws Exception {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){ //FALTA ALGO MAS AQUI???
 			parse.add(69);
-			nextToken();
-			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
+			if(gestorTS.buscaIdGeneral(token.atrString()) != null) {		
 				nextToken();
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
+					nextToken();
+					return new ExpresionTipo(TipoBasico.vacio);
+				}
+				else{
+					// error
+					gestorErr.insertaErrorSintactico(linea, columna,
+							"Lectura terminada incorrectamente, falta ';'" +
+							"Palabra o termino "+token.atrString()+" inseperado.");
+					return null;
+				}
 			}
-			else{
-				// error
-				gestorErr.insertaErrorSintactico(linea, columna,
-						"Lectura terminada incorrectamente, falta ';'");
-				//ruptura=parse.size();
-			}
+			else return new ExpresionTipo(TipoBasico.error_tipo); //error semantico
 		}
 		else if(esLiteral()){
 			parse.add(70);
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
-				nextToken();	
+				nextToken();
+				return  new ExpresionTipo(TipoBasico.vacio);
 			}
 			else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Lectura terminada incorrectamente, falta ';'");
 				//ruptura=parse.size();
+				return null;
 			}
 		}
 		else{
@@ -1692,6 +1706,7 @@ public class AnalizadorSintactico {
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Lectura incorrecta, se esperaba un literal o una variable");
 			//ruptura=parse.size();
+			return null;
 		}
 	}
 	
@@ -1715,89 +1730,69 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 72. RESTO_ESC →  LITERAL INS_ESC2
+	 *  {  RESTO_ESC.tipo = INS_ESC2.tipo }
 	 * 73. RESTO_ESC →  ID INS_ESC2
+	 * { if (INS_ESC2.tipo != error_tipo) and (consulta(id.lexema) != null) then    //el id tiene que estar declarado
+           RESTO_ESC.tipo = INS_ESC2.tipo
+         else
+           RESTO_ESC.tipo = error_tipo }
 	 * 74. RESTO_ESC →  endl INS_ESC2
+	 *  {  RESTO_ESC.tipo = INS_ESC2.tipo }
 	 * @throws Exception 
 	 */
-	private void resto_esc() throws Exception {
+	private ExpresionTipo resto_esc() throws Exception {
 		if(esLiteral()){
 			parse.add(72);
 			nextToken();
-			ins_esc2();
+			return ins_esc2();
 		}
 		else if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(73);
-			nextToken();
-			ins_esc2();
+			if(gestorTS.buscaIdGeneral(token.atrString()) != null) {
+				nextToken();
+				return ins_esc2();		
+			}	
+			return new ExpresionTipo(TipoBasico.error_tipo);	
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,76 /*endl*/)){ 
 			parse.add(74);
 			nextToken();
-			ins_esc2();
+			return ins_esc2();
 		}
 		else{
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Escritura incorrecta, se esperaba un literal, una variable o la palabra reservada \"endl\"");
-			//ruptura=parse.size();
+			return null;
 		}
 	}
 	
 	/**
-	 * 75. INS_ESC2 →  << RESTO_ESC2
+	 * 75. INS_ESC2 →  << RESTO_ESC
+	 * { INS_ESC2.tipo = RESTO_ESC.tipo }
 	 * 76. INS_ESC2 →  ;
+	 * { INS_ESC.tipo = vacio }
 	 * @throws Exception 
 	 */
-	private void ins_esc2() throws Exception{
+	private ExpresionTipo ins_esc2() throws Exception{
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
 			parse.add(75);
 			nextToken();
-			resto_esc2();
+			return resto_esc();
 		}
 		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 			parse.add(76);
 			nextToken();
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
 		else{
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna,
 					"Escritura terminada incorrectamente, falta ';'");
-			//ruptura=parse.size();
+			return null;
 		}
 	}
-	
-	
-	/**
-	 * 77. RESTO_ESC2 → LITERAL  INS_ESC2 
-	 * 78. RESTO_ESC2 → ID  INS_ESC2  
-	 * 79. RESTO_ESC2 → endl INS_ESC2 
-	 * 80. RESTO_ESC2 → lamdba
-	 * @throws Exception 
-	 */
-	private void resto_esc2() throws Exception {
-		if(esLiteral()){
-			parse.add(77);
-			nextToken();
-			ins_esc2();
-		}
-		else if(token.esIgual(TipoToken.IDENTIFICADOR)){
-			parse.add(78);
-			nextToken();
-			ins_esc2();
-		}
-		else if(token.esIgual(TipoToken.PAL_RESERVADA,76 /*endl*/)){ 
-			parse.add(79);
-			nextToken();
-			ins_esc2();
-		}
-		else{
-			// Lambda...
-			parse.add(80);
-		}
-	}
-	
 
-	
 	/**
 	 * 81. CUERPO --> for RESTO_FOR CUERPO
 	 * 82. CUERPO --> do RESTO_DO CUERPO

@@ -1415,14 +1415,14 @@ public class AnalizadorSintactico {
 		}
 	}
 	/**
-	 * 52. INS_DEC2 →
-	 *  if (consulta(id1.lexema) == null //El id no tiene que estar declarado )  
-	 *               PUNT ID MAS_COSAS
+	 * 52. INS_DEC2 → PUNT ID MAS_COSAS
+	 *  //El id no tiene que estar declarado 
+	 *               
 	 * 				{ if(PUNT.tipo != vacio) 
 	 * 				  then MAS_COSAS.tipo_h := puntero(INS_DEC2.tipo_h)
 	 * 				  else MAS_COSAS.tipo_h := INS_DEC2.tipo_h;
 	 * 				  INS_DEC2.tipo_s := MAS_COSAS.tipo_s 
-	 * else INS_DEC2.tipo = error_tipo }
+	 *  }
 	 * @throws Exception 
 	 */
 	private ExpresionTipo ins_dec2(ExpresionTipo tipo_h) throws Exception {
@@ -1918,12 +1918,44 @@ public class AnalizadorSintactico {
 
 	/**
 	 * 81. CUERPO --> for RESTO_FOR CUERPO
+	 * { if (RESTO_FOR.tipo != error_tipo) then 
+     	     CUERPO.tipo = CUERPO1.tipo
+		 else CUERPO.tipo = error_tipo 
+	   }
+
 	 * 82. CUERPO --> do RESTO_DO CUERPO
+	 * {
+	 *  if (RESTO_DO.tipo != error_tipo) then 
+     	CUERPO.tipo = CUERPO1.tipo
+		else CUERPO.tipo = error_tipo
+		}
+
 	 * 83. CUERPO --> while RESTO_WHILE CUERPO
+	 * {
+	 *  if (RESTO_WHILE.tipo != error_tipo) then 
+		  CUERPO.tipo = CUERPO1.tipo
+		else CUERPO.tipo = error_tipo
+		}
+
 	 * 84. CUERPO --> if RESTO_IF CUERPO
+	 * { 
+	 *   if (RESTO_IF.tipo != error_tipo) then
+		      CUERPO.tipo = CUERPO1.tipo 
+		  else CUERPO.tipo = error_tipo 
+		 }
+
 	 * 85. CUERPO --> switch RESTO_CASE CUERPO
+	 * { 
+	 *  if (RESTO_CASE.tipo != error_tipo) then 
+     	CUERPO.tipo = CUERPO1.tipo
+		else CUERPO.tipo = error_tipo 
+		}
+
 	 * 86. CUERPO --> lambda
-	 * 				{ CUERPO.tipo := vacio }
+	 * 	{
+	 *  CUERPO.tipo := vacio 
+	 *  }
+	 *  
 	 * 104. CUERPO → { CUERPO } CUERPO
 	 * 128. CUERPO → break ; CUERPO
 	 * 129. CUERPO → continue ; CUERPO
@@ -1939,38 +1971,44 @@ public class AnalizadorSintactico {
 	{
 		if(token.esIgual(TipoToken.PAL_RESERVADA,29 /*for*/))
 		{
+			ExpresionTipo RESTO_FOR_tipo;
 			parse.add(81);
 			nextToken();
-			resto_for();
-			cuerpo();
+			RESTO_FOR_tipo = resto_for();
+			if(RESTO_FOR_tipo.getTipoBasico() != TipoBasico.error_tipo)
+				return cuerpo();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,19 /*do*/))
 		{
 			parse.add(82);
 			nextToken();
-			resto_do();
-			cuerpo();
+			ExpresionTipo RESTO_DO_tipo = resto_do();
+			if(RESTO_DO_tipo.getTipoBasico() != TipoBasico.error_tipo)
+				return cuerpo();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,72 /*while*/))
 		{
 			parse.add(83);
 			nextToken();
-			resto_while();
-			cuerpo();
+			ExpresionTipo RESTO_WHILE_tipo = resto_while();
+			if(RESTO_WHILE_tipo.getTipoBasico() != TipoBasico.error_tipo)
+				return cuerpo();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,32 /*if*/))
 		{
 			parse.add(84);
 			nextToken();
-			resto_if();
-			cuerpo();
+			ExpresionTipo RESTO_IF_tipo = resto_if();
+			if(RESTO_IF_tipo.getTipoBasico() != TipoBasico.error_tipo)
+				return cuerpo();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,55 /*switch*/))
 		{
 			parse.add(85);
 			nextToken();
-			resto_case();
-			cuerpo();
+			ExpresionTipo RESTO_CASE_tipo = resto_case();
+			if(RESTO_CASE_tipo.getTipoBasico() != TipoBasico.error_tipo)
+				return cuerpo();
 //		}
 //		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 //			parse.add(86);
@@ -2064,58 +2102,82 @@ public class AnalizadorSintactico {
 
 	/** 
 	 * 87. CUERPO2 --> while RESTO_WHILE
+	 * { 
+	 *   CUERPO2.tipo =  RESTO_WHILE.tipo 
+	 * }
 	 * 88. CUERPO2 --> for RESTO_FOR
+	 * { 
+	 * CUERPO2.tipo =  RESTO_FOR.tipo
+	 * }
 	 * 89. CUERPO2 --> do RESTO_DO
+	 * {
+	 *  CUERPO2.tipo =  RESTO_DO.tipo 
+	 * }
 	 * 90. CUERPO2 --> if RESTO_IF 
+	 * { 
+	 * CUERPO2.tipo =  RESTO_IF.tipo
+	 *  }
 	 * 91. CUERPO2 --> switch RESTO_CASE
+	 * {
+	 *  CUERPO2.tipo =  RESTO_CASE.tipo 
+	 *  }
 	 * 92. CUERPO2 --> { CUERPO }
+	 * { 
+	 * CUERPO2.tipo =  CUERPO.tipo
+	 * }
 	 * 93. CUERPO2 --> INSTRUCCION
+	 * { 
+	 * CUERPO2.tipo =  INSTRUCCION.tipo 
+	 * }
+
 	 * @throws Exception 
 	 */
-	private void cuerpo2() throws Exception {
+	private ExpresionTipo cuerpo2() throws Exception {
 		
 		if(token.esIgual(TipoToken.PAL_RESERVADA,72 /*while*/))
 		{
 			parse.add(87);
 			nextToken();
-			resto_while();
+			return resto_while();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,29 /*for*/))
 		{
 			parse.add(88);
 			nextToken();
-			resto_for();
+			return resto_for();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,19 /*do*/))
 		{
 			parse.add(89);
 			nextToken();
-			resto_do();
+			return resto_do();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,32 /*if*/))
 		{
 			parse.add(90);
 			nextToken();
-			resto_if();
+			return resto_if();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,55 /*switch*/))
 		{
 			parse.add(91);
 			nextToken();
-			resto_case();
+			return resto_case();
 		}
 		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
+			ExpresionTipo CUERPO_tipo; 
 			nextToken();
 			parse.add(92);
-			cuerpo();
+			CUERPO_tipo = cuerpo();
 			if (!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)) {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta }");
 			}
-			nextToken();
+			return CUERPO_tipo;
+			//nextToken();
 		}
 		else {
 			parse.add(93);
-			instruccion();
+			return instruccion();
 		}
 		/*else 	
 			gestorErr.insertaErrorSintactico(linea, columna,
@@ -2126,97 +2188,125 @@ public class AnalizadorSintactico {
 	
 	/**
 	 *  94. RESTO_WHILE --> (EXPRESSION) do CUERPO2
+	 *  {
+	 *    if(EXPRESSION.tipo == logico) then 
+       		RESTO_WHILE.tipo = CUERPO2.tipo
+		   else RESTO_WHILE.tipo = error_tipo 
+		}
+
 	 * @throws Exception 
 	 */
-	private void resto_while() throws Exception {
+	private ExpresionTipo resto_while() throws Exception {
+		ExpresionTipo EXPRESSION_tipo;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(94);
 			nextToken();
-			expression();
+			 EXPRESSION_tipo = expression();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
-				cuerpo2();
+				if(EXPRESSION_tipo.getTipoBasico() == TipoBasico.logico)
+					return cuerpo2();
+				else 
+					return new ExpresionTipo(TipoBasico.error_tipo);
 			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
-				//ruptura=parse.size();
 			}
 		} else{
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \"(\"");
-			//ruptura=parse.size();
 		}
+		return null;
 	}		
 
 	/**
 	 * 95. RESTO_DO --> CUERPO2 while (EXPRESSION);
-	 * @throws Exception 
+	 * {
+	 *  if(EXPRESSION.tipo == logico) then 
+       		RESTO_DO.tipo = CUERPO2.tipo
+		 else RESTO_DO.tipo = error_tipo 
+  	   }
 	 */
-	private void resto_do() throws Exception {
+	private ExpresionTipo resto_do() throws Exception {
+		ExpresionTipo EXPRESSION_tipo;
+		ExpresionTipo CUERPO2_tipo;
 		parse.add(95); 
-		cuerpo2();
+		CUERPO2_tipo = cuerpo2();
 		if(token.esIgual(TipoToken.PAL_RESERVADA,72 /*while*/))	{
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 				nextToken();
-				expression();
+				EXPRESSION_tipo = expression();
+				
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 					nextToken();
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 						nextToken();
+						if(EXPRESSION_tipo.getTipoBasico() == TipoBasico.logico)
+							return CUERPO2_tipo;
+						else
+							return new ExpresionTipo(TipoBasico.error_tipo);
 					}	
 					else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-						//ruptura=parse.size();
 					}
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
-					//ruptura=parse.size();
 				}
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
-				//ruptura=parse.size();
 			}
 		}
 		else{
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta palabra \"while\"");
-			//ruptura=parse.size();
 		}
+		return null;
 	}	
 		
 	/**
 	 * 96. RESTO_FOR → ( FOR-INIT ; EXPRESSIONOPT ; EXPRESSIONOPT ) CUERPO2 
+	 * { 
+	 *  if(FOR_INIT.tipo != error_tipo) and (EXPRESSIONOPT.tipo == logico) and (EXPRESSIONOPT1.tipo != error_tipo)  then 
+       		RESTO_FOR.tipo = CUERPO2.tipo
+		 else RESTO_FOR.tipo = error_tipo
+		}
+
 	 * @throws Exception 
 	 */
-	private void resto_for() throws Exception {
+	private ExpresionTipo resto_for() throws Exception {
+		ExpresionTipo FOR_INIT_tipo;
+		ExpresionTipo EXPRESSIONOPT_tipo;
+		ExpresionTipo EXPRESSIONOPT1_tipo;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(96);
 			nextToken();
-			for_init();
+			 FOR_INIT_tipo = for_init();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				nextToken();
-				expressionOpt();
+				EXPRESSIONOPT_tipo = expressionOpt();
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 					nextToken();
-					expressionOpt();
+					EXPRESSIONOPT1_tipo = expressionOpt();
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 						nextToken();
-						cuerpo2();
+						if(EXPRESSIONOPT_tipo.getTipoBasico() == TipoBasico.logico && EXPRESSIONOPT1_tipo.getTipoBasico() != TipoBasico.error_tipo 
+							&& FOR_INIT_tipo.getTipoBasico() != TipoBasico.error_tipo)
+							return cuerpo2();
+						else
+							return new ExpresionTipo(TipoBasico.error_tipo);
 					} else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
-						//ruptura=parse.size();
 					}
 				} else{
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-					//ruptura=parse.size();
 				}
 			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-				//ruptura=parse.size();
 			}
 		} else{
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \"(\"");
 		}
+		return null;
 	}
 
 	/**
@@ -2225,7 +2315,7 @@ public class AnalizadorSintactico {
 	 * 137. FOR-INIT → EXPRESSIONOPT
 	 * @throws Exception 
 	 */
-	private void for_init() throws Exception {
+	private ExpresionTipo for_init() throws Exception {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(135);
 			nextToken();
@@ -2243,47 +2333,55 @@ public class AnalizadorSintactico {
 			parse.add(137);
 			expressionOpt();
 		}
+		return null;
 	}
 
 	/** 
 	 * 97. RESTO_CASE --> ( EXPRESSION ) RESTO_CASE2
+	 * { if (consulta(id.lexema) != null) then    //el id tiene que estar declarado
+		     RESTO_CASE.tipo = RESTO_CASE2.tipo
+		else
+		     RESTO_CASE.tipo = error_tipo 
+		 }
+
 	 * @throws Exception 
 	 */
-	private boolean resto_case() throws Exception {
-		
+	private ExpresionTipo resto_case() throws Exception {
+		ExpresionTipo EXPRESSION_tipo;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(97);
 			nextToken();
-			expression(); 
+			 EXPRESSION_tipo = expression(); 
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
-				resto_case2();
+				if(EXPRESSION_tipo.getTipoBasico() == TipoBasico.vacio)
+					return resto_case2();
+				else
+					return new ExpresionTipo(TipoBasico.error_tipo);
+				
 			}
 			else{
-				gestorErr.insertaErrorSintactico(linea, columna, "Falta ')'");
-				//ruptura=parse.size();
+				gestorErr.insertaErrorSintactico(linea, columna, "Falta ')'");;
 			}
 		}
 		else{
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta '('");
-			//ruptura=parse.size();
 		}
-		
-	
-	return false;
+	return null;
 	}
 	
 	/** 
 	 * TODO nuevos numeros de regla!
+	 * TODO mirar por que motivo devuelve boolean
 	 * 97aaaa. RESTO_CASE2 --> { CUERPO_CASE }
 	 * 97bbbb. RESTO_CASE2 --> ; 
 	 * @throws Exception 
 	 */
-	private boolean resto_case2() throws Exception {
+	private ExpresionTipo resto_case2() throws Exception {
 		numDefaults = 0;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 			parse.add(97); // TODO cambiar numero de regla
-			return true;
+			//return true;
 		}
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(97); // TODO cambiar numero de regla
@@ -2291,7 +2389,7 @@ public class AnalizadorSintactico {
 			cuerpo_case();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 				nextToken();
-				return true;
+				//return true;
 			}
 			else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta '}'");
@@ -2302,16 +2400,22 @@ public class AnalizadorSintactico {
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta '{'");
 			//ruptura=parse.size();
 		}
-		
-	return false;
+	return null;	
+	//return false;
 	}
 
 	/** TODO deberia funcionar con cuerpo si este no tuviese la regla cuerpo -> }
 	 * 98. CUERPO_CASE --> case LITERAL : CUERPO CUERPO_CASE
+	 * { if (CUERPO.tipo != error_tipo) and  (CUERPO_CASE.tipo != error_tipo) then 
+       		CUERPO_CASE.tipo = vacio
+		else CUERPO_CASE.tipo = error_tipo 
+	   }
 	 * TODO 98aaa. CUERPO_CASE --> default : CUERPO CUERPO_CASE 
 	 * @throws Exception 
 	 */
-	private void cuerpo_case() throws Exception {
+	private ExpresionTipo cuerpo_case() throws Exception {
+		ExpresionTipo CUERPO_tipo;
+		ExpresionTipo CUERPO_CASE1_tipo;
 		if(token.esIgual(TipoToken.PAL_RESERVADA,6 /*case*/)) {
 			parse.add(98);
 			nextToken();
@@ -2319,15 +2423,20 @@ public class AnalizadorSintactico {
 			{
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
 					nextToken();
-					cuerpo();
-					cuerpo_case();
+					CUERPO_tipo = cuerpo();
+					CUERPO_CASE1_tipo = cuerpo_case();
+					if(CUERPO_tipo.getTipoBasico() != TipoBasico.error_tipo &&
+						CUERPO_CASE1_tipo.getTipoBasico() != TipoBasico.error_tipo)
+						return new ExpresionTipo(TipoBasico.vacio);
+					else 
+						return new ExpresionTipo(TipoBasico.error_tipo);
+					
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta ':'");
 				}
 			}
 			else{ 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta literal");
-				//ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA,17 /*default*/)){
 			if(numDefaults < 1) {
@@ -2345,24 +2454,41 @@ public class AnalizadorSintactico {
 				gestorErr.insertaErrorSintactico(linea, columna, "'default' aparece más de una vez.");
 			}
 		}
+		return null;
 	}
 	
 	
 	
 	/**
 	 *  99. RESTO_IF --> ( EXPRESSION ) CUERPO2 SENT_ELSE
+	 *  {
+	 *   if(EXPRESSION.tipo == logico) and (CUERPO2.tipo != error_tipo) and  (SENT_ELSE.tipo != error_tipo) then 
+        	RESTO_IF.tipo = vacio
+		  else RESTO_IF.tipo = error_tipo
+		 }
+
 	 * @throws Exception 
+	 * TODO Mirar por que motivo devuelvia boolean
 	 */
-	private boolean resto_if() throws Exception {
+	private ExpresionTipo resto_if() throws Exception {
+		ExpresionTipo EXPRESSION_tipo;
+		ExpresionTipo SENT_ELSE_tipo;
+		ExpresionTipo CUERPO2_tipo;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(99);
 			nextToken();
-			expression();
+			EXPRESSION_tipo = expression();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
-				cuerpo2();
-				sent_else();
-				return true;
+				CUERPO2_tipo = cuerpo2();
+				SENT_ELSE_tipo = sent_else();
+				if(CUERPO2_tipo.getTipoBasico() != TipoBasico.error_tipo &&
+					SENT_ELSE_tipo.getTipoBasico() != TipoBasico.error_tipo &&
+					EXPRESSION_tipo.getTipoBasico() == TipoBasico.logico)
+						return new ExpresionTipo(TipoBasico.vacio);
+				else
+					return new ExpresionTipo(TipoBasico.error_tipo);
+				//return true;
 			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
 				//ruptura=parse.size();
@@ -2371,23 +2497,28 @@ public class AnalizadorSintactico {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
 			//ruptura=parse.size();
 		}
-		return false;
+		//return false;
+		return null;
 	}
 	
 	
 	/**
 	 * 100. SENT_ELSE --> else CUERPO2 
+	 * { SENT_ELSE.tipo =  CUERPO2.tipo }
 	 * 101. SENT_ELSE --> lambda
+	 * { SENT_ELSE.tipo = vacio }
 	 * @throws Exception 
 	 */
-	private void sent_else() throws Exception {
+	private ExpresionTipo sent_else() throws Exception {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,22 /*else*/)) {
 			parse.add(100);
 			nextToken();
-			cuerpo2();
+			return cuerpo2();
 		}
-		else //SENT_ELSE -> lambda
+		else {//SENT_ELSE -> lambda
 			parse.add(101);
+			return new ExpresionTipo(TipoBasico.vacio);
+		}	
 	}
 	
 	/**
@@ -3432,10 +3563,11 @@ public class AnalizadorSintactico {
 	 * 246. EXPRESSION → ASSIGNMENT-EXPRESSION RESTO_EXP
 	 * @throws Exception 
 	 */
-	private void expression() throws Exception {
+	private ExpresionTipo expression() throws Exception {
 		parse.add(246);
 		assignment_expression();
 		resto_exp();
+		return null;
 	}
 	
 	

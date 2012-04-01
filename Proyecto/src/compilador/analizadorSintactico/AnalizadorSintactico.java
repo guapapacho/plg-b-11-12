@@ -303,6 +303,13 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 105. RESTO_PROGRAMA → class ID { CUERPO_CLASE } ;
+	 * {  if // ( consulta(id.lexema) == null // No puede haber otra clase con el mismo id)  and 
+	 *    (CUERPO_CLASE.tipo != error_tipo) 
+       		inserta(ID.entrada,TIPO_SEM, CLASE)
+            RESTO_PROGRAMA.tipo = vacio  
+		  else RESTO_PROGRAMA.tipo = error_tipo
+	   }
+
 	 * 106. RESTO_PROGRAMA → COSAS
 	 * 						{ RESTO_PROGRAMA.tipo := COSAS.tipo }
 	 * @throws Exception 
@@ -315,12 +322,16 @@ public class AnalizadorSintactico {
 				nextToken();
 				if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_LLAVE)) {
 					nextToken();
-					cuerpo_clase();
+					ExpresionTipo CUERPO_CLASE_tipo = cuerpo_clase();
 					if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)) {
 						nextToken();
 						if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
 							nextToken();
-							return null;
+							if(CUERPO_CLASE_tipo.getTipoBasico() != TipoBasico.error_tipo)
+								//hacer algo con el ID
+								return new ExpresionTipo(TipoBasico.vacio);
+							else
+								return new ExpresionTipo(TipoBasico.error_tipo);
 							// TODO: return "bien hecho"
 						} else {
 							gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \";\"");
@@ -360,19 +371,30 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 107.CUERPO_CLASE → friend RESTO_FRIEND CUERPO CLASE
+	 *  { 
+	 *    if (RESTO_FRIEND.tipo != error_tipo) and  (CUERPO_CLASE1.tipo != error_tipo) then 
+       		CUERPO_CLASE.tipo = vacio
+		  else CUERPO_CLASE.tipo = error_tipo 
+		}
 	 * 108.CUERPO_CLASE → public : LISTA_CLASE CUERPO_CLASE
 	 * 109.CUERPO_CLASE → private : LISTA_CLASE CUERPO_CLASE
 	 * 110.CUERPO_CLASE → protected : LISTA_CLASE CUERPO_CLASE
 	 * 111.CUERPO_CLASE → lambda
 	 * @throws Exception 
 	 */
-	private void cuerpo_clase() throws Exception {
+	private ExpresionTipo cuerpo_clase() throws Exception {
 		if (!token.esIgual(TipoToken.EOF)) {
 			if (token.esIgual(TipoToken.PAL_RESERVADA, 30)) {
 				parse.add(107);
 				nextToken();
-				resto_friend();
-				cuerpo_clase();
+				ExpresionTipo RESTO_FRIEND_tipo = resto_friend();
+				ExpresionTipo CUERPO_CLASE1_tipo = cuerpo_clase();
+				if(RESTO_FRIEND_tipo.getTipoBasico() != TipoBasico.error_tipo &&
+					CUERPO_CLASE1_tipo.getTipoBasico() != TipoBasico.error_tipo)
+					return new ExpresionTipo(TipoBasico.vacio);
+				else
+					return new ExpresionTipo(TipoBasico.error_tipo);
+				
 			} else if (token.esIgual(TipoToken.PAL_RESERVADA, 44)) {
 				parse.add(108);
 				nextToken();
@@ -413,6 +435,7 @@ public class AnalizadorSintactico {
 			gestorErr.insertaErrorSintactico(linea, columna,"Fin de fichero inesperado");
 			//ruptura=parse.size();
 		}
+		return null;
 	}
 	
 	
@@ -421,7 +444,7 @@ public class AnalizadorSintactico {
 	 * 113.RESTO_FRIEND → TIPO RESTO_FRIEND2
 	 * @throws Exception 
 	 */
-	private void resto_friend() throws Exception {
+	private ExpresionTipo resto_friend() throws Exception {
 		if (token.esIgual(TipoToken.PAL_RESERVADA, 69)) {
 			parse.add(112);
 			nextToken();
@@ -435,6 +458,7 @@ public class AnalizadorSintactico {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta tipo de retorno (o void)");
 			//ruptura=parse.size();
 		}
+		return null;
 	}
 	
 	
@@ -1957,6 +1981,10 @@ public class AnalizadorSintactico {
 	 *  }
 	 *  
 	 * 104. CUERPO → { CUERPO } CUERPO
+	 * { if(CUERPO1.tipo != error_tipo) and  (CUERPO2 != error_tipo) then 
+       	 	CUERPO.tipo = vacio
+		 else CUERPO.tipo = error_tipo
+	   }
 	 * 128. CUERPO → break ; CUERPO
 	 * 129. CUERPO → continue ; CUERPO
 	 * 130. CUERPO → return EXPRESSIONOPT; CUERPO
@@ -2016,14 +2044,19 @@ public class AnalizadorSintactico {
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(104);
 			nextToken();
-			cuerpo();
+			ExpresionTipo CUERPO1_tipo = cuerpo();
 //			cuerpo();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 				nextToken();
-				cuerpo();
+				ExpresionTipo CUERPO2_tipo = cuerpo();
+				if(CUERPO1_tipo.getTipoBasico() != TipoBasico.error_tipo &&
+					CUERPO2_tipo.getTipoBasico() != TipoBasico.error_tipo)
+					return new ExpresionTipo(TipoBasico.vacio);
+				else
+					return new ExpresionTipo(TipoBasico.error_tipo);
+				
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \"}\"");
-				//ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA,5 /*break*/)) {
 			parse.add(128);
@@ -2338,7 +2371,7 @@ public class AnalizadorSintactico {
 
 	/** 
 	 * 97. RESTO_CASE --> ( EXPRESSION ) RESTO_CASE2
-	 * { if (consulta(id.lexema) != null) then    //el id tiene que estar declarado
+	 * { if(EXPRESSION != error_tipo)  //(consulta(id.lexema) != null) then    //el id tiene que estar declarado
 		     RESTO_CASE.tipo = RESTO_CASE2.tipo
 		else
 		     RESTO_CASE.tipo = error_tipo 
@@ -2354,11 +2387,10 @@ public class AnalizadorSintactico {
 			 EXPRESSION_tipo = expression(); 
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
-				if(EXPRESSION_tipo.getTipoBasico() == TipoBasico.vacio)
+				if(EXPRESSION_tipo.getTipoBasico() != TipoBasico.error_tipo)
 					return resto_case2();
 				else
 					return new ExpresionTipo(TipoBasico.error_tipo);
-				
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta ')'");;
@@ -2372,7 +2404,6 @@ public class AnalizadorSintactico {
 	
 	/** 
 	 * TODO nuevos numeros de regla!
-	 * TODO mirar por que motivo devuelve boolean
 	 * 97aaaa. RESTO_CASE2 --> { CUERPO_CASE }
 	 * 97bbbb. RESTO_CASE2 --> ; 
 	 * @throws Exception 
@@ -2406,7 +2437,7 @@ public class AnalizadorSintactico {
 
 	/** TODO deberia funcionar con cuerpo si este no tuviese la regla cuerpo -> }
 	 * 98. CUERPO_CASE --> case LITERAL : CUERPO CUERPO_CASE
-	 * { if (CUERPO.tipo != error_tipo) and  (CUERPO_CASE.tipo != error_tipo) then 
+	 * { if (CUERPO.tipo != error_tipo) and  (CUERPO_CASE1.tipo != error_tipo) then 
        		CUERPO_CASE.tipo = vacio
 		else CUERPO_CASE.tipo = error_tipo 
 	   }
@@ -2468,7 +2499,6 @@ public class AnalizadorSintactico {
 		 }
 
 	 * @throws Exception 
-	 * TODO Mirar por que motivo devuelvia boolean
 	 */
 	private ExpresionTipo resto_if() throws Exception {
 		ExpresionTipo EXPRESSION_tipo;

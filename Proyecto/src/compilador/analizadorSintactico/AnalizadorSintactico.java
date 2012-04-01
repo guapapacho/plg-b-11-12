@@ -3218,6 +3218,14 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 199. MULTIPLICATIVE-EXPRESSION → PM-EXPRESSION RESTO-MULT
+	 *   { if (PM_EXPRESSION.tipo_s != error_tipo) then   
+	 *   		RESTO-MULT.tipo_h := PM-EXPRESSION.tipo_s;
+     *          if (RESTO-MULT.tipo_s == vacio) then 
+     *          	MULTIPLICATIVE-EXPRESSION.tipo_s == PM-EXPRESSION.tipo_s
+     *          else MULTIPLICATIVE-EXPRESSION.tipo_s := RESTO-MULT.tipo_s
+     *     else
+     *         MULTIPLICATIVE-EXPRESSION.tipo_s := error_tipo }
+	 *
 	 * @throws Exception 
 	 */
 	private void multiplicative_expression() throws Exception{
@@ -3228,9 +3236,43 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 200. RESTO-MULT → * MULTIPLICATIVE-EXPRESSION
+	 *   { if (RESTO_MULT.tipo_h == PM-EXPRESSION.tipo_s) then
+	 *   		if ((RESTO-MULT.tipo_h := entero) & (MULTIPLICATIVE-EXPRESSION.tipo_s := entero) then 
+	 *   			RESTO-MULT.tipo_s := entero;
+	 *   		else if ((RESTO-MULT.tipo_h := entero) & (MULTIPLICATIVE-EXPRESSION.tipo_s := real) then 
+	 *   			RESTO-MULT.tipo_s := real;
+	 *   		else if ((RESTO-MULT.tipo_h := real) & (MULTIPLICATIVE-EXPRESSION.tipo_s := entero) then 
+	 *   			RESTO-MULT.tipo_s := real;
+	 *   		else if ((RESTO-MULT.tipo_h := real) & (MULTIPLICATIVE-EXPRESSION.tipo_s := real) then 
+	 *   			RESTO-MULT.tipo_s := real;
+	 *     else    
+	 *     		RESTO-MULT.tipo_s := error_tipo }
 	 * 201. RESTO-MULT → / MULTIPLICATIVE-EXPRESSION
+	 *   { if (RESTO_MULT.tipo_h == PM-EXPRESSION.tipo_s) then
+	 *   		if ((RESTO-MULT.tipo_h := entero) & (MULTIPLICATIVE-EXPRESSION.tipo_s := entero) then 
+	 *   			RESTO-MULT.tipo_s := entero;
+	 *   		else if ((RESTO-MULT.tipo_h := entero) & (MULTIPLICATIVE-EXPRESSION.tipo_s := real) then 
+	 *   			RESTO-MULT.tipo_s := real;
+	 *   		else if ((RESTO-MULT.tipo_h := real) & (MULTIPLICATIVE-EXPRESSION.tipo_s := entero) then 
+	 *   			RESTO-MULT.tipo_s := real;
+	 *   		else if ((RESTO-MULT.tipo_h := real) & (MULTIPLICATIVE-EXPRESSION.tipo_s := real) then 
+	 *   			RESTO-MULT.tipo_s := real;
+	 *     else    
+	 *     		RESTO-MULT.tipo_s := error_tipo }
 	 * 202. RESTO-MULT → % MULTIPLICATIVE-EXPRESSION
+	 *   { if (RESTO_MULT.tipo_h == PM-EXPRESSION.tipo_s) then
+	 *   		if ((RESTO-MULT.tipo_h := entero) & (MULTIPLICATIVE-EXPRESSION.tipo_s := entero) then 
+	 *   			RESTO-MULT.tipo_s := entero;
+	 *   		else if ((RESTO-MULT.tipo_h := entero) & (MULTIPLICATIVE-EXPRESSION.tipo_s := real) then 
+	 *   			RESTO-MULT.tipo_s := real;
+	 *   		else if ((RESTO-MULT.tipo_h := real) & (MULTIPLICATIVE-EXPRESSION.tipo_s := entero) then 
+	 *   			RESTO-MULT.tipo_s := real;
+	 *   		else if ((RESTO-MULT.tipo_h := real) & (MULTIPLICATIVE-EXPRESSION.tipo_s := real) then 
+	 *   			RESTO-MULT.tipo_s := real;
+	 *     else    
+	 *     		RESTO-MULT.tipo_s := error_tipo }
 	 * 203. RESTO-MULT → lambda
+	 * 	{RESTO-MULT.tipo_s := vacio }
 	 * @throws Exception 
 	 */
 	private void resto_mult() throws Exception{

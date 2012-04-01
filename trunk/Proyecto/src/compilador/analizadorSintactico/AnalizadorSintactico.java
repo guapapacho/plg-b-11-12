@@ -3193,7 +3193,7 @@ public class AnalizadorSintactico {
 	 * 198. PM-EXPRESSION → -> CAST-EXPRESSION
 	 * @throws Exception 
 	 */
-	private void pm_expression() throws Exception{
+	private ExpresionTipo pm_expression() throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO)){
 			nextToken();
 			if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
@@ -3213,6 +3213,7 @@ public class AnalizadorSintactico {
 			parse.add(196);
 			cast_expression();
 		}
+		return null; //QUITAR DESPUES DE IMPLEMENTACION
 	}
 	
 	
@@ -3228,10 +3229,21 @@ public class AnalizadorSintactico {
 	 *
 	 * @throws Exception 
 	 */
-	private void multiplicative_expression() throws Exception{
+	private ExpresionTipo multiplicative_expression() throws Exception{
+		ExpresionTipo aux1,aux2,aux3=null;
 		parse.add(199);
-		pm_expression();
-		resto_mult();
+		aux1 = pm_expression();
+		if ( !aux1.getTipoBasico().equals("error_tipo")) {
+			aux3 = aux1;
+			aux2 = resto_mult(aux3);
+			if (aux2.getTipoBasico().equals("vacio")) {
+				return new ExpresionTipo(aux1.getTipoBasico());
+			} else {
+				return new ExpresionTipo(aux2.getTipoBasico());
+			}
+		} else {
+			return new ExpresionTipo(TipoBasico.error_tipo);
+		}
 	}
 	
 	/**
@@ -3275,92 +3287,211 @@ public class AnalizadorSintactico {
 	 * 	{RESTO-MULT.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private void resto_mult() throws Exception{
+	private ExpresionTipo resto_mult(ExpresionTipo tipo_h/*RESTO-MULT.tipo_h*/) throws Exception{
+		ExpresionTipo aux = null; //MULTIPLICATIVE-EXPRESSION.tipo_s
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 			nextToken();
 			parse.add(200);
-			multiplicative_expression();
+			aux = multiplicative_expression();
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.DIVISION)){
 			nextToken();
 			parse.add(201);
-			multiplicative_expression();
+			aux = multiplicative_expression();
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.PORCENTAJE)){
 			nextToken();
 			parse.add(202);
-			multiplicative_expression();
+			aux = multiplicative_expression();
 		} else{
 			parse.add(203);
 			//lambda
+			return new ExpresionTipo(TipoBasico.vacio);
+		}
+		// { if (RESTO_MULT.tipo_h == PM-EXPRESSION.tipo_s) then
+		if (tipo_h.getTipoBasico().equals("tengo que coger el valor de PM expression")) { //Supuestamente me viene en la misma variable ¿?¿?¿?¿?
+			if (aux.getTipoBasico().equals("entero") && tipo_h.getTipoBasico().equals("entero")) {
+				return new ExpresionTipo(TipoBasico.entero);
+			} else if ((aux.getTipoBasico().equals("real") && tipo_h.getTipoBasico().equals("entero")) ||
+						(aux.getTipoBasico().equals("entero") && tipo_h.getTipoBasico().equals("real")) ||
+							((aux.getTipoBasico().equals("real") && tipo_h.getTipoBasico().equals("real")))) {
+				return new ExpresionTipo(TipoBasico.real);
+			} else {
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}	
+		}else {
+			return new ExpresionTipo(TipoBasico.error_tipo);
 		}
 	}
 	
 	/**
 	 * 204. ADDITIVE_EXPRESSION → MULTIPLICATIVE-EXPRESSION  RESTO _ADD
+	 *   { if (MULTIPLICATIVE-EXPRESSION.tipo_s != error_tipo) then
+	 *      RESTO_ADD.tipo_h := MULTIPLICATIVE-EXPRESSION.tipo_s;
+	 *              if (RESTO_ADD.tipo_s == vacio) then 
+	 *                  ADDITIVE_EXPRESSION.tipo_s == MULTIPLICATIVE-EXPRESSION.tipo_s
+	 *              else ADDITIVE_EXPRESSION.tipo_s := RESTO_ADD.tipo_s
+	 *     else    ADDITIVE_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception 
 	 */
-	private void additive_expression() throws Exception{
+	private ExpresionTipo additive_expression() throws Exception{
+		ExpresionTipo aux1,aux2,aux3=null;
 		parse.add(204);
-		multiplicative_expression();
-		resto_add();
+		aux1 = multiplicative_expression();
+		if (!aux1.getTipoBasico().equals("error_tipo")) {
+			aux3 = aux1;
+			aux2 = resto_add(aux3);
+			if (aux2.equals("vacio")) {
+				return new ExpresionTipo(aux1.getTipoBasico());
+			} else {
+				return new ExpresionTipo(aux2.getTipoBasico());
+			}
+		} else {
+			return new ExpresionTipo(TipoBasico.error_tipo);
+		}
 	}
 	
 	/**
 	 * 205. RESTO_ADD → + ADDITIVE_EXPRESSION
+	 *   { if (RESTO_ADD.tipo_h == ADDITIVE_EXPRESSION.tipo_s) then
+	 *    	if ((RESTO_ADD.tipo_h := entero) & ADDITIVE_EXPRESSION.tipo_s := entero) then 
+	 *  	  		RESTO_ADD.tipo_s := entero;
+	 * 		else if ((RESTO_ADD.tipo_h := entero) & (ADDITIVE_EXPRESSION.tipo_s := real) then 
+	 *    			RESTO_ADD.tipo_s := real;
+	 *    	else if ((RESTO_ADD.tipo_h := real) & (ADDITIVE_EXPRESSION.tipo_s := entero) then 
+	 *    			RESTO_ADD.tipo_s := real;
+	 *    	else if ((RESTO_ADD.tipo_h := real) & (ADDITIVE_EXPRESSION.tipo_s := real) then 
+	 *    			RESTO_ADD.tipo_s := real;
+	 *    else
+	 *    	RESTO_ADD.tipo_s := error_tipo }
+	 *    
 	 * 206. RESTO_ADD → - ADDITIVE_EXPRESSION
+	 * 	{ if (RESTO_ADD.tipo_h == ADDITIVE_EXPRESSION.tipo_s) then
+	 *    	if ((RESTO_ADD.tipo_h := entero) & ADDITIVE_EXPRESSION.tipo_s := entero) then 
+	 *  	  		RESTO_ADD.tipo_s := entero;
+	 * 		else if ((RESTO_ADD.tipo_h := entero) & (ADDITIVE_EXPRESSION.tipo_s := real) then 
+	 *    			RESTO_ADD.tipo_s := real;
+	 *    	else if ((RESTO_ADD.tipo_h := real) & (ADDITIVE_EXPRESSION.tipo_s := entero) then 
+	 *    			RESTO_ADD.tipo_s := real;
+	 *    	else if ((RESTO_ADD.tipo_h := real) & (ADDITIVE_EXPRESSION.tipo_s := real) then 
+	 *    			RESTO_ADD.tipo_s := real;
+	 *    else
+	 *    	RESTO_ADD.tipo_s := error_tipo }
+	 *    
 	 * 207. RESTO_ADD → lambda
+	 *	 {RESTO_ADD.tipo := vacio }
+	 * 
 	 * @throws Exception 
 	 */
-	private void resto_add() throws Exception{
+	private ExpresionTipo resto_add(ExpresionTipo tipo_h) throws Exception{
+		ExpresionTipo aux = null;
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.SUMA)){
 			parse.add(205);
 			nextToken();
-			additive_expression();
+			aux = additive_expression();
 		}
 		else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.RESTA)){
 			parse.add(206);
 			nextToken();
-			additive_expression();
+			aux = additive_expression();
 		} else{
 			parse.add(207);
 			// lambda
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
+		//if (RESTO_ADD.tipo_h == ADDITIVE_EXPRESSION.tipo_s) then
+		if (tipo_h.getTipoBasico().equals("tengo que coger el valor de ADDITIVE expression")) { //Supuestamente me viene en la misma variable ¿?¿?¿?¿?
+			if (aux.getTipoBasico().equals("entero") && tipo_h.getTipoBasico().equals("entero")) {
+				return new ExpresionTipo(TipoBasico.entero);
+			} else if ((aux.getTipoBasico().equals("real") && tipo_h.getTipoBasico().equals("entero")) ||
+						(aux.getTipoBasico().equals("entero") && tipo_h.getTipoBasico().equals("real")) ||
+							((aux.getTipoBasico().equals("real") && tipo_h.getTipoBasico().equals("real")))) {
+				return new ExpresionTipo(TipoBasico.real);
+			} else {
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}	
+		}else {
+			return new ExpresionTipo(TipoBasico.error_tipo);
+		}
+		
 	}
 	
 	
 	/**
 	 * 208. SHIFT-EXPRESSION → ADDITIVE_EXPRESSION RESTO_SHIFT
+	 *   { if (ADDITIVE_EXPRESSION.tipo_s != error_tipo) then
+	 *   	RESTO_SHIFT.tipo_h := ADDITIVE_EXPRESSION.tipo_s;
+	 *   	if (RESTO_SHIFT.tipo_s == vacio) then
+	 *   		SHIFT_EXPRESSION.tipo_s == ADDITIVE_EXPRESSION.tipo_s
+	 *   	else 
+	 *   		SHIFT_EXPRESSION.tipo_s := RESTO_SHIFT.tipo_s
+	 *   else
+	 *   	SHIFT_EXPRESSION.tipo_s := error_tipo }
+	 *   
 	 * @throws Exception 
 	 * */
 	private ExpresionTipo shift_expression() throws Exception{
+		ExpresionTipo aux1,aux2,aux3=null;
 		parse.add(208);
-		additive_expression(); //Debe leer el siguiente token
-		resto_shift();
-		return null; //TODO: Laura, borra esto cuando termines con esta regla
+		aux1 = additive_expression();
+		if (!aux1.getTipoBasico().equals("error_tipo")) {
+			aux3 = aux1;
+			aux2 = resto_shift(aux3);
+			if (aux2.equals("vacio")) {
+				return new ExpresionTipo(aux1.getTipoBasico());
+			} else {
+				return new ExpresionTipo(aux2.getTipoBasico());
+			}
+		} else {
+			return new ExpresionTipo(TipoBasico.error_tipo);
+		}
+		
 	}
 
 	/** 209. RESTO_SHIFT →  <<  SHIFT-EXPRESSION
+	 *   { if (RESTO_SHIFT.tipo_h == SHIFT_EXPRESSION.tipo_s) then
+	 *   	 if ((RESTO_SHIFT.tipo_h := entero) & SHIFT_EXPRESSION.tipo_s := entero) then 
+	 *   		RESTO_SHIFT.tipo_s := entero;
+	 *       else
+	 *          RESTO_SHIFT.tipo_s := error_tipo
+	 *     else 
+	 *   	RESTO_SHIFT.tipo_s := error_tipo }
+	 *          
 	 * 210. RESTO_SHIFT →  >> SHIFT-EXPRESSION
+	 * { if (RESTO_SHIFT.tipo_h == SHIFT_EXPRESSION.tipo_s) then
+	 *   	 if ((RESTO_SHIFT.tipo_h := entero) & SHIFT_EXPRESSION.tipo_s := entero) then 
+	 *   		RESTO_SHIFT.tipo_s := entero;
+	 *       else
+	 *          RESTO_SHIFT.tipo_s := error_tipo 
+	 *   else 
+	 *   	RESTO_SHIFT.tipo_s := error_tipo }
 	 * 211. RESTO_SHIFT → lambda
 	 * 					{ RESTO_SHIFT.tipo_s := vacio }
 	 * @throws Exception 
 	 * */
 	
-	private ExpresionTipo resto_shift() throws Exception {
+	private ExpresionTipo resto_shift(ExpresionTipo tipo_h) throws Exception {
+		ExpresionTipo aux = null;
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.DOS_MENORES)){
 			parse.add(209);
 			nextToken();
-			shift_expression();
+			aux = shift_expression();
 		}
 		else if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.DOS_MAYORES)){
 			parse.add(210);
 			nextToken();
-			shift_expression();
+			aux = shift_expression();
 		}
 		else{
 			parse.add(211);
 			return new ExpresionTipo(TipoBasico.vacio);
 		}
-		return null; //TODO: Laura, borra esto cuando termines con esta regla
+		
+		if (aux.getTipoBasico().equals(tipo_h)) {
+			//¿Cual es el tipo que tengo que devolver??
+			return null;
+		} else {
+			return new ExpresionTipo(TipoBasico.error_tipo);
+		}
+			
 	}
 	
 	/**	212. RELATIONAL-EXPRESSION → SHIFT-EXPRESSION RESTO-RELATIONAL

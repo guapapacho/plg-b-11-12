@@ -3253,7 +3253,7 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * 204. ADDITIVE_EXPRESSION  → MULTIPLICATIVE-EXPRESSION  RESTO _ADD
+	 * 204. ADDITIVE_EXPRESSION → MULTIPLICATIVE-EXPRESSION  RESTO _ADD
 	 * @throws Exception 
 	 */
 	private void additive_expression() throws Exception{
@@ -3289,16 +3289,17 @@ public class AnalizadorSintactico {
 	 * 208. SHIFT-EXPRESSION → ADDITIVE_EXPRESSION RESTO_SHIFT
 	 * @throws Exception 
 	 * */
-	private void shift_expression() throws Exception{
+	private ExpresionTipo shift_expression() throws Exception{
 		parse.add(208);
 		additive_expression(); //Debe leer el siguiente token
 		resto_shift();
+		return null; //TODO: Laura, borra esto cuando termines con esta regla
 	}
 
 	/** 209. RESTO_SHIFT →  <<  SHIFT-EXPRESSION
 	 * 210. RESTO_SHIFT →  >> SHIFT-EXPRESSION
 	 * 211. RESTO_SHIFT → lambda
-	 * 					{ RESTO_SHIFT.tipo := vacio }
+	 * 					{ RESTO_SHIFT.tipo_s := vacio }
 	 * @throws Exception 
 	 * */
 	
@@ -3317,50 +3318,77 @@ public class AnalizadorSintactico {
 			parse.add(211);
 			return new ExpresionTipo(TipoBasico.vacio);
 		}
-		return null; //TODO: borrar luego!!
+		return null; //TODO: Laura, borra esto cuando termines con esta regla
 	}
 	
 	/**	212. RELATIONAL-EXPRESSION → SHIFT-EXPRESSION RESTO-RELATIONAL
+	 * 							  { if (SHIFT_EXPRESSION.tipo_s != error_tipo)
+	 * 								then   RESTO_RELATIONAL.tipo_h := SHIFT_EXPRESSION.tipo_s;
+	 * 										if (RESTO_RELATIONAL.tipo_s == vacio) 
+	 * 										then RELATIONAL_EXPRESSION.tipo_s == SHIFT_EXPRESSION.tipo_s
+	 * 										else RELATIONAL_EXPRESSION.tipo_s := RESTO_RELATIONAL.tipo_s    
+	 * 								else   RELATIONAL_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception */
 	
-	private void relational_expression() throws Exception{
+	private ExpresionTipo relational_expression() throws Exception{
+		ExpresionTipo aux1,aux2;		
 		parse.add(212);
-		shift_expression(); 
-		resto_relational();
+		aux1=shift_expression();
+		aux2=resto_relational(aux1);
+		if(aux2.equals(TipoBasico.vacio))
+			return aux1;
+		else
+			return aux2;
 	}
 
 	/**	213. RESTO-RELATIONAL → < RESTO2-RELATIONAL
-		214. RESTO-RELATIONAL → > RESTO2-RELATIONAL
-		216. RESTO-RELATIONAL → >= RESTO2-RELATIONAL //TODO cambiar las reglas en la memoria
-		217. RESTO-RELATIONAL → <= RESTO2-RELATIONAL //TODO cambiar las reglas en la memoria
-		215. RESTO-RELATIONAL → lambda
+	 * 							  { if (RESTO_RELATIONAL.tipo_h == SHIFT_EXPRESSION.tipo_s)
+	 * 								then   RESTO_RELATIONAL.tipo_s := logico
+	 * 								else    RESTO_RELATIONAL.tipo_s := error_tipo } 
+	 * 214. RESTO-RELATIONAL → > RESTO2-RELATIONAL
+	 * 							  { BIS }
+	 * 216. RESTO-RELATIONAL → >= RESTO2-RELATIONAL //TODO cambiar las reglas en la memoria
+	 * 							  { BIS }
+	 * 217. RESTO-RELATIONAL → <= RESTO2-RELATIONAL //TODO cambiar las reglas en la memoria
+	 * 							  { BIS }
+	 * 215. RESTO-RELATIONAL → lambda
+	 * 							  { RESTO_RELATIONAL.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private void resto_relational() throws Exception {
+	private ExpresionTipo resto_relational(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MENOR)){
 			parse.add(213);
-			nextToken();
-			shift_expression();
+//			nextToken();
+//			shift_expression();
 		}
 		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR)){
 			parse.add(214);
-			nextToken();
-			shift_expression();
+//			nextToken();
+//			shift_expression();
 		}
 		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR_IGUAL)){
 			parse.add(216);
-			nextToken();
-			shift_expression();
+//			nextToken();
+//			shift_expression();
 		}
 		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MENOR_IGUAL)){
 			parse.add(217);
-			nextToken();
-			shift_expression();
+//			nextToken();
+//			shift_expression();
 		}
 		else{
 			parse.add(215);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
-		
+		nextToken();
+		ExpresionTipo aux1 = shift_expression();
+		if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
+			return new ExpresionTipo(TipoBasico.logico);
+		else{
+			// TODO insertar error: "tipos no compatibles para comparacion logica" 
+			return new ExpresionTipo(TipoBasico.error_tipo);
+		}
+			
 	}
 	
 //	/**	216. RESTO2-RELATIONAL → = SHIFT-EXPRESSION
@@ -3382,149 +3410,285 @@ public class AnalizadorSintactico {
 //	}
 	
 	/** 218. EQUALITY-EXPRESSION → RELATIONAL-EXPRESSION RESTO_EQUALITY
+	 * 							  { if (RELATIONAL_EXPRESSION.tipo_s != error_tipo)
+	 * 								then   RESTO_EQUALITY.tipo_h := RELATIONAL_EXPRESSION.tipo_s;
+	 * 										if (RESTO_EQUALITY.tipo_s == vacio) 
+	 * 										then EQUALITY_EXPRESSION.tipo_s == RELATIONAL_EXPRESSION.tipo_s
+	 * 										else EQUALITY_EXPRESSION.tipo_s := RESTO_EQUALITY.tipo_s    
+	 * 								else   EQUALITY_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception */
 	
-	private void equality_expression() throws Exception{
+	private ExpresionTipo equality_expression() throws Exception{
+		ExpresionTipo aux1,aux2;		
 		parse.add(218);
-		relational_expression(); //Debe leer el siguiente token
-		resto_equality();
+		aux1=relational_expression(); //Debe leer el siguiente token
+		aux2=resto_equality(aux1);
+		if(aux2.equals(TipoBasico.vacio))
+			return aux1;
+		else
+			return aux2;
 	}
 
 	
 	/**	219. RESTO-EQUALITY → igualdad EQUALITY-EXPRESSION
+	 * 						  { if (RESTO_EQUALITY.tipo_h == EQUALITY_EXPRESSION.tipo_s)
+	 * 							then RESTO_EQUALITY.tipo_s := logico
+	 * 							else RESTO_EQUALITY.tipo_s := error_tipo } 
 	 * 	220. RESTO-EQUALITY → distinto EQUALITY-EXPRESSION
+	 * 						  { BIS }
 	 *  169 .RESTO-EQUALITY → lambda
+	 *  					  { RESTO_EQUALITY.tipo_s := vacio }
 	 * @throws Exception 
 	 */
 	
-	private void resto_equality() throws Exception {
+	private ExpresionTipo resto_equality(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.IGUALDAD)){
 			parse.add(219);
-			nextToken();
-			equality_expression();
+//			nextToken();
+//			equality_expression();
 		}
 		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.DISTINTO)){
 			parse.add(220);
-			nextToken();
-			equality_expression();
+//			nextToken();
+//			equality_expression();
 		}
 		else {
 			parse.add(169);
+			return new ExpresionTipo(TipoBasico.vacio);
+		}
+		nextToken();
+		ExpresionTipo aux1 = equality_expression();
+		if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
+			return new ExpresionTipo(TipoBasico.logico);
+		else{
+			// TODO insertar error: "tipos no compatibles para comparacion logica" 
+			return new ExpresionTipo(TipoBasico.error_tipo);
 		}
 		
 	}
 		
 	/**	221. AND-EXPRESSION → EQUALITY-EXPRESSION RESTO_AND
+	 * 							  { if (EQUALITY_EXPRESSION.tipo_s != error_tipo)
+	 * 								then   RESTO_AND.tipo_h := EQUALITY_EXPRESSION.tipo_s;
+	 * 										if (RESTO_AND.tipo_s == vacio) 
+	 * 										then AND_EXPRESSION.tipo_s == EQUALITY_EXPRESSION.tipo_s
+	 * 										else AND_EXPRESSION.tipo_s := RESTO_AND.tipo_s    
+	 * 								else   AND_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception */
-	private void and_expression() throws Exception{
+	private ExpresionTipo and_expression() throws Exception{
+		ExpresionTipo aux1,aux2;		
 		parse.add(221);
-		equality_expression(); //Debe leer el siguiente token
-		resto_and();
+		aux1=equality_expression(); //Debe leer el siguiente token
+		aux2=resto_and(aux1);
+		if(aux2.equals(TipoBasico.vacio))
+			return aux1;
+		else
+			return aux2;
 	}
 	
 	/**	222. RESTO-AND → & AND-EXPRESSION
+	 * 						  { if (RESTO_AND.tipo_h == AND_EXPRESSION.tipo_s)
+	 * 							then RESTO_AND.tipo_s := logico
+	 * 							else RESTO_AND.tipo_s := error_tipo } 
 	 *	223. RESTO-AND → lambda
+	 *						  { RESTO_AND.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private void resto_and() throws Exception {
+	private ExpresionTipo resto_and(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.BIT_AND)){
 			parse.add(222);
 			nextToken();
-			and_expression();
+			ExpresionTipo aux1 = and_expression();
+			if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
+				return new ExpresionTipo(TipoBasico.logico);
+			else{
+				// TODO insertar error: "tipos no compatibles para comparacion logica" 
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else{
 			parse.add(223);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}		
 	}
 	
 	/**	224. EXCLUSIVE-OR-EXPRESSION → AND-EXPRESSION RESTO-EXCLUSIVE
+	 * 							  { if (AND_EXPRESSION.tipo_s != error_tipo)
+	 * 								then   RESTO_EXCLUSIVE.tipo_h := AND_EXPRESSION.tipo_s;
+	 * 										if (RESTO_EXCLUSIVE.tipo_s == vacio) 
+	 * 										then EXCLUSIVE_OR_EXPRESSION.tipo_s == AND_EXPRESSION.tipo_s
+	 * 										else EXCLUSIVE_OR_EXPRESSION.tipo_s := RESTO_EXCLUSIVE.tipo_s    
+	 * 								else   EXCLUSIVE_OR_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception */
-	private void exclusive_or_expression() throws Exception{
+	private ExpresionTipo exclusive_or_expression() throws Exception{
+		ExpresionTipo aux1,aux2;		
 		parse.add(224);
-		and_expression(); 
-		resto_exclusive();
+		aux1=and_expression(); //Debe leer el siguiente token
+		aux2=resto_exclusive(aux1);
+		if(aux2.equals(TipoBasico.vacio))
+			return aux1;
+		else
+			return aux2;
 	}
 
 	/**	225. RESTO-EXCLUSIVE → ^ EXCLUSIVE-OR-EXPRESSION
-		226. RESTO-EXCLUSIVE → lambda
+	 * 						  { if (RESTO_EXCLUSIVE.tipo_h == EXCLUSIVE_OR_EXPRESSION.tipo_s)
+	 * 							then RESTO_EXCLUSIVE.tipo_s := logico
+	 * 							else RESTO_EXCLUSIVE.tipo_s := error_tipo } 
+	 * 226. RESTO-EXCLUSIVE → lambda
+	 * 						  { RESTO_EXCLUSIVE.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private void resto_exclusive() throws Exception {
+	private ExpresionTipo resto_exclusive(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.CIRCUNFLEJO)){
 			parse.add(225);
 			nextToken();
-			exclusive_or_expression();
+			ExpresionTipo aux1 = exclusive_or_expression();
+			if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
+				return new ExpresionTipo(TipoBasico.logico);
+			else{
+				// TODO insertar error: "tipos no compatibles para comparacion logica" 
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else{
 			parse.add(226);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}		
 	}
 	
-	/**	227. INCL-OR-EXPRESSION → EXCL-OR-EXPRESSION RESTO_INCL-OR
+	/**	227. INCL-OR-EXPRESSION → EXCLUSIVE_OR_EXPRESSION RESTO_INCL_OR
+	 * 							  { if (EXCLUSIVE_OR_EXPRESSION.tipo_s != error_tipo)
+	 * 								then   RESTO_INCL_OR.tipo_h := EXCLUSIVE_OR_EXPRESSION.tipo_s;
+	 * 										if (RESTO_INCL_OR.tipo_s == vacio) 
+	 * 										then INCL_OR_EXPRESSION.tipo_s == EXCLUSIVE_OR_EXPRESSION.tipo_s
+	 * 										else INCL_OR_EXPRESSION.tipo_s := RESTO_INCL_OR.tipo_s    
+	 * 								else   INCL_OR_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception */
-	private void incl_or_expression() throws Exception{
+	private ExpresionTipo incl_or_expression() throws Exception{
+		ExpresionTipo aux1,aux2;		
 		parse.add(227);
-		exclusive_or_expression(); 
-		resto_incl_or();
+		aux1=exclusive_or_expression(); //Debe leer el siguiente token
+		aux2=resto_incl_or(aux1);
+		if(aux2.equals(TipoBasico.vacio))
+			return aux1;
+		else
+			return aux2;
 	}
 
 	/**	228. RESTO-INCL-OR → | INCL-OR-EXPRESSION
-		229. RESTO-INCL-OR → lambda
+	 * 						  { if (RESTO_INCL_OR.tipo_h == INCL_OR_EXPRESSION.tipo_s)
+	 * 							then RESTO_INCL_OR.tipo_s := logico
+	 * 							else RESTO_INCL_OR.tipo_s := error_tipo } 
+	 * 229. RESTO-INCL-OR → lambda
+	 * 						  { RESTO_INCL_OR.tipo_s := vacio }
 	 * @throws Exception 
 	*/
-	private void resto_incl_or() throws Exception {
+	private ExpresionTipo resto_incl_or(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.BIT_OR)){
 			parse.add(228);
 			nextToken();
-			incl_or_expression();
+			ExpresionTipo aux1 = incl_or_expression();
+			if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
+				return new ExpresionTipo(TipoBasico.logico);
+			else{
+				// TODO insertar error: "tipos no compatibles para comparacion logica" 
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else{
 			parse.add(229);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
 	}
 	
 	/**	230. LOG-AND-EXPRESSION → INCL-OR-EXPRESSION RESTO_LOG-AND
+	 * 							  { if (INCL_OR_EXPRESSION.tipo_s != error_tipo)
+	 * 								then   RESTO_LOG_AND.tipo_h := INCL_OR_EXPRESSION.tipo_s;
+	 * 										if (RESTO_LOG_AND.tipo_s == vacio) 
+	 * 										then LOG_AND_EXPRESSION.tipo_s == INCL_OR_EXPRESSION.tipo_s
+	 * 										else LOG_AND_EXPRESSION.tipo_s := RESTO_LOG_AND.tipo_s    
+	 * 								else   LOG_AND_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception */
-	private void log_and_expression() throws Exception{
+	private ExpresionTipo log_and_expression() throws Exception{
+		ExpresionTipo aux1,aux2;		
 		parse.add(230);
-		incl_or_expression(); 
-		resto_log_and();
+		aux1=incl_or_expression(); //Debe leer el siguiente token
+		aux2=resto_log_and(aux1);
+		if(aux2.equals(TipoBasico.vacio))
+			return aux1;
+		else
+			return aux2;
 	}
 	
 	/**	231. RESTO-LOG-AND → && LOG-AND-EXPRESSION
-		232. RESTO-LOG-AND → lambda
+	 * 						  { if (RESTO_LOG_AND.tipo_h == LOG_AND_EXPRESSION.tipo_s)
+	 * 							then RESTO_LOG_AND.tipo_s := logico
+	 * 							else RESTO_LOG_AND.tipo_s := error_tipo } 
+	 * 232. RESTO-LOG-AND → lambda
+	 * 						  { RESTO_LOG_AND.tipo_s := vacio }
 	 * @throws Exception */
-	private void resto_log_and() throws Exception {
+	private ExpresionTipo resto_log_and(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.AND)){
 			parse.add(231);
 			nextToken();
-			log_and_expression();
+			ExpresionTipo aux1 = log_and_expression();
+			if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
+				return new ExpresionTipo(TipoBasico.logico);
+			else{
+				// TODO insertar error: "tipos no compatibles para comparacion logica" 
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
+
 		}
 		else{
 			parse.add(232);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
 	}
 	
 	/**	233. LOG-OR-EXPRESSION → LOG-AND-EXPRESSION RESTO_LOG-OR
+	 * 							  { if (LOG_AND_EXPRESSION.tipo_s != error_tipo)
+	 * 								then   RESTO_LOG_OR.tipo_h := LOG_AND_EXPRESSION.tipo_s;
+	 * 										if (RESTO_LOG_OR.tipo_s == vacio) 
+	 * 										then LOG_OR_EXPRESSION.tipo_s == LOG_AND_EXPRESSION.tipo_s
+	 * 										else LOG_OR_EXPRESSION.tipo_s := RESTO_LOG_OR.tipo_s    
+	 * 								else   LOG_OR_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception */
-	private void log_or_expression() throws Exception{
+	private ExpresionTipo log_or_expression() throws Exception{
+		ExpresionTipo aux1,aux2;		
 		parse.add(233);
-		log_and_expression(); 
-		resto_log_or();
+		aux1=log_and_expression(); //Debe leer el siguiente token
+		aux2=resto_log_or(aux1);
+		if(aux2.equals(TipoBasico.vacio))
+			return aux1;
+		else
+			return aux2;
 	}
 
 	/**	234. RESTO-LOG-OR → || LOG-OR-EXPRESSION
-		235. RESTO-LOG-OR → lambda
+	 * 						  { if (RESTO_LOG_OR.tipo_h == LOG_OR_EXPRESSION.tipo_s)
+	 * 							then RESTO_LOG_OR.tipo_s := logico
+	 * 							else RESTO_LOG_OR.tipo_s := error_tipo } 
+	 * 235. RESTO-LOG-OR → lambda
+	 * 						  { RESTO_LOG_OR.tipo_s := vacio }
 	 * @throws Exception 
 	*/
-	private void resto_log_or() throws Exception {
+	private ExpresionTipo resto_log_or(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.OR)){
 			parse.add(234);
 			nextToken();
-			log_or_expression();
+			ExpresionTipo aux1 = log_or_expression();
+			if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
+				return new ExpresionTipo(TipoBasico.logico);
+			else{
+				// TODO insertar error: "tipos no compatibles para comparacion logica" 
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else{
 			parse.add(235);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
 	}
 	

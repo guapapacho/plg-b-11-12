@@ -3745,95 +3745,152 @@ public class AnalizadorSintactico {
 //	}
 	
 	/**	
-		238. RESTO_CONDITIONAL →  ? EXPRESSION  :  ASSIGNMENT_EXPRESSION
-		239. RESTO_CONDITIONAL → lambda
+	 * 238. RESTO_CONDITIONAL →  ? EXPRESSION  :  ASSIGNMENT_EXPRESSION
+	 * 						  { if (RESTO_CONDITIONAL.tipo_h == logico)
+	 * 							then   	if (EXPRESSION.tipo_s == ASSIGNMENT_EXPRESSION.tipo_s)
+	 * 									then RESTO_CONDITIONAL.tipo_s := EXPRESSION.tipo_s
+	 * 									else RESTO_CONDITIONAL.tipo_s := error_tipo 
+	 * 							else RESTO_CONDITIONAL.tipo_s := error_tipo }
+	 * 239. RESTO_CONDITIONAL → lambda
+	 * 						  { RESTO_CONDITIONAL.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private void resto_conditional() throws Exception {//////////////////////////////////////////////
+	private ExpresionTipo resto_conditional(ExpresionTipo tipo_h) throws Exception {//////////////////////////////////////////////
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.INTEROGACION)){
 			parse.add(238);
 			nextToken();
-			expression();
+			ExpresionTipo aux1 = expression();
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)){
 				nextToken();
-				assignment_expression();
+				ExpresionTipo aux2 = assignment_expression();
+				if(tipo_h.equals(TipoBasico.logico)){ // TODO cambiar por llamada a SonEquivalentes(...)
+					if(aux1.equals(aux2)) // TODO cambiar por llamada a SonEquivalentes(...)
+						return tipo_h; // Retorna el tipo mas restrictivo??
+					else{
+						// TODO insertar error: "tipos no compatibles para asignación" 
+						return new ExpresionTipo(TipoBasico.error_tipo);
+					}
+				}
+				else{
+					// TODO insertar error: "tipo no compatible con booleano" 
+					return new ExpresionTipo(TipoBasico.error_tipo);
+				}
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba \":\"");
 				//ruptura=parse.size();
+				return new ExpresionTipo(TipoBasico.vacio);
 			}
 		}
 		else{
 			parse.add(239);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}		
 	}
 	
 	/**
-	 * 241. ASSIGNMENT_EXPRESSION → LOGICAL-OR-EXPRESSION RESTO_ASSIG
+	 * 241. ASSIGNMENT_EXPRESSION → LOG_OR_EXPRESSION RESTO_ASSIG
+	 * 							  { if (LOG_OR_EXPRESSION.tipo_s != error_tipo)
+	 * 								then   RESTO_ASSIG.tipo_h := LOG_OR_EXPRESSION.tipo_s;
+	 * 										if (RESTO_ASSIG.tipo_s == vacio) 
+	 * 										then ASSIGNMENT_EXPRESSION.tipo_s == LOG_OR_EXPRESSION.tipo_s
+	 * 										else ASSIGNMENT_EXPRESSION.tipo_s := RESTO_ASSIG.tipo_s    
+	 * 								else   ASSIGNMENT_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception 
 	 */
-	private void assignment_expression() throws Exception {
+	private ExpresionTipo assignment_expression() throws Exception {
+		ExpresionTipo aux1,aux2;		
 		parse.add(241);
-		log_or_expression();
-		resto_asig();
+		aux1=log_or_expression(); //Debe leer el siguiente token
+		aux2=resto_assig(aux1);
+		if(aux2.equals(TipoBasico.vacio))
+			return aux1;
+		else
+			return aux2;
 	}
 	
 	/**
 	 * 242. RESTO_ASSIG → RESTO_CONDITIONAL
+	 * 						  { RESTO_CONDITIONAL.tipo_h := RESTO_ASSIG.tipo_h;
+	 * 							RESTO_ASSIG.tipo_s := RESTO_CONDITIONAL.tipo_s }
 	 * 243. RESTO_ASSIG → op_asignacion ASSIGNMENT_EXPRESSION
+	 * 						  { if (RESTO_ASSIG.tipo_h == ASSIGNMENT_EXPRESSION.tipo_s)
+	 * 							then RESTO_ASSIG.tipo_s := RESTO_ASSIG.tipo_h
+	 * 							else RESTO_ASSIG.tipo_s := error_tipo }
 	 * @throws Exception 
 	 */
-	private void resto_asig() throws Exception {
+	private ExpresionTipo resto_assig(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_ASIGNACION)){
 			parse.add(243);
 			nextToken();
-			assignment_expression();
+			ExpresionTipo aux1 = assignment_expression();
+			if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
+				return tipo_h; // Retorna el tipo de la variable a la que se asigna "valor"
+			else{
+				// TODO insertar error: "tipos no compatibles para asignación" 
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else{
 			parse.add(242);
-			resto_conditional();// Porque resto_conditional implementa las dos reglas que faltan: 238. RESTO_ASSIG →  ? EXPRESSION  :  ASSIGNMENT_EXPRESSION y 239. RESTO_ASSIG → lambda
+			return resto_conditional(tipo_h);// Porque resto_conditional implementa las dos reglas que faltan: 238. RESTO_ASSIG →  ? EXPRESSION  :  ASSIGNMENT_EXPRESSION y 239. RESTO_ASSIG → lambda
 		}		
 	}
 
 	/**
 	 * 246. EXPRESSION → ASSIGNMENT-EXPRESSION RESTO_EXP
+	 * 					{ 	if (ASSIGNMENT-EXPRESSION.tipo_s != error_tipo)
+	 * 						then	if (RESTO_EXP.tipo_s == vacio)
+	 * 								then EXPRESSION.tipo_s := ASSIGNMENT-EXPRESSION.tipo_s
+	 * 								else EXPRESSION.tipo_s := RESTO_EXP.tipo_s 
+	 * 						else EXPRESSION.tipo_s := error_tipo }  
 	 * @throws Exception 
 	 */
 	private ExpresionTipo expression() throws Exception {
 		parse.add(246);
-		assignment_expression();
-		resto_exp();
-		return null;
+		ExpresionTipo aux1 = assignment_expression();
+		ExpresionTipo aux2 = resto_exp();
+		if(aux1.equals(TipoBasico.error_tipo))
+			return aux1;
+		else{
+			if(aux2.equals(TipoBasico.vacio))
+				return aux1;
+			else
+				return aux2;
+		}
 	}
 	
 	
 	/**
 	 * 247. RESTO_EXP → , EXPRESSION
+	 * 					{ RESTO_EXP.tipo_s := EXPRESSION.tipo_s } 
 	 * 248. RESTO_EXP→ lambda
+	 * 					{ RESTO_EXP.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private void resto_exp() throws Exception {
+	private ExpresionTipo resto_exp() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 			parse.add(247);
 			nextToken();
-			expression();
+			return expression();
 		}	
 		else {
 			parse.add(248);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
 	}
 	
 	/**
 	 * 249. EXPRESSIONOPT → EXPRESSION 
+	 * 						{ EXPRESSIONOPT.tipo_s := EXPRESSION.tipo_s } 
 	 * 250. EXPRESSIONOPT → lambda
-	 * 						{ EXPRESIONOPT.tipo := vacio }
+	 * 						{ EXPRESSIONOPT.tipo_s := vacio }
 	 * @throws Exception 
 	 */
 	private ExpresionTipo expressionOpt() throws Exception {
 		if(primeroDeExpression()) {
 			parse.add(249);
-			expression();
-			return null; //TODO: CORREGIR!!!
+			return expression();
 		}
 		else{
 			parse.add(250);

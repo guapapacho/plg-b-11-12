@@ -1,4 +1,6 @@
-package compilador.tablaSimbolos;
+package compilador.gestionTablasSimbolos;
+
+import compilador.analizadorSemantico.ExpresionTipo;
 
 /**
  * Clase que guarda el tipo y el modo en el que se
@@ -7,13 +9,6 @@ package compilador.tablaSimbolos;
  *
  */
 public class Parametro {
-	
-	/**
-	 * Enumerado para el tipo de parametro
-	 */
-	public enum TipoParam {
-		ENTERO, REAL, BOOL; //TODO añadir los demas tipos
-	}
 
 	/**
 	 * Enumerado para el paso de parametro
@@ -23,16 +18,16 @@ public class Parametro {
 	}
 	
 	/** Tipo del argumento */
-	private TipoParam tipo;
+	private ExpresionTipo tipo;
 	/** Paso del argumento */
 	private PasoParam paso;
 	
-	public Parametro(TipoParam tipo, PasoParam paso) {
+	public Parametro(ExpresionTipo tipo, PasoParam paso) {
 		this.tipo = tipo;
 		this.paso = paso;
 	}
 
-	public TipoParam getTipo() {
+	public ExpresionTipo getTipo() {
 		return tipo;
 	}
 

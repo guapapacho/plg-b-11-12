@@ -1,9 +1,8 @@
-package compilador.tablaSimbolos;
+package compilador.gestionTablasSimbolos;
 
 import java.util.Vector;
 
 import compilador.analizadorSemantico.ExpresionTipo;
-import compilador.tablaSimbolos.Parametro.TipoParam;
 
 /**
  * Clase que guarda una entrada de la tabla de simbolos
@@ -20,13 +19,13 @@ public class EntradaTS {
 	/** Parametros del identificador si es una funcion, si no, un array vacio */
 	private Vector<Parametro> params;
 	/** Tipo de retorno */
-	private TipoParam retorno;
+	private ExpresionTipo retorno;
 
 	public EntradaTS(String lexema) {
 		this(lexema, null, new Vector<Parametro>(), null, false);
 	}
 	
-	public EntradaTS(String lexema, ExpresionTipo tipo, Vector<Parametro> params, TipoParam retorno, boolean constante) {
+	public EntradaTS(String lexema, ExpresionTipo tipo, Vector<Parametro> params, ExpresionTipo retorno, boolean constante) {
 		this.lexema = lexema;
 		this.tipo = tipo;
 		this.params = params;
@@ -54,7 +53,7 @@ public class EntradaTS {
 		return retorno;
 	}
 
-	public void setRetorno(TipoParam retorno) {
+	public void setRetorno(ExpresionTipo retorno) {
 		this.retorno = retorno;
 	}
 

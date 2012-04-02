@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import compilador.analizadorLexico.Token.*;
 import compilador.gestionErrores.*;
 import compilador.gestionErrores.GestorErrores.TError;
-import compilador.tablaSimbolos.EntradaTS;
-import compilador.tablaSimbolos.GestorTablasSimbolos;
+import compilador.gestionTablasSimbolos.EntradaTS;
+import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
 
 
 /**

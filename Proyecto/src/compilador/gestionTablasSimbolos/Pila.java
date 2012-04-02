@@ -1,7 +1,7 @@
 /**
  * 
  */
-package compilador.tablaSimbolos;
+package compilador.gestionTablasSimbolos;
 
 import java.util.Vector;
 

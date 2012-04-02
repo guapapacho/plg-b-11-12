@@ -3219,7 +3219,8 @@ public class AnalizadorSintactico {
 			parse.add(196);
 			cast_expression();
 		}
-		return null; //QUITAR DESPUES DE IMPLEMENTACION
+		return new ExpresionTipo(TipoBasico.vacio); //Devolver esto en vez de "null" para evitar posibles errores!!!! 
+		//return null; //QUITAR DESPUES DE IMPLEMENTACION
 	}
 	
 	

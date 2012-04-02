@@ -83,14 +83,12 @@ public class GestorErrores {
         throw new Exception("Error sintáctico!");
     }
     
-    public void insertaErrorSemantico(int er, int l, int n) throws Exception {
+    public void insertaErrorSemantico(int er, int l, int n) {
         errors.add(new TError(TipoError.SEMANTICO, lista.get(er), l, n));
-        throw new Exception("Error semántico!");
     }
 
-    public void insertaErrorSemantico(int l, int n,String mensaje) throws Exception {
+    public void insertaErrorSemantico(int l, int n,String mensaje) {
         errors.add(new TError(TipoError.SEMANTICO, mensaje, l, n));
-        throw new Exception("Error semantico!");
     }
     
     public ArrayList<TError> devuelveErrores(){

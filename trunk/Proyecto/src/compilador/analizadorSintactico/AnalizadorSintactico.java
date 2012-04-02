@@ -578,7 +578,7 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * 117b.RESTO_LINEA → * ID ; // TODO cambiar numero de regla
+	 * 258. RESTO_LINEA → * ID ;
 	 * 				{
 	 * 				    Completa(id.entrada, TIPO_SEM, TIPO.tipo)
 	 * 				    RESTO_LINEA.tipo := vacio
@@ -595,7 +595,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.MULTIPLICACION)) {
 			nextToken();
 			if (token.esIgual(TipoToken.IDENTIFICADOR)) {
-				parse.add(117); // TODO cambiar numero de regla
+				parse.add(258);
 				nextToken();	
 				
 				if(tipoID != null) { // tipoID != void
@@ -749,7 +749,7 @@ public class AnalizadorSintactico {
 	 * 7. TIPO → TIPO_SIMPLE
 	 * 			{ TIPO.tipo := TIPO_SIMPLE.tipo }
 	 */
-	private ExpresionTipo tipo() {
+	private ExpresionTipo tipo() { // TODO terminar este método
 		ExpresionTipo tipo_s = null;
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(6);
@@ -760,7 +760,7 @@ public class AnalizadorSintactico {
 			parse.add(7);
 			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			nextToken();
-
+			
 			if(tipo_s!=null){
 				if(tipo_s.esTipoBasico())
 					//System.out.println("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());

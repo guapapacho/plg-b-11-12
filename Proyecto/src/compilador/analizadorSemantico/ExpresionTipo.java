@@ -60,4 +60,14 @@ public class ExpresionTipo {
 		
 	}
 	
+	public boolean equals(ExpresionTipo e) {
+		if(this.esTipoBasico() != e.esTipoBasico())
+			return false;
+		if(this.esTipoBasico()) {
+			return this.getTipoBasico().equals(e.getTipoBasico());
+		} else {
+			return this.getTipoNoBasico().equals(e.getTipoNoBasico());
+		}
+	}
+	
 }

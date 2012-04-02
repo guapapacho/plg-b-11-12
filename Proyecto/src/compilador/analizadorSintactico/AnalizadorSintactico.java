@@ -203,6 +203,7 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 1. PROGRAMA → LIBRERIA RESTO_PROGRAMA eof
+	 * 				 {}
 	 * @throws Exception 
 	 */
 	private void programa() throws Exception {
@@ -218,6 +219,7 @@ public class AnalizadorSintactico {
 	
 	/**
 	 *  2. LIBRERIA → #include RESTO_LIBRERIA
+	 *  				{LIBRERIA.tipo_s:=RESTO_LIBRERIA.tipo_s}
 	 *  3. LIBRERIA -> lambda
 	 *  				{ LIBRERIA.tipo := vacio }
 	 * @throws Exception 
@@ -231,9 +233,9 @@ public class AnalizadorSintactico {
 					//token.esIgual(TipoToken.IDENTIFICADOR) && 
 					//"include".equals( ((EntradaTS)token.getAtributo()).getLexema() )) {
 					nextToken();
-					resto_libreria();
+					//resto_libreria();
 					//TODO: return resto_libreria();
-					return null;
+					return resto_libreria();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta palabra \"include\"");
 					return null;
@@ -258,7 +260,7 @@ public class AnalizadorSintactico {
 	 * 5. RESTO_LIBRERIA → <ID.ID> LIBRERIA
 	 * @throws Exception 
 	 */
-	private void resto_libreria() throws Exception {
+	private ExpresionTipo resto_libreria() throws Exception {
 		if(token.esIgual(TipoToken.LIT_CADENA)) {
 			parse.add(4);
 			nextToken();
@@ -276,7 +278,8 @@ public class AnalizadorSintactico {
 						if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR)) {
 							nextToken();
 							//System.out.println("libreria con angulos");
-							libreria();
+							//libreria();
+							return libreria();
 						} else {
 							gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \">\"");
 							//ruptura=parse.size();
@@ -297,6 +300,7 @@ public class AnalizadorSintactico {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \"<\" o \"___\"");
 			//ruptura=parse.size();
 		}
+		return null;
 		
 	}
 	
@@ -685,6 +689,7 @@ public class AnalizadorSintactico {
 	 * 11. COSAS → enum ID { LISTANOMBRES } ; COSAS
 	 * 12. COSAS → struct RESTO_ST COSAS
 	 * 13. COSAS → lambda
+	 * 				{COSAS.tipo_s:=vacio}
 	 * @throws Exception 
 	 */
 	private ExpresionTipo cosas() throws Exception {
@@ -798,6 +803,7 @@ public class AnalizadorSintactico {
 				cosas();
 			} else {
 				parse.add(13);
+				return new ExpresionTipo(TipoBasico.vacio);
 				//gestorErr.insertaErrorSintactico(linea, columna, "");
 			}
 		} 

@@ -2,8 +2,6 @@ package compilador.gestionTablasSimbolos;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import compilador.analizadorSemantico.ExpresionTipo;
-
 /**
  * Gestor de las Tablas de Simbolos
  * @author Grupo 1
@@ -145,11 +143,6 @@ public class GestorTablasSimbolos {
 	public String getTipoSimple(Integer atributo) {
 		return tipos.get(atributo);
 	}	
-	
-	public ExpresionTipo tipoAsociado(Integer i){
-		String s = tipos.get(i);
-		return ExpresionTipo.expresionTipoDeString(s);
-	}
 	
 	/**
 	 * @param id

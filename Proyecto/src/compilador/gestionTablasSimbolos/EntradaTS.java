@@ -1,7 +1,5 @@
 package compilador.gestionTablasSimbolos;
 
-import java.util.Vector;
-
 import compilador.analizadorSemantico.ExpresionTipo;
 
 /**
@@ -16,20 +14,15 @@ public class EntradaTS {
 	private ExpresionTipo tipo;
 	/** Si es constante o no */
 	private boolean constante;
-	/** Parametros del identificador si es una funcion, si no, un array vacio */
-	private Vector<Parametro> params;
-	/** Tipo de retorno */
-	private ExpresionTipo retorno;
+	
 
 	public EntradaTS(String lexema) {
-		this(lexema, null, new Vector<Parametro>(), null, false);
+		this(lexema, null, false);
 	}
 	
-	public EntradaTS(String lexema, ExpresionTipo tipo, Vector<Parametro> params, ExpresionTipo retorno, boolean constante) {
+	public EntradaTS(String lexema, ExpresionTipo tipo, boolean constante) {
 		this.lexema = lexema;
 		this.tipo = tipo;
-		this.params = params;
-		this.retorno = retorno;
 		this.constante = constante;
 	}
 	
@@ -49,28 +42,8 @@ public class EntradaTS {
 		this.tipo = tipo;
 	}
 
-	public Object getRetorno() {
-		return retorno;
-	}
-
-	public void setRetorno(ExpresionTipo retorno) {
-		this.retorno = retorno;
-	}
-
 	public String getLexema() {
 		return lexema;
-	}
-
-	public Vector<Parametro> getParams() {
-		return params;
-	}
-
-	public void addParam(Parametro param) {
-		params.add(param);
-	}
-	
-	public int getNumArgs() {
-		return params.size();
 	}
 	
 }

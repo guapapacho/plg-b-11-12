@@ -9,8 +9,8 @@ import compilador.analizadorSemantico.*;
 import compilador.analizadorSemantico.ExpresionTipo.TipoBasico;
 import compilador.analizadorSemantico.ExpresionTipo.TipoNoBasico;
 import compilador.gestionErrores.GestorErrores;
-import compilador.tablaSimbolos.*;
-import compilador.tablaSimbolos.Tipo.EnumTipo;
+import compilador.gestionTablasSimbolos.*;
+import compilador.gestionTablasSimbolos.Tipo.EnumTipo;
 
 public class AnalizadorSintactico {
 

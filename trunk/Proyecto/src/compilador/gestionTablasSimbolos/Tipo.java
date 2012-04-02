@@ -1,4 +1,4 @@
-package compilador.tablaSimbolos;
+package compilador.gestionTablasSimbolos;
 
 public class Tipo {
 	

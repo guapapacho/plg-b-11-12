@@ -1,7 +1,7 @@
 package compilador.analizadorLexico;
 
-import compilador.tablaSimbolos.EntradaTS;
-import compilador.tablaSimbolos.GestorTablasSimbolos;
+import compilador.gestionTablasSimbolos.EntradaTS;
+import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
 
 /**
  * 

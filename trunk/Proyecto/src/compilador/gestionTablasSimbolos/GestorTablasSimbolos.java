@@ -1,4 +1,4 @@
-package compilador.tablaSimbolos;
+package compilador.gestionTablasSimbolos;
 import java.util.Enumeration;
 import java.util.Hashtable;
 

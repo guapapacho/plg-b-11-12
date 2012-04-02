@@ -70,4 +70,18 @@ public class ExpresionTipo {
 		}
 	}
 	
+	public boolean equals(TipoBasico t) {
+		if(!this.esTipoBasico())
+			return false;
+		else
+			return this.getTipoBasico().equals(t);
+	}
+	
+	public boolean equals(TipoNoBasico t) {
+		if(this.esTipoBasico())
+			return false;
+		else
+			return this.getTipoNoBasico().equals(t);
+	}
+	
 }

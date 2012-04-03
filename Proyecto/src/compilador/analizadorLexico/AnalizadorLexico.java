@@ -18,6 +18,12 @@ import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
 public class AnalizadorLexico {
 
 	/**
+	 * Booleano que indica si se encuentra en modo declaracion o no
+	 */
+	private boolean modoDeclaracion;
+
+
+	/**
 	 * Gestor de errores
 	 */
 	private GestorErrores gestorErrores;
@@ -83,6 +89,7 @@ public class AnalizadorLexico {
 		this.comentario = "";
 		this.gestorErrores = GestorErrores.getGestorErrores();
 		this.gestorTS = GestorTablasSimbolos.getGestorTS();
+		this.modoDeclaracion = true;
 	}
 	
 	public String getLexemaAnterior(){
@@ -758,13 +765,29 @@ public class AnalizadorLexico {
 					 Integer indice = gestorTS.buscaPalRes(lexema);
 					 if(indice == null ) //si es un identificador	
 					 {	 
-						EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
-						if (puntero == null) { //si no esta en la T.S. se inserta
-							token = new Token(TipoToken.IDENTIFICADOR,gestorTS.insertaIdentificador(lexema), comentario);
-						}
-						else {
-							token = new Token(TipoToken.IDENTIFICADOR,puntero, comentario);
-						}
+						//Dependiendo de si se esta en modo declaracion se insertara el atributo en la TS o se consultara para comprobar su existencia. 
+						 if(modoDeclaracion) {
+							 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
+							 if (puntero == null) { //si no esta en la T.S. se inserta.
+								 token = new Token(TipoToken.IDENTIFICADOR,gestorTS.insertaIdentificador(lexema), comentario);
+							 }
+							 else 
+							 {
+								 //si ya esta habria que mirar si se encuentra en el mismo ambito o no. Si ya hay un id con ese mismo nombre en el mismo ambito deberia lanzar error en vez de devolver el token
+								 if(gestorTS.buscaIdBloqueActual(lexema) != null)
+									 token = new Token(TipoToken.IDENTIFICADOR,puntero, comentario);
+								 else {
+									 //gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
+									 //return new Token(TipoToken.ERROR,null, comentario);
+								 }	 
+							}
+						 }
+						 else { // si no esta en modo declaracion
+							 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
+							 if(puntero == null) {
+								 //ERROR! 
+							 }
+						 }
 					 }	
 					 else { // es una palabra reservada
 						 token = new Token(TipoToken.PAL_RESERVADA,indice, comentario);
@@ -1003,6 +1026,14 @@ public class AnalizadorLexico {
 
 	public int getColumna() {
 		return numcolumna;
+	}
+	
+	public boolean isModoDeclaracion() {
+		return modoDeclaracion;
+	}
+
+	public void setModoDeclaracion(boolean modoDeclaracion) {
+		this.modoDeclaracion = modoDeclaracion;
 	}
     
 }

@@ -923,39 +923,72 @@ public class AnalizadorSintactico {
 		
 	/** 
 	 * 14. LISTANOMBRES → ID RESTO_ListaNombres
+	 * {
+	 * LISTANOMBRES.tipo_h = Vector(ID)
+	 * LISTANOMBRES.tipo_s:=RESTO_LISTANOMBRES.tipo_s)
+	 * }
 	 * 15. LISTANOMBRES → lambda
+	 *{ LISTANOMBRES.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private void listaNombres() throws Exception {
+	private ExpresionTipo listaNombres() throws Exception {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(14);
 			id();
-			resto_ln();
+			ExpresionTipo tipo_h = new compilador.analizadorSemantico.Vector(entradaTS.getLexema());
+			ExpresionTipo resto_ln = resto_ln(tipo_h);
+			if(resto_ln.getTipoBasico() == TipoBasico.error_tipo)
+				gestorErr.insertaErrorSemantico(linea, columna, "Identificador repetido dentro del enumerado");
+			return resto_ln; //supongo que aqui habra que decir al lexico que inserte, si no se pierde...
 		}
 		else{
 			parse.add(15);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
 	}
 	
 	/**	102. RESTO_ListaNombres → , ID RESTO_ListaNombres
+	 * {  if( consulta(id.lexema) == null //OJO El id no tiene que estar declarado ni dentro del enumerado ni fuera!!!! 
+     			RESTO_ListaNombes1.tipo_h = RESTO_ListaNombres.tipo_h
+     			if(RESTO_ListaNombres1.tipo != error) then
+     				ponElemento(RESTO_listaNombres1,IDlexema)
+     				RESTO_ListaNombres.tipo = RESTO_ListaNombres1.tipo
+     			else RESTO_ListaNombres.tipo = error
+     		else RESTO_ListaNombres.tipo = error_tipo }"
+
 		103. RESTO_ListaNombres → lambda
+		{ 
+			RESTO_ListaNombres.tipo = tipo_h
+		 }
+
 	 * @throws Exception 
 	*/
-	private void resto_ln() throws Exception {
+	private ExpresionTipo resto_ln(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 			parse.add(102);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				id();
-				resto_ln();
+				String IDlexema = entradaTS.getLexema();
+				ExpresionTipo RESTO_listaNombres1 = resto_ln(tipo_h);
+				if(RESTO_listaNombres1.getTipoBasico() != TipoBasico.error_tipo)
+				{
+					if(!((compilador.analizadorSemantico.Vector)RESTO_listaNombres1).ponElemento(IDlexema))
+						return new ExpresionTipo(TipoBasico.error_tipo);
+					else {
+						return RESTO_listaNombres1;
+					}
+				}
+				else return new ExpresionTipo(TipoBasico.error_tipo);
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta identificador de lista");
-				//ruptura=parse.size();
+				return null;
 			}
 		}
 		else{
 			parse.add(103);
+			return tipo_h;
 		}
 	}
 

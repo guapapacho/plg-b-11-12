@@ -1,6 +1,6 @@
 package compilador.analizadorSintactico;
 
- 
+
 import java.util.Vector;
 
 import compilador.analizadorLexico.*;
@@ -1479,7 +1479,7 @@ public class AnalizadorSintactico {
 		*/
 		
 		//return true;
-		return null;
+		return new ExpresionTipo(TipoBasico.vacio);
 	}
 	
 	
@@ -1682,8 +1682,11 @@ public class AnalizadorSintactico {
 				           		//inserta(id.entrada, TIPO_SEM, Registro) // Este id identifica al registro pero no se puede usar
 				           		//inserta(id1.entrada,TIPO_SEM, Registro(CUERPO_ST.tipo))
 				           		return new ExpresionTipo(TipoBasico.vacio); }
-				        else
-				        	return new ExpresionTipo(TipoBasico.error_tipo);
+				        else {
+				        	gestorErr.insertaErrorSemantico(linea, columna, "El struct tiene un id repetido");
+							System.out.println("El identificador que se encuentra en la posicion indicada esta repetido");	
+							return new ExpresionTipo(TipoBasico.error_tipo);	
+				        }	
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta la identificacion de la estructura");
 					}
@@ -1698,12 +1701,16 @@ public class AnalizadorSintactico {
 			parse.add(61);
 			nextToken();
 			CUERPO_ST_tipo = cuerpo_st();
+				
 			if(CUERPO_ST_tipo.getTipoNoBasico() == TipoNoBasico.producto)
 				NOMBRES_tipo_h = new Registro((Producto)CUERPO_ST_tipo);
 			else if (CUERPO_ST_tipo.getTipoBasico() == TipoBasico.vacio)
 				NOMBRES_tipo_h = new Registro(null);
-			else return new ExpresionTipo(TipoBasico.error_tipo);	
-			
+			else { 
+				gestorErr.insertaErrorSemantico(linea, columna, "El struct tiene un id repetido");
+				System.out.println("El identificador que se encuentra en la posicion indicada esta repetido");	
+				return new ExpresionTipo(TipoBasico.error_tipo);	
+			}
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
 				nextToken();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
@@ -1759,25 +1766,25 @@ public class AnalizadorSintactico {
 					CUERPO_ST_tipo = cuerpo_st();
 					if(RESTO_VAR_tipo.getTipoBasico() != TipoBasico.error_tipo && CUERPO_ST_tipo.getTipoBasico() != TipoBasico.error_tipo )
 					{ 
-						if(RESTO_VAR_tipo.getTipoNoBasico() == TipoNoBasico.producto && CUERPO_ST_tipo.getTipoNoBasico() == TipoNoBasico.producto)
-							if(!EstaRepetido(IDlexema,(Producto)RESTO_VAR_tipo) && !EstaRepetido(IDlexema,(Producto)CUERPO_ST_tipo)) //(gestorTS.buscaIdBloqueActual(IDlexema) == null)) //No puede haber mas id's con el mismo nombre dentro del struct
-								return new Producto(new Producto(IDlexema,TIPO_tipo),new Producto(RESTO_VAR_tipo,CUERPO_ST_tipo));
-							else
-								return new ExpresionTipo(TipoBasico.error_tipo);
-						
-						if(RESTO_VAR_tipo.getTipoNoBasico() == TipoNoBasico.producto)
-							if(!EstaRepetido(IDlexema,(Producto)RESTO_VAR_tipo))  //(gestorTS.buscaIdBloqueActual(IDlexema) == null)) //No puede haber mas id's con el mismo nombre dentro del struct
-								return new Producto(new Producto(IDlexema,TIPO_tipo),RESTO_VAR_tipo);
-							else
-								return new ExpresionTipo(TipoBasico.error_tipo);
-						
-						if(CUERPO_ST_tipo.getTipoNoBasico() == TipoNoBasico.producto)
-							if(!EstaRepetido(IDlexema,(Producto)CUERPO_ST_tipo) ) //(gestorTS.buscaIdBloqueActual(IDlexema) == null)) //No puede haber mas id's con el mismo nombre dentro del struct
-								return new Producto(new Producto(IDlexema,TIPO_tipo),CUERPO_ST_tipo);
-							else 
-							    return new ExpresionTipo(TipoBasico.error_tipo);
-						
+						try{
+						if(RESTO_VAR_tipo.getTipoNoBasico() == TipoNoBasico.producto && CUERPO_ST_tipo.getTipoNoBasico() == TipoNoBasico.producto){	
+							(((Producto)CUERPO_ST_tipo)).ponProductos(((Producto)RESTO_VAR_tipo).getTablaProd());
+							((Producto)CUERPO_ST_tipo).ponProducto(IDlexema, TIPO_tipo);
+							return  CUERPO_ST_tipo;
+						}
+						if(RESTO_VAR_tipo.getTipoNoBasico() == TipoNoBasico.producto) {
+								((Producto)RESTO_VAR_tipo).ponProducto(IDlexema, TIPO_tipo);
+								return RESTO_VAR_tipo;
+						}					
+						if(CUERPO_ST_tipo.getTipoNoBasico() == TipoNoBasico.producto) {
+								((Producto)CUERPO_ST_tipo).ponProducto(IDlexema, TIPO_tipo);
+								return CUERPO_ST_tipo;
+						}	
 						return new Producto(IDlexema,TIPO_tipo);
+						}
+						catch(Exception e) { //Si algun id esta repetido en el struct Producto lanza excepcion y se mete por aqui
+							    return new ExpresionTipo(TipoBasico.error_tipo);
+						}
 					}	
 					else 
 						return new ExpresionTipo(TipoBasico.error_tipo);
@@ -1823,10 +1830,16 @@ public class AnalizadorSintactico {
 				
 				if(RESTO_VAR1_tipo.getTipoBasico() == TipoBasico.vacio)
 					 return new Producto(IDlexema,tipo_h);
-				else if( RESTO_VAR1_tipo.getTipoNoBasico() == TipoNoBasico.producto && !EstaRepetido(IDlexema,(Producto)RESTO_VAR1_tipo))
-					return new Producto(new Producto(IDlexema,tipo_h),RESTO_VAR1_tipo);
-				else
-					return new ExpresionTipo(TipoBasico.error_tipo);
+				else if( RESTO_VAR1_tipo.getTipoNoBasico() == TipoNoBasico.producto) {
+					try {
+						((Producto)RESTO_VAR1_tipo).ponProducto(IDlexema, tipo_h);
+						return RESTO_VAR1_tipo;
+					}
+					catch(Exception e){
+						return new ExpresionTipo(TipoBasico.error_tipo);
+					}
+				}
+				return new ExpresionTipo(TipoBasico.error_tipo);
 			} else {
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, 
@@ -4203,17 +4216,5 @@ public class AnalizadorSintactico {
 			 || token.esIgual(TipoToken.IDENTIFICADOR));
 	}
 
-	private boolean EstaRepetido(String lexema, Producto p) {
-		Object tipo = p.getTipo1();
-		while (tipo != null) {
-			if(tipo.equals(lexema)) return true;
-			if (tipo instanceof Producto)
-				tipo = ((Producto) tipo).getTipo1();
-			else
-				break;
-		}
-		return false;
-	}
-	
 
 }

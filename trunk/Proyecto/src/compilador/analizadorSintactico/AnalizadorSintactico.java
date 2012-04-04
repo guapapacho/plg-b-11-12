@@ -79,7 +79,7 @@ public class AnalizadorSintactico {
 		try {
 			programa();
 		} catch (Exception e) {
-			System.out.println("Excepcion: "+e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	
@@ -165,7 +165,7 @@ public class AnalizadorSintactico {
 //			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("BOOLEANO: " + valor);
 			nextToken();
-			return ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
+			return ExpresionTipo.expresionTipoDeString("bool");
 		}
 		
 		return null;		
@@ -776,7 +776,7 @@ public class AnalizadorSintactico {
 			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			nextToken();
 			
-			if(tipo_s!=null){
+			if(tipo_s!=null && token.getAtributo()!=null){
 				if(tipo_s.esTipoBasico())
 					//System.out.println("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());
 					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());
@@ -790,15 +790,14 @@ public class AnalizadorSintactico {
 		return tipo_s;
 	}
 	
-	private boolean tipo_simple() {
-		if(token.esIgual(TipoToken.PAL_RESERVADA) && 
-				gestorTS.esTipoSimple((Integer)token.getAtributo())){
+	private ExpresionTipo tipo_simple() {
+		ExpresionTipo tipo = null;
+		if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
-			tipo = new Tipo(EnumTipo.DEFINIDO, (gestorTS.getTipoSimple((Integer)token.getAtributo())));
+			tipo = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			nextToken();
-			return true;
 		}
-		return false;
+		return tipo;
 	}
 
 
@@ -2886,22 +2885,35 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 152. POSTFIX-EXPRESSION → typeid ( EXPRESSION ) RESTO_POSTFIX_EXP
+	 * 					{ if(EXPRESSION.tipo = error_tipo || RESTO_POSTFIX_EXP.tipo = error_tipo)
+	 * 					      RESTO_CAST.tipo := error_tipo
+	 * 					  else
+	 * 					      RESTO_CAST.tipo := vacio
+	 * 					}
 	 * 153. POSTFIX-EXPRESSION → ID RESTO_PE RESTO_POSTFIX_EXP
 	 * 154. POSTFIX-EXPRESSION → PRIMARY-EXPRESSION RESTO_POSTFIX_EXP
 	 * 168. POSTFIX-EXPRESSION → TIPO_SIMPLE POSTFIX-4 POSTFIX-2 RESTO_POSTFIX_EXP
 	 * 170. POSTFIX-EXPRESSION →  ~ POSTFIX-EXPRESSION
+	 * @return 
 	 * @throws Exception 
 	 */
-	private void postfix_expression() throws Exception {
+	private ExpresionTipo postfix_expression() throws Exception {
+		ExpresionTipo tipo = new ExpresionTipo(TipoBasico.vacio);
+		
 		if (token.esIgual(TipoToken.PAL_RESERVADA, 63)) {
 			parse.add(152);
 			nextToken();
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 				nextToken();
-				expression();
+				ExpresionTipo aux1 = expression();
 				if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 					nextToken();
-					resto_postfix_exp(null);
+					ExpresionTipo aux2 = resto_postfix_exp(aux1); // TODO creo que deberia pasar el tipo que devuelve typeid(expresion)...
+					if(aux1.equals(TipoBasico.error_tipo) || aux2.equals(TipoBasico.error_tipo)){
+						tipo = new ExpresionTipo(TipoBasico.error_tipo);
+					} else {
+						tipo = aux2;
+					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
 				}
@@ -2917,7 +2929,7 @@ public class AnalizadorSintactico {
 			parse.add(170);
 			nextToken();
 			postfix_expression();
-		} else if(tipo_simple()) {
+		} else if(tipo_simple() != null) {
 			parse.add(168);
 			postfix4();
 			postfix2();
@@ -2928,6 +2940,8 @@ public class AnalizadorSintactico {
 			if(tokenAnterior.esIgual(TipoToken.IDENTIFICADOR))
 				resto_postfix_exp(null);
 		}
+		
+		return tipo;
 	}
 	
 	/**
@@ -2952,80 +2966,106 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 155. RESTO_POSTFIX_EXP → [ EXPRESSION ]
+	 * 					{ if(RESTO_POSTFIX_EXP.tipo_h != vector && RESTO_POSTFIX_EXP.tipo_h != cadena)
+	 * 					      RESTO_POSTFIX_EXP.tipo := error_tipo
+	 * 					  else if( EXPRESSION.tipo != entero)
+	 * 					      RESTO_POSTFIX_EXP.tipo := error_tipo
+	 * 					  else
+	 * 					      RESTO_POSTFIX_EXP.tipo := vacio
+	 * 					}
 	 * 156. RESTO_POSTFIX_EXP → -> RESTO_POSTFIX_EXP3
+	 * 					{ if(RESTO_POSTFIX_EXP.tipo_h != objeto)
+	 * 					      RESTO_POSTFIX_EXP.tipo := error_tipo
+	 * 					  else
+	 * 					      RESTO_POSTFIX_EXP.tipo := vacio
+	 * 					}
 	 * 157. RESTO_POSTFIX_EXP → . RESTO_POSTFIX_EXP3
+	 * 					{ if(RESTO_POSTFIX_EXP.tipo_h != objeto)
+	 * 					      RESTO_POSTFIX_EXP.tipo := error_tipo
+	 * 					  else
+	 * 					      RESTO_POSTFIX_EXP.tipo := vacio
+	 * 					}
 	 * 158. RESTO_POSTFIX_EXP → decremento
-	 * 								{ RESTO_POSTFIX_EXP.tipo := entero }
+	 * 					{ RESTO_POSTFIX_EXP.tipo := entero }
 	 * 159. RESTO_POSTFIX_EXP → incremento
-	 * 								{ RESTO_POSTFIX_EXP.tipo := entero }
+	 * 					{ RESTO_POSTFIX_EXP.tipo := entero }
 	 * 160. RESTO_POSTFIX_EXP → ( RESTO_POSTFIX_EXP2
-	 * 								{ RESTO_POSTFIX_EXP.tipo_s := RESTO_POSTFIX_EXP2.tipo_s }
+	 * 					{ RESTO_POSTFIX_EXP.tipo_s := RESTO_POSTFIX_EXP2.tipo_s }
 	 * 161. RESTO_POSTFIX_EXP → lambda
-	 * 								{ RESTO_POSTFIX_EXP.tipo_s := vacio }
-	 * @param expresionTipo 
-	 * @return 
+	 * 					{ RESTO_POSTFIX_EXP.tipo_s := vacio }
+	 * @param exp 
+	 * @return RESTO_POSTFIX_EXP.tipo
 	 * @throws Exception 
 	 */
-	private ExpresionTipo resto_postfix_exp(ExpresionTipo expresionTipo) throws Exception {
-		ExpresionTipo aux = null;
+	private ExpresionTipo resto_postfix_exp(ExpresionTipo exp) throws Exception {
+		ExpresionTipo tipo = new ExpresionTipo(TipoBasico.vacio);
 		
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_CORCHETE)) {
 			parse.add(155);
 			nextToken();
-			expression();
+			ExpresionTipo aux = expression();
+			if(!exp.equals(TipoNoBasico.vector) || !exp.equals(TipoNoBasico.cadena)) {
+				tipo = new ExpresionTipo(TipoBasico.error_tipo);
+				gestorErr.insertaErrorSemantico(linea, columna, "Aqui no vale lo de los [ ]"); //TODO cambiar el mensaje
+			}
+			if(!aux.equals(TipoBasico.entero)) {
+				tipo = new ExpresionTipo(TipoBasico.error_tipo);
+				gestorErr.insertaErrorSemantico(linea, columna, "El indice tiene que ser un entero");
+			}
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)) {
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"]\"");
-				//ruptura=parse.size();
 			}
 		} else if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.PUNTERO)) {
 			parse.add(156);
 			nextToken();
-			resto_postfix_exp3();
+			tipo = resto_postfix_exp3();
+			if(!exp.equals(TipoNoBasico.objeto)) {
+				tipo = new ExpresionTipo(TipoBasico.error_tipo);
+				gestorErr.insertaErrorSemantico(linea, columna, "Aqui no vale el '->' porque no se aplica sobre un objeto"); //TODO cambiar el mensaje
+			}
 		} else if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO)) {
 			parse.add(157);
 			nextToken();
-			resto_postfix_exp3();
+			tipo = resto_postfix_exp3();
+			if(!exp.equals(TipoNoBasico.objeto)) {
+				tipo = new ExpresionTipo(TipoBasico.error_tipo);
+				gestorErr.insertaErrorSemantico(linea, columna, "Aqui no vale el '.'  porque no se aplica sobre un objeto"); //TODO cambiar el mensaje
+			}
 		} else if (token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.DECREMENTO)) {
 			if(parse.lastElement() == 165){ //debería garantizar que antes hubo un identificador
-				if(expresionTipo.getTipoBasico() == TipoBasico.entero || expresionTipo.getTipoBasico() == TipoBasico.real) {
-					aux = new ExpresionTipo(TipoBasico.vacio);
-				} else {
-					aux = new ExpresionTipo(TipoBasico.error_tipo);
+				if(exp.getTipoBasico() != TipoBasico.entero && exp.getTipoBasico() != TipoBasico.real) {
+					tipo = new ExpresionTipo(TipoBasico.error_tipo);
 					gestorErr.insertaErrorSemantico(linea, columna, "Valor invalido para decremento.");
 				}
 			} else {
-				aux = new ExpresionTipo(TipoBasico.error_tipo);
+				tipo = new ExpresionTipo(TipoBasico.error_tipo);
 				gestorErr.insertaErrorSemantico(linea, columna, "Valor invalido para decremento.");
 			}
 			parse.add(158);
 			nextToken();
 		} else if (token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)) {
 			if(parse.lastElement() == 165){ //debería garantizar que antes hubo un identificador
-				if(expresionTipo.getTipoBasico() == TipoBasico.entero || expresionTipo.getTipoBasico() == TipoBasico.real) {
-					aux = new ExpresionTipo(TipoBasico.vacio);
-				} else {
-					aux = new ExpresionTipo(TipoBasico.error_tipo);
+				if(exp.getTipoBasico() != TipoBasico.entero && exp.getTipoBasico() != TipoBasico.real) {
+					tipo = new ExpresionTipo(TipoBasico.error_tipo);
 					gestorErr.insertaErrorSemantico(linea, columna, "Valor invalido para incremento.");
 				}
 			} else {
-				aux = new ExpresionTipo(TipoBasico.error_tipo);
+				tipo = new ExpresionTipo(TipoBasico.error_tipo);
 				gestorErr.insertaErrorSemantico(linea, columna, "Valor invalido para incremento.");
 			}
 			parse.add(159);
 			nextToken();
-			aux = new ExpresionTipo(TipoBasico.vacio);
 		} else if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(160);
 			nextToken();
 			return resto_postfix_exp2();
 		} else {
 			parse.add(161);
-			return new ExpresionTipo(TipoBasico.vacio);
 		}
 		
-		return aux;
+		return tipo;
 	}
 	
 	
@@ -3457,9 +3497,10 @@ public class AnalizadorSintactico {
 	/**
 	 * 194. CAST-EXPRESSION → UNARY-EXPRESSION
 	 * 195. CAST-EXPRESSION → ( RESTO_CAST
+	 * @return 
 	 * @throws Exception 
 	 */
-	private void cast_expression() throws Exception{
+	private ExpresionTipo cast_expression() throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(195);
 			nextToken();
@@ -3468,35 +3509,43 @@ public class AnalizadorSintactico {
 			parse.add(194);
 			unary_expression();
 		}
+		return null;
 	}
 	
 	/**
 	 * 139. RESTO_CAST → TIPO_SIMPLE ) CAST_EXPRESSION
+	 * 				{ if(TIPO_SIMPLE.tipo = error_tipo || CAST_EXPRESSION.tipo = error_tipo)
+	 * 				      RESTO_CAST.tipo := error_tipo
+	 * 				  else
+	 * 				      RESTO_CAST.tipo := vacio
+	 * 				}
 	 * 140. RESTO_CAST → EXPRESSION )
+	 * 				{ RESTO_CAST.tipo := EXPRESSION.tipo }
 	 * @throws Exception 
 	 */
-	private void resto_cast() throws Exception{
-		if(tipo_simple()){
+	private ExpresionTipo resto_cast() throws Exception{
+		ExpresionTipo tipo = tipo_simple();
+		if(tipo != null){
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
 				parse.add(139);
-				cast_expression();
-			}else{
-				// error
+				ExpresionTipo aux = cast_expression(); //TODO a lo mejor deberia pasarle el tipo
+				if(!tipo.equals(TipoBasico.error_tipo)){
+					tipo = aux;
+				}
+			}else{ 
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ')' ");
-				//ruptura=parse.size();
 			}
 		}else{
 			parse.add(140);
-			expression();
+			tipo = expression();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
 			} else{
-				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ')' ");
-				//ruptura=parse.size();
 			}
 		}
+		return tipo;
 	}
 	
 	

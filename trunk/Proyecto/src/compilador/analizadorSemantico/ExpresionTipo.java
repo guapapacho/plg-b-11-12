@@ -6,7 +6,7 @@ public class ExpresionTipo {
 	private TipoNoBasico tipoNoBasico;
 	
 	public enum TipoBasico{logico, caracter, entero, real, error_tipo, vacio}; 
-	public enum TipoNoBasico{vector, producto, registro, union, puntero, funcion, objeto}
+	public enum TipoNoBasico{vector, producto, registro, union, puntero, funcion, objeto, cadena}
 	
 	public ExpresionTipo(TipoNoBasico tipo){
 		this.basico = false;
@@ -55,7 +55,7 @@ public class ExpresionTipo {
 		if (s.equals("int")) return new ExpresionTipo(TipoBasico.entero);
 		if (s.equals("double")) return new ExpresionTipo(TipoBasico.real);
 		if (s.equals("float")) return new ExpresionTipo(TipoBasico.real);
-		if (s.equals("String")) return new Vector(0,new ExpresionTipo(TipoBasico.caracter)); //longitud 0??
+		if (s.equals("String")) return new Cadena(); //longitud 0??
 		return null;
 		
 	}

@@ -39,8 +39,6 @@ public class GestorErrores {
 		
 			public String toString() {
 				return "Error "+tipo+" en L: "+linea+" C: "+columna+" - "+mensaje;
-			//	return "Error "+tipo+": "+lista.get(error)+
-			//			" en: \n la linea "+linea+" y la columna "+columna;
 			}
 		
 			public TError(TipoError tipo, String string, int linea, int columna){
@@ -96,7 +94,7 @@ public class GestorErrores {
     }
     
     public void resetErrores(){
-    	errors.clear();;
+    	errors.clear();
     }
     
     /*
@@ -111,15 +109,6 @@ public class GestorErrores {
     	}
     	else {
     		salida = salida + errors.get(0);
-    		/*
-    		salida=salida+"Hubo: "+errors.size()+" errores\n";
-    		Iterator<TError> iterator = errors.iterator();
-    		while (iterator.hasNext()){
-    			TError err2;
-    			err2=iterator.next();
-    			salida=salida+err2+" \n";
-    			
-    		}*/
     		return salida;
     	}
     }

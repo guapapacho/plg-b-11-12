@@ -79,7 +79,7 @@ public class AnalizadorSintactico {
 		try {
 			programa();
 		} catch (Exception e) {
-			// TODO Ha habido un error
+			System.out.println("Excepcion: "+e.getMessage());
 		}
 	}
 	
@@ -211,7 +211,7 @@ public class AnalizadorSintactico {
 	public String getStringTokens() {
 		String string = "";
 		for(Token token : tokens)
-			string += "\nTipo: " + token.getTipo() + " Atr: " + token.getAtributo();
+			string += "\nTipo: " + token.getTipo() + "\t Atr: " + token.getAtributo();
 		return string+"\n";
 	}	
 	

@@ -95,6 +95,7 @@ public class Compilador extends JFrame {
 		this.setContentPane(getPanelPrincipal());
 		this.setTitle("Traductor C++ - Pascal");
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);	
+		this.setExtendedState(JFrame.MAXIMIZED_BOTH);
 	}
 
 	/**

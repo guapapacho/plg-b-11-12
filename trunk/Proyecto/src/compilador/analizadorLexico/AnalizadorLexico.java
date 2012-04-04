@@ -769,24 +769,27 @@ public class AnalizadorLexico {
 						 if(modoDeclaracion) {
 							 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
 							 if (puntero == null) { //si no esta en la T.S. se inserta.
-								 token = new Token(TipoToken.IDENTIFICADOR,gestorTS.insertaIdentificador(lexema), comentario);
+								 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
 							 }
 							 else 
 							 {
-								 //si ya esta habria que mirar si se encuentra en el mismo ambito o no. Si ya hay un id con ese mismo nombre en el mismo ambito deberia lanzar error en vez de devolver el token
-								 if(gestorTS.buscaIdBloqueActual(lexema) != null)
-									 token = new Token(TipoToken.IDENTIFICADOR,puntero, comentario);
-								 else {
+								 //si ya esta habria que mirar si se encuentra en el mismo ambito o no. 
+								 //Si ya hay un id con ese mismo nombre en el mismo ambito deberia lanzar error en vez de devolver el token
+								 if(gestorTS.buscaIdBloqueActual(lexema) == null) {// si no esta en la tabla actual hay que insertarlo
+									 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
+								 } else {
+									 token = new Token(TipoToken.IDENTIFICADOR, null, comentario);
 									 //gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 									 //return new Token(TipoToken.ERROR,null, comentario);
-								 }	 
+								 }
 							}
 						 }
 						 else { // si no esta en modo declaracion
 							 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
-							 if(puntero == null) {
-								 //ERROR! 
-							 }
+//							 if(puntero == null) {
+							//si puntero == null error semantico (variable no declarada)
+								 token = new Token(TipoToken.IDENTIFICADOR, puntero, comentario); 
+//							 }
 						 }
 					 }	
 					 else { // es una palabra reservada

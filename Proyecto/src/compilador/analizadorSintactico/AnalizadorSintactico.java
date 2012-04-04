@@ -47,6 +47,15 @@ public class AnalizadorSintactico {
 	
 	private int numDefaults;
 	
+	/** Marca si estamos en el cuerpo de un bucle */
+	private boolean estamosEnBucle;
+	/** Marca si estamos en el cuerpo de un Switch */
+	private boolean estamosEnSwitch;
+	/** Marca si estamos en una funcion */
+	private boolean estamosEnFuncion;
+	/** Nombre de la clase si es una clase o null si no lo es */
+	private String nombreClase;
+	
 	/** Numero de linea del token anterior */
 	private int linea;
 	/** Numero de columna del siguiente al token anterior */
@@ -63,6 +72,10 @@ public class AnalizadorSintactico {
 		gestorErr = GestorErrores.getGestorErrores();
 		tipo = null;
 		entradaTS = null;
+		nombreClase = null;
+		estamosEnBucle = false;
+		estamosEnSwitch = false;
+		estamosEnFuncion = false;
 		try {
 			programa();
 		} catch (Exception e) {
@@ -90,7 +103,7 @@ public class AnalizadorSintactico {
 		nextToken();
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
 			nextToken();
-			if(literal()) {
+			if(literal() != null) {
 //				Object valor = token.getAtributo(); // TODO depende del tipo... a ver que se hace con el...
 //				System.out.println("inicializacion constante " + entradaTS.getLexema() + " con " + valor);
 			} else {
@@ -111,39 +124,40 @@ public class AnalizadorSintactico {
 	}
 	
 	/**
-	 * Metodo que devuelve el LITERAL y lee el siguiente token
+	 * Metodo que devuelve el tipo del LITERAL y lee el siguiente token
+	 * Devuelve null si no es un literal.
 	 */
-	private boolean literal() {		
+	private ExpresionTipo literal() {
 		//TODO hacer algo con los valores, si hace falta...
 		if(token.esIgual(TipoToken.LIT_CADENA)) {
 //			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("LITERAL CADENA: " + valor);
 			nextToken();
-			return true;
+			return new Cadena(((String) token.getAtributo()).length());
 		}
 		else if(token.esIgual(TipoToken.LIT_CARACTER)){
 //			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("LITERAL CARACTER: " + valor);
 			nextToken();
-			return true;
+			return new ExpresionTipo(TipoBasico.caracter);
 		} 
 		else if (token.esIgual(TipoToken.NUM_ENTERO)){
 //			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("NUMERO ENTERO: " + valor);
 			nextToken();
-			return true;
+			return new ExpresionTipo(TipoBasico.entero);
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL)){
 //			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("NUMERO REAL: " + valor);
 			nextToken();
-			return true;
+			return new ExpresionTipo(TipoBasico.real);
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL_EXPO)){
 //			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("NUMERO REAL EXPO: " + valor);
 			nextToken();
-			return true;
+			return new ExpresionTipo(TipoBasico.real);
 		}
 		else if (token.esIgual(TipoToken.PAL_RESERVADA) &&
 				( (Integer)token.getAtributo() == 27 /*false*/ || 
@@ -151,10 +165,10 @@ public class AnalizadorSintactico {
 //			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("BOOLEANO: " + valor);
 			nextToken();
-			return true;
+			return ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 		}
 		
-		return false;		
+		return null;		
 	}
 	
 	private boolean esLiteral(){
@@ -324,6 +338,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			if (token.esIgual(TipoToken.IDENTIFICADOR)) {
 				nextToken();
+				nombreClase = ((EntradaTS) token.getAtributo()).getLexema();
 				if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_LLAVE)) {
 					nextToken();
 					ExpresionTipo CUERPO_CLASE_tipo = cuerpo_clase();
@@ -1005,7 +1020,9 @@ public class AnalizadorSintactico {
 			lista_param();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 				nextToken();
+				estamosEnFuncion = true;
 				cosas3();
+				estamosEnFuncion = false;
 			} else {
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)||token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \")\"");
@@ -1244,7 +1261,7 @@ public class AnalizadorSintactico {
 	 */
 	private void inicDim3() throws Exception {
 		if(!token.esIgual(TipoToken.EOF)){
-			if(literal()){ // El metodo literal() lee el siguiente token
+			if(literal() != null){ // El metodo literal() lee el siguiente token
 				parse.add(29);
 				inicDim4();
 			}
@@ -1268,7 +1285,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 			parse.add(31);
 			nextToken();
-			if(!literal()){
+			if(literal() == null){
 				gestorErr.insertaErrorSintactico(linea, columna,
 						"Falta token literal");
 				//ruptura=parse.size();
@@ -1415,7 +1432,7 @@ public class AnalizadorSintactico {
 	 * 					  else INSTRUCCION.tipo := error_tipo }
 	 * 48. INSTRUCCION → ;
 	 * 133.INSTRUCCION → EXPRESSION_OPT ;
-	 * 					{ INSTRUCCION.tipo := vacio }
+	 * 					{ INSTRUCCION.tipo := EXPRESSION_OPT.tipo }
 	 * @throws Exception 
 	 */
 	
@@ -2144,7 +2161,11 @@ public class AnalizadorSintactico {
 		 else CUERPO.tipo = error_tipo
 	   }
 	 * 128. CUERPO → break ; CUERPO
+	 * 			{ if (estamosEnBucle o estamosEnSwitch) CUERPO.tipo := CUERPO1.tipo
+	 * 			  else CUERPO.tipo := error_tipo }
 	 * 129. CUERPO → continue ; CUERPO
+	 * 			{ if (estamosEnBucle) CUERPO.tipo := CUERPO1.tipo
+	 * 			  else CUERPO.tipo := error_tipo }
 	 * 130. CUERPO → return EXPRESSIONOPT; CUERPO
 	 * 131. CUERPO → goto ID ; CUERPO
 	 * 132. CUERPO → INSTRUCCION CUERPO
@@ -2221,31 +2242,47 @@ public class AnalizadorSintactico {
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				nextToken();
-				cuerpo();
+				if(estamosEnBucle || estamosEnSwitch) 
+					return cuerpo();
+				else {
+					gestorErr.insertaErrorSemantico(linea, columna, "No está permitido usar break fuera de un bucle o switch.");
+					return new ExpresionTipo(TipoBasico.error_tipo);
+				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-				//ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA, 12 /*continue*/)) {
 			parse.add(129);
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				nextToken();
-				cuerpo();
+				if(estamosEnBucle) 
+					return cuerpo();
+				else {
+					gestorErr.insertaErrorSemantico(linea, columna, "No está permitido usar continue fuera de un bucle.");
+					return new ExpresionTipo(TipoBasico.error_tipo);
+				}
 			} else { 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-				//ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA, 47 /*return*/)) {
 			parse.add(130);
 			nextToken();
-			expressionOpt();
+			ExpresionTipo aux = expressionOpt();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				nextToken();
-				cuerpo();
+				ExpresionTipo tipo = null;
+				if(estamosEnFuncion && aux.equals(TipoBasico.vacio)) {
+					gestorErr.insertaErrorSemantico(linea, columna, "Es obligatorio devolver algo de tipo ..."); //TODO
+					tipo = new ExpresionTipo(TipoBasico.error_tipo);
+				} else if(!estamosEnFuncion && !aux.equals(TipoBasico.vacio)) {
+					gestorErr.insertaErrorSemantico(linea, columna, "No se puede devolver nada. Solo se puede usar 'return;'.");
+					tipo = new ExpresionTipo(TipoBasico.error_tipo);
+				}
+				aux = cuerpo();
+				return tipo.equals(TipoBasico.error_tipo) ? tipo : aux; 
 			} else { 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-				//ruptura=parse.size();
 			}
 		}  else if(token.esIgual(TipoToken.PAL_RESERVADA, 31 /*goto*/)) {
 			parse.add(128);
@@ -2257,11 +2294,9 @@ public class AnalizadorSintactico {
 					cuerpo();
 				} else { 
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-					//ruptura=parse.size();
 				}
 			} else { 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el identificador");
-				//ruptura=parse.size();
 			}
 		} else {
 			parse.add(132);
@@ -2395,9 +2430,12 @@ public class AnalizadorSintactico {
 			 EXPRESSION_tipo = expression();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
-				if(EXPRESSION_tipo.getTipoBasico() == TipoBasico.logico)
-					return cuerpo2();
-				else 
+				if(EXPRESSION_tipo.getTipoBasico() == TipoBasico.logico) {
+					estamosEnBucle = true;
+					ExpresionTipo aux = cuerpo2();
+					estamosEnBucle = false;
+					return aux;
+				} else 
 					return new ExpresionTipo(TipoBasico.error_tipo);
 			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
@@ -2419,8 +2457,12 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_do() throws Exception {
 		ExpresionTipo EXPRESSION_tipo;
 		ExpresionTipo CUERPO2_tipo;
-		parse.add(95); 
+		parse.add(95);
+
+		estamosEnBucle = true;
 		CUERPO2_tipo = cuerpo2();
+		estamosEnBucle = false;
+		
 		if(token.esIgual(TipoToken.PAL_RESERVADA,72 /*while*/))	{
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
@@ -2481,8 +2523,12 @@ public class AnalizadorSintactico {
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 						nextToken();
 						if(EXPRESSIONOPT_tipo.getTipoBasico() == TipoBasico.logico && EXPRESSIONOPT1_tipo.getTipoBasico() != TipoBasico.error_tipo 
-							&& FOR_INIT_tipo.getTipoBasico() != TipoBasico.error_tipo)
-							return cuerpo2();
+							&& FOR_INIT_tipo.getTipoBasico() != TipoBasico.error_tipo) {
+							estamosEnBucle = true;
+							ExpresionTipo aux = cuerpo2();
+							estamosEnBucle = false;
+							return aux;
+						} 
 						else
 							return new ExpresionTipo(TipoBasico.error_tipo);
 					} else{
@@ -2575,7 +2621,9 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(97); // TODO cambiar numero de regla
 			nextToken();
+			estamosEnSwitch = true;
 			cuerpo_case();
+			estamosEnSwitch = false;
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 				nextToken();
 				//return true;
@@ -2608,7 +2656,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,6 /*case*/)) {
 			parse.add(98);
 			nextToken();
-			if(literal())
+			if(literal() != null)
 			{
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
 					nextToken();
@@ -2711,89 +2759,104 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 144. PRIMARY-EXPRESSION → LITERAL
+	 * 					{ PRIMARY-EXPRESSION.tipo := LITERAL.tipo }
 	 * 145. PRIMARY-EXPRESSION → this
+	 * 					{ PRIMARY-EXPRESSION.tipo := objeto(nombreClase) }
 	 * 146. PRIMARY-EXPRESSION → UNQUALIFIED-ID
+	 * 					{ PRIMARY-EXPRESSION.tipo := UNQUALIFIED-ID.tipo }
 	 * 147. PRIMARY-EXPRESSION → ( EXPRESSION )
+	 * 					{ PRIMARY-EXPRESSION.tipo := EXPRESSION.tipo }
+	 * @return PRIMARY-EXPRESSION.tipo o null si no es una primary expression
 	 * @throws Exception 
 	 */
-	private boolean primary_expression() throws Exception {
+	private ExpresionTipo primary_expression() throws Exception {
+		ExpresionTipo tipo = null;
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(147);
 			nextToken();
-			expression();
+			tipo = expression();
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
-				//ruptura=parse.size();
-				return false;
 			}
-		} else if (token.esIgual(TipoToken.PAL_RESERVADA, 57)) {
+		} else if (token.esIgual(TipoToken.PAL_RESERVADA, 57 /* this */)) {
 			parse.add(145);
 			nextToken();
-		} else if(literal()) {
-			parse.add(144);
-			//nextToken();
+			tipo = new Objeto(nombreClase);
 		} else {
-			parse.add(146);
-			unqualified_id();
+			ExpresionTipo aux = literal();
+			if(aux != null) {
+				parse.add(144);
+				tipo = aux;
+			} else {
+				parse.add(146);
+				tipo = unqualified_id();
+			}
 		}
-		return true;
+		return tipo;
 	}
 	
 	
 	/**
 	 * 148. UNQUALIFIED-ID → id
+	 * 				{ UNQUALIFIED-ID.tipo := objeto(id.lexema) }
 	 * 149. UNQUALIFIED-ID →  ~ RESTO_UNQ
+	 * 				{ UNQUALIFIED-ID.tipo := RESTO_UNQ.tipo }
+	 * @return 
 	 * @throws Exception 
 	 */
-	private void unqualified_id() throws Exception {
+	private ExpresionTipo unqualified_id() throws Exception {
+		ExpresionTipo tipo = new ExpresionTipo(TipoBasico.vacio);
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(148);
-			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+			tipo = new Objeto(((EntradaTS)token.getAtributo()).getLexema());
 			nextToken();
 		} else if (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {
 			parse.add(149);
 			nextToken();
-			resto_unq();
+			tipo = resto_unq();
 		} else {
-			//gestorErr.insertaErrorSintactico(linea, columna,"Parte derecha de la asignacion incompleta");
 			gestorErr.insertaErrorSintactico(linea, columna,"Expresion incompleta.");
-			//ruptura=parse.size();
 		}
+		return tipo;
 	}
 	
 	
 	/**
 	 * 150. RESTO_UNQ → id
+	 * 				{ RESTO_UNQ.tipo := vacio }
 	 * 151. RESTO_UNQ → decltype ( EXPRESSION )
+	 * 				{ RESTO_UNQ.tipo := EXPRESSION.tipo }
+	 * @return RESTO_UNQ.tipo
 	 * @throws Exception 
 	 */
-	private void resto_unq() throws Exception {
+	private ExpresionTipo resto_unq() throws Exception {
+		ExpresionTipo tipo = new ExpresionTipo(TipoBasico.vacio);
+		
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(150);
-			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+//			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
 			nextToken();
 		} else if (token.esIgual(TipoToken.PAL_RESERVADA, 16)) {
 			parse.add(151);
 			nextToken();
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 				nextToken();
-				expression();
+				tipo = expression();
 				if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 					nextToken();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
-					//ruptura=parse.size();
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
-				//ruptura=parse.size();
 			}
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta identificador o decltype");
-			//ruptura=parse.size();
 		}
+		
+		return tipo;
 	}
 	
 	/**

@@ -2548,29 +2548,54 @@ public class AnalizadorSintactico {
 
 	/**
 	 * 135. FOR-INIT → id INICIALIZACION
+	 * 			{ if(id no declarado) FOR-INIT.tipo := error_tipo
+	 * 			  else FOR-INIT.tipo := INICIALIZACION.tipo
+	 * 			}
 	 * 136. FOR-INIT → TIPO id INICIALIZACION
+	 * 			{ if(id ya declarado) FOR-INIT.tipo := error_tipo
+	 * 			  else FOR-INIT.tipo := INICIALIZACION.tipo
+	 * 			}
 	 * 137. FOR-INIT → EXPRESSIONOPT
+	 * 			{ FOR-INIT.tipo := EXPRESSION_OPT.tipo }
 	 * @throws Exception 
 	 */
 	private ExpresionTipo for_init() throws Exception {
+		ExpresionTipo tipo = new ExpresionTipo(TipoBasico.vacio);
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(135);
 			nextToken();
-			//inicializacion();
-			inicializacion(null);
-		//} else if(tipo()) {
-		} else if(tipo()!=null) {
-			parse.add(136);
-			if(token.esIgual(TipoToken.IDENTIFICADOR)){
-				nextToken();
-				//inicializacion();
-				inicializacion(null);
+			EntradaTS entrada = (EntradaTS) token.getAtributo();
+			if(entrada == null) {
+				gestorErr.insertaErrorSemantico(linea, columna, "La variable no está declarada");
+				inicializacion(null); // la llamamos para que no de error sintáctico
+				tipo = new ExpresionTipo(TipoBasico.error_tipo);
+			} else {
+				tipo = inicializacion(entrada.getTipo());
 			}
 		} else {
-			parse.add(137);
-			expressionOpt();
+			ExpresionTipo aux = tipo();
+			if(aux != null) {
+				parse.add(136);
+				lexico.setModoDeclaracion(true);
+				if(token.esIgual(TipoToken.IDENTIFICADOR)){
+					nextToken();
+					EntradaTS entrada = (EntradaTS) token.getAtributo();
+					if(entrada != null) {
+						entrada.setTipo(aux);
+						tipo = inicializacion(aux);
+					} else {
+						inicializacion(aux);
+						gestorErr.insertaErrorSemantico(linea, columna, "La variable ya estába declarada");
+						tipo = new ExpresionTipo(TipoBasico.error_tipo);
+					}
+				}
+				lexico.setModoDeclaracion(false);
+			} else {
+				parse.add(137);
+				tipo = expressionOpt();
+			}
 		}
-		return null;
+		return tipo;
 	}
 
 	/** 

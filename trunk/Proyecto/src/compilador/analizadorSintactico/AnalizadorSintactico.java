@@ -2871,7 +2871,9 @@ public class AnalizadorSintactico {
 	 * 159. RESTO_POSTFIX_EXP → incremento
 	 * 								{ RESTO_POSTFIX_EXP.tipo := entero }
 	 * 160. RESTO_POSTFIX_EXP → ( RESTO_POSTFIX_EXP2
+	 * 								{ RESTO_POSTFIX_EXP.tipo_s := RESTO_POSTFIX_EXP2.tipo_s }
 	 * 161. RESTO_POSTFIX_EXP → lambda
+	 * 								{ RESTO_POSTFIX_EXP.tipo_s := vacio }
 	 * @param expresionTipo 
 	 * @return 
 	 * @throws Exception 
@@ -2929,9 +2931,10 @@ public class AnalizadorSintactico {
 		} else if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(160);
 			nextToken();
-			resto_postfix_exp2();
+			return resto_postfix_exp2();
 		} else {
 			parse.add(161);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
 		
 		return aux;
@@ -2940,16 +2943,20 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 162. RESTO_POSTFIX_EXP2 → )
+	 * 							{ RESTO_POSTFIX_EXP2.tipo_s := vacio }
 	 * 163. RESTO_POSTFIX_EXP2 → INITIALIZER-LIST )
+	 * 							{ RESTO_POSTFIX_EXP2.tipo_s := INITIALIZER-LIST.tipo_s }
 	 * @throws Exception 
 	 */
-	private void resto_postfix_exp2() throws Exception {
+	private ExpresionTipo resto_postfix_exp2() throws Exception {
+		ExpresionTipo aux = null;
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 			parse.add(162);
 			nextToken();
+			return new ExpresionTipo(TipoBasico.vacio);
 		} else {
 			parse.add(163);
-			initializer_list();
+			aux = initializer_list();
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 				nextToken();
 			} else {
@@ -2957,15 +2964,19 @@ public class AnalizadorSintactico {
 				//ruptura=parse.size();
 			}
 		}
+		return aux;
 	}
 	
 	
 	/**
 	 * 166. RESTO_POSTFIX_EXP3 → ~ decltype ( EXPRESSION )
+	 * 							{ RESTO_POSTFIX_EXP3.tipo_s := EXPRESSION.tipo_s }
 	 * 167. RESTO_POSTFIX_EXP3 → UNQUALIFIED-ID
+	 * 							{ RESTO_POSTFIX_EXP3.tipo_s := UNQUALIFIED-ID.tipo_s }
 	 * @throws Exception 
 	 */
-	private void resto_postfix_exp3() throws Exception {
+	private ExpresionTipo resto_postfix_exp3() throws Exception {
+		ExpresionTipo aux = null;
 		if (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {	
 			parse.add(166);
 			nextToken();
@@ -2973,7 +2984,7 @@ public class AnalizadorSintactico {
 				nextToken();
 				if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 					nextToken();
-					expression();
+					aux =  expression();
 					if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 						nextToken();
 					} else {
@@ -2990,53 +3001,67 @@ public class AnalizadorSintactico {
 			}
 		} else {
 			unqualified_id();
+			return new ExpresionTipo(TipoBasico.vacio);
+			//aux = unqualified_id(); TODO cambiar por este
 		}
+		return aux;
 	}
 	
 	
 	/**
 	 * 171. POSTFIX4 → (
+	 * 					{POSTFIX4.tipo_s := vacio}
 	 * 172. POSTFIX4 → lambda
+	 * 					{POSTFIX4.tipo_s := vacio}
 	 */
-	private void postfix4() {
+	private ExpresionTipo postfix4() {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(171);
 			nextToken();
+			return new ExpresionTipo(TipoBasico.vacio);
 		} else {
 			parse.add(172);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
 	}
 	
 	
 	/**
 	 * 173. POSTFIX-2 → ( POSTFIX-3
+	 * 					{ POSTFIX-2.tipo_s := POSTFIX-3.tipo_s }
 	 * @throws Exception 
 	 */
-	private void postfix2() throws Exception {
+	private ExpresionTipo postfix2() throws Exception {
+		ExpresionTipo aux = null;
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(173);
 			nextToken();
-			postfix3();
+			aux = postfix3();
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
 			//ruptura=parse.size();
 		}
+		return aux;
 	}
 	
 	
 	/**
 	 * 174. POSTFIX-3 →  )
+	 * 					{ POSTFIX-3.tipo_s := vacio }
 	 * 175. POSTFIX-3 → INITIALIZER-LIST )
+	 * 					{ POSTFIX-3.tipo_s := INITIALIZER-LIST.tipo_s }
 	 * @return 
 	 * @throws Exception 
 	 */
 	private ExpresionTipo postfix3() throws Exception {
+		ExpresionTipo aux = null;
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 			parse.add(174);
 			nextToken();
+			return new ExpresionTipo(TipoBasico.vacio);
 		} else {
 			parse.add(175);
-			initializer_list();
+			aux = initializer_list();
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 				nextToken();
 			} else {
@@ -3044,7 +3069,7 @@ public class AnalizadorSintactico {
 				//ruptura=parse.size();
 			}
 		}
-		return null;
+		return aux;
 	}
 	
 	
@@ -3053,15 +3078,18 @@ public class AnalizadorSintactico {
 	 * 176. INITIALIZER-LIST → ASSIGNMENT-EXPRESSION RESTO_INIT 
 	 * @throws Exception 
 	 */
-	private void initializer_list() throws Exception{
+	private ExpresionTipo initializer_list() throws Exception{
+		ExpresionTipo aux = null;
 		parse.add(176);
 		assignment_expression();
 		resto_init();
+		return aux;
 	}
 	
 	/**
 	 * 177. RESTO_INIT → , INITIALIZER_LIST
 	 * 178. RESTO_INIT → lambda
+	 * 					{RESTO_INIT.tipo_s := vacio}
 	 * @throws Exception 
 	 */
 	private void resto_init() throws Exception{
@@ -3072,6 +3100,7 @@ public class AnalizadorSintactico {
 		}
 		else {
 			parse.add(178);
+			//return new ExpresionTipo(TipoBasico.vacio);
 		}
 	}
 			
@@ -3313,12 +3342,14 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 193. NOEXCEPT-EXPRESSION → ( EXPRESSION ) 
+	 * 							{ NOEXCEPT-EXPRESSION.tipo_s := EXPRESSION.tipo_s }
 	 * @throws Exception 
 	 */
-	private void noexcept_expression() throws Exception{
+	private ExpresionTipo noexcept_expression() throws Exception{
+		ExpresionTipo aux = null;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			nextToken();
-			expression();
+			aux = expression();
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)){
 				parse.add(193);
 				nextToken();
@@ -3332,6 +3363,7 @@ public class AnalizadorSintactico {
 			gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `(` ");
 			//ruptura=parse.size();
 		}
+		return aux;
 	}
 	
 	/**

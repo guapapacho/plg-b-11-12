@@ -2917,7 +2917,20 @@ public class AnalizadorSintactico {
 	 * 					      RESTO_CAST.tipo := vacio
 	 * 					}
 	 * 153. POSTFIX-EXPRESSION → ID RESTO_PE RESTO_POSTFIX_EXP
+	 * 					{ if(RESTO_PE.tipo = error_tipo || RESTO_POSTFIX_EXP.tipo = error_tipo)
+	 * 					      POSTFIX-EXPRESSION.tipo := error_tipo
+	 * 					  else if(RESTO_PE.tipo = producto && ID.tipo != funcion)
+	 * 					      POSTFIX-EXPRESSION.tipo := error_tipo
+	 * 					  else
+	 * 					      RESTO_POSTFIX_EXP.tipo_h := ID.tipo
+	 * 					      POSTFIX-EXPRESSION.tipo := RESTO_POSTFIX_EXP.tipo
+	 * 					}
 	 * 154. POSTFIX-EXPRESSION → PRIMARY-EXPRESSION RESTO_POSTFIX_EXP
+	 * 					{ if(PRIMARY-EXPRESSION.tipo = error_tipo)
+	 * 					      RESTO_CAST.tipo := error_tipo
+	 * 					  else
+	 * 					      RESTO_CAST.tipo := RESTO_POSTFIX_EXP.tipo
+	 * 					}
 	 * 168. POSTFIX-EXPRESSION → TIPO_SIMPLE POSTFIX-4 POSTFIX-2 RESTO_POSTFIX_EXP
 	 * 
 	 * 170. POSTFIX-EXPRESSION →  ~ POSTFIX-EXPRESSION1
@@ -2951,8 +2964,24 @@ public class AnalizadorSintactico {
 		} else if (token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(153);
 			nextToken();
-			resto_pe();
-			resto_postfix_exp(((EntradaTS)token.getAtributo()).getTipo());
+			
+			ExpresionTipo params = resto_pe();
+			ExpresionTipo tipoSem = ((EntradaTS)token.getAtributo()).getTipo();
+			if(params.equals(TipoNoBasico.producto)) { // se trata de una función
+				if(!tipoSem.equals(TipoNoBasico.funcion)) {
+					gestorErr.insertaErrorSemantico(linea, columna, "No es una función o la función no está declarada");
+					tipo = new ExpresionTipo(TipoBasico.error_tipo);
+				} else	if(!params.paramsEquivalentes(((Funcion)tipoSem).getDominio())) {
+					gestorErr.insertaErrorSemantico(linea, columna, "Paramteros de la funcion incorrectos");
+					tipo = new ExpresionTipo(TipoBasico.error_tipo);
+				}
+			}
+			ExpresionTipo aux = resto_postfix_exp(tipoSem);
+			
+			if(tipo.equals(TipoBasico.error_tipo) || params.equals(TipoBasico.error_tipo) || aux.equals(TipoBasico.error_tipo))
+				tipo = new ExpresionTipo(TipoBasico.error_tipo);
+			else
+				tipo = aux;
 		} else if  (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {
 			parse.add(170);
 			nextToken();
@@ -2964,9 +2993,11 @@ public class AnalizadorSintactico {
 			resto_postfix_exp(null);
 		} else {
 			parse.add(154);
-			primary_expression();
-			if(tokenAnterior.esIgual(TipoToken.IDENTIFICADOR))
-				resto_postfix_exp(null);
+			ExpresionTipo aux = primary_expression();
+//			if(tokenAnterior.esIgual(TipoToken.IDENTIFICADOR)) //TODO (Alina) no se por que se comprueba esto, asi, haria falta una regla que deriva en lambda
+				tipo = resto_postfix_exp(aux);
+			if(aux.equals(TipoBasico.error_tipo))
+				tipo = aux;
 		}
 		
 		return tipo;
@@ -3014,9 +3045,17 @@ public class AnalizadorSintactico {
 	 * 					      RESTO_POSTFIX_EXP.tipo := vacio
 	 * 					}
 	 * 158. RESTO_POSTFIX_EXP → decremento
-	 * 					{ RESTO_POSTFIX_EXP.tipo := entero }
+	 * 					{ if(RESTO_POSTFIX_EXP.tipo_h != entero && RESTO_POSTFIX_EXP.tipo_h != real)
+	 * 					      RESTO_POSTFIX_EXP.tipo := error_tipo
+	 * 					  else
+	 * 					      RESTO_POSTFIX_EXP.tipo := RESTO_POSTFIX_EXP.tipo_h
+	 * 					}
 	 * 159. RESTO_POSTFIX_EXP → incremento
-	 * 					{ RESTO_POSTFIX_EXP.tipo := entero }
+	 * 					{ if(RESTO_POSTFIX_EXP.tipo_h != entero && RESTO_POSTFIX_EXP.tipo_h != real)
+	 * 					      RESTO_POSTFIX_EXP.tipo := error_tipo
+	 * 					  else
+	 * 					      RESTO_POSTFIX_EXP.tipo := RESTO_POSTFIX_EXP.tipo_h
+	 * 					}
 	 * 160. RESTO_POSTFIX_EXP → ( RESTO_POSTFIX_EXP2
 	 * 					{ RESTO_POSTFIX_EXP.tipo_s := RESTO_POSTFIX_EXP2.tipo_s }
 	 * 161. RESTO_POSTFIX_EXP → lambda
@@ -3062,10 +3101,12 @@ public class AnalizadorSintactico {
 				gestorErr.insertaErrorSemantico(linea, columna, "Aqui no vale el '.'  porque no se aplica sobre un objeto"); //TODO cambiar el mensaje
 			}
 		} else if (token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.DECREMENTO)) {
-			if(parse.lastElement() == 165){ //debería garantizar que antes hubo un identificador
+			if(tokenAnterior.esIgual(TipoToken.IDENTIFICADOR)){
 				if(exp.getTipoBasico() != TipoBasico.entero && exp.getTipoBasico() != TipoBasico.real) {
 					tipo = new ExpresionTipo(TipoBasico.error_tipo);
 					gestorErr.insertaErrorSemantico(linea, columna, "Valor invalido para decremento.");
+				} else {
+					tipo = new ExpresionTipo (exp.getTipoBasico());
 				}
 			} else {
 				tipo = new ExpresionTipo(TipoBasico.error_tipo);
@@ -3074,10 +3115,12 @@ public class AnalizadorSintactico {
 			parse.add(158);
 			nextToken();
 		} else if (token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)) {
-			if(parse.lastElement() == 165){ //debería garantizar que antes hubo un identificador
+			if(tokenAnterior.esIgual(TipoToken.IDENTIFICADOR)){
 				if(exp.getTipoBasico() != TipoBasico.entero && exp.getTipoBasico() != TipoBasico.real) {
 					tipo = new ExpresionTipo(TipoBasico.error_tipo);
 					gestorErr.insertaErrorSemantico(linea, columna, "Valor invalido para incremento.");
+				} else {
+					tipo = new ExpresionTipo (exp.getTipoBasico());
 				}
 			} else {
 				tipo = new ExpresionTipo(TipoBasico.error_tipo);
@@ -3087,7 +3130,7 @@ public class AnalizadorSintactico {
 			nextToken();
 		} else if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(160);
-			nextToken();
+			nextToken(); 
 			return resto_postfix_exp2();
 		} else {
 			parse.add(161);
@@ -3314,7 +3357,6 @@ public class AnalizadorSintactico {
 		}
 		else if(unary_operator() != null){
 			parse.add(181);
-			//nextToken();
 			aux = cast_expression();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA)
@@ -3328,53 +3370,39 @@ public class AnalizadorSintactico {
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
 				nextToken();
-				//if(tipo()){
 				if(tipo()!=null){
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 						parse.add(183);
 						nextToken();
 						aux = tipo();
 					}else{
-						// error
 						gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");
-						//ruptura=parse.size();
 					}	
 				}else{
-					// error
 					gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador o tipo pre-definido ");
-					//ruptura=parse.size();
 				}
 			}else{
-				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `(` ");
-				//ruptura=parse.size();
 			}
 		} else if (token.esIgual(TipoToken.PAL_RESERVADA)
 				&& (Integer)token.getAtributo()==39 /*noexcept*/ ){
 			parse.add(184);
 			nextToken();
 			aux = noexcept_expression();
-		} else if(token.esIgual(TipoToken.PAL_RESERVADA)
-				&& (Integer)token.getAtributo()==38 /*new*/ ){
+		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo()==38 /*new*/ ){
 			parse.add(142);
 			nextToken();
-			//if(tipo()){
 			if(tipo()!=null){
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
 					nextToken();
 					resto_new();
 				}else{
-					//error
 					gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");
-					//ruptura=parse.size();
 				}
 			}else{
-				//error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador o tipo pre-definido ");
-				//ruptura=parse.size();
 			}
-		}else if(token.esIgual(TipoToken.PAL_RESERVADA)
-				&& (Integer)token.getAtributo()==18 /*delete*/ ){
+		}else if(token.esIgual(TipoToken.PAL_RESERVADA)	&& (Integer)token.getAtributo()==18 /*delete*/ ){
 			parse.add(143);
 			nextToken();
 			resto_delete();
@@ -3480,11 +3508,8 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
 			}else{
-				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ')' ");
-				//ruptura=parse.size();
 			}
-				
 		}
 		
 	}
@@ -3529,14 +3554,10 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_CORCHETE)){
 				nextToken();
 			}else{
-				//error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ']' ");
-				//ruptura=parse.size();
 			}			
 		}else{
-			//error
 			gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba '[' ");
-			//ruptura=parse.size();
 		}
 	}
 	

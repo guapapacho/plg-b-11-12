@@ -778,7 +778,7 @@ public class AnalizadorLexico {
 								 if(gestorTS.buscaIdBloqueActual(lexema) == null) {// si no esta en la tabla actual hay que insertarlo
 									 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
 								 } else {
-									 token = new Token(TipoToken.IDENTIFICADOR, null, comentario);
+									 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.buscaIdGeneral(lexema), comentario);
 									 //gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 									 //return new Token(TipoToken.ERROR,null, comentario);
 								 }

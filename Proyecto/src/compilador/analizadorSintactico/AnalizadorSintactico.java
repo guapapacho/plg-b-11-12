@@ -3265,7 +3265,7 @@ public class AnalizadorSintactico {
 	 * 182. UNARY_EXPRESSION → sizeof RESTO_UNARY
 	 * 							{ UNARY-EXPRESSION.tipo_s := RESTO-UNARY.tipo_s }
 	 * 183. UNARY_EXPRESSION → alignof (type-id)
-	 * 
+	 * 							{ UNARY-EXPRESSION.tipo_s := TIPO.tipo_s }
 	 * 184. UNARY_EXPRESSION → noexcept NOEXCEPT_EXPRESSION
 	 * 							{ UNARY-EXPRESSION.tipo_s := NOEXCEPT-EXPRESSION.tipo_s }
 	 * 142. UNARY_EXPRESSION → new TIPO ( RESTO_NEW
@@ -3307,6 +3307,7 @@ public class AnalizadorSintactico {
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 						parse.add(183);
 						nextToken();
+						aux = tipo();
 					}else{
 						// error
 						gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");

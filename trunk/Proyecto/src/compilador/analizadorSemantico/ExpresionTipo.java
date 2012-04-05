@@ -1,5 +1,7 @@
 package compilador.analizadorSemantico;
 
+import compilador.analizadorLexico.Token.OpLogico;
+
 public class ExpresionTipo {
 	private boolean basico;
 	private TipoBasico tipoBasico;
@@ -7,6 +9,73 @@ public class ExpresionTipo {
 	
 	public enum TipoBasico{logico, caracter, entero, real, error_tipo, vacio}; 
 	public enum TipoNoBasico{vector, producto, registro, union, puntero, funcion, objeto, cadena}
+	/*
+	switch(e1.getTipoBasico()){
+	case logico:
+		switch (e2.getTipoBasico()){
+		case logico: return e1;
+		case caracter:
+		case entero: 
+		case real:
+		default: return new ExpresionTipo(TipoBasico.error_tipo);
+		}
+	case caracter:
+		switch (e2.getTipoBasico()){
+		case logico: 
+		case caracter: return e1;
+		case entero: 
+		case real:
+		default: return new ExpresionTipo(TipoBasico.error_tipo);
+		}
+	case entero:
+		switch (e2.getTipoBasico()){
+		case logico: 
+		case caracter:
+		case entero: return e1;
+		case real:
+		default: return new ExpresionTipo(TipoBasico.error_tipo);
+		}
+	case real:
+		switch (e2.getTipoBasico()){
+		case logico: 
+		case caracter:
+		case entero: 
+		case real: return e1;
+		default: return new ExpresionTipo(TipoBasico.error_tipo);
+		}
+	default: return new ExpresionTipo(TipoBasico.error_tipo);
+	}
+	*/
+	
+	public static ExpresionTipo sonEquivLog(ExpresionTipo e1, ExpresionTipo e2, OpLogico op){
+		switch(op){
+		case CIRCUNFLEJO: case XOR: case XOR_EQ: case DOS_MENORES: case DOS_MAYORES: case BIT_AND: case ANDEQ: case BIT_OR: case OR_EQ:
+			switch(e1.getTipoBasico()){
+			case logico: case caracter: case entero:
+				switch (e2.getTipoBasico()){
+				case logico: case caracter: case entero: return new ExpresionTipo(TipoBasico.entero);
+				default: return new ExpresionTipo(TipoBasico.error_tipo);
+				}
+			default: return new ExpresionTipo(TipoBasico.error_tipo);
+			}
+		 case AND: case OR: 
+			switch(e1.getTipoBasico()){
+			case logico: 
+				switch (e2.getTipoBasico()){
+				case logico: return e1;
+				case caracter: case entero: case real: return new ExpresionTipo(TipoBasico.entero); 
+				default: return new ExpresionTipo(TipoBasico.error_tipo);
+				}
+			case caracter: case entero: case real:
+				switch (e2.getTipoBasico()){
+				case logico: case caracter: case entero: case real: return new ExpresionTipo(TipoBasico.entero);
+				default: return new ExpresionTipo(TipoBasico.error_tipo);
+				}
+			default: return new ExpresionTipo(TipoBasico.error_tipo);
+			}
+		default: return new ExpresionTipo(TipoBasico.error_tipo);
+		}			
+	}
 	
 	public ExpresionTipo(TipoNoBasico tipo){
 		this.basico = false;

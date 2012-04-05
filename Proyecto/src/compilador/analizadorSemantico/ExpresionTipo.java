@@ -83,5 +83,17 @@ public class ExpresionTipo {
 		else
 			return this.getTipoNoBasico().equals(t);
 	}
+
+	/**
+	 * Comprueba si los dos tipos Producto representan parametros de la misma funcion
+	 * @param dominio
+	 * @return boolean
+	 */
+	public boolean paramsEquivalentes(Producto dominio) {
+		if(this.equals(TipoNoBasico.producto))
+			return false;
+		//TODO terminar este método. habría que ver si los parametros tienen el mismo tipo y si en c se permite pasar menos params
+		return true;
+	}
 	
 }

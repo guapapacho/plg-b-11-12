@@ -137,7 +137,7 @@ public class GestorTablasSimbolos {
 		tipos.put(35, "long");
 		tipos.put(48, "short");
 		tipos.put(71, "wchar_t");
-		tipos.put(73, "String");
+//		tipos.put(73, "String"); string no es un tipo simple
 	}	
 	
 	public String getTipoSimple(Integer atributo) {
@@ -241,7 +241,7 @@ public class GestorTablasSimbolos {
 		palRes.put("volatile",70);
 		palRes.put("wchar_t",71);
 		palRes.put("while", 72);
-		palRes.put("String", 73);
+		palRes.put("String", 73);//creo que es con minuscula
 		palRes.put("cin", 74);
 		palRes.put("cout", 75);
 		palRes.put("endl", 76); // TODO: agregar en otros sitios pertinentes !??

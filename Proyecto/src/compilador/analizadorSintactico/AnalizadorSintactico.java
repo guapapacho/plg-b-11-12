@@ -2893,7 +2893,9 @@ public class AnalizadorSintactico {
 	 * 153. POSTFIX-EXPRESSION → ID RESTO_PE RESTO_POSTFIX_EXP
 	 * 154. POSTFIX-EXPRESSION → PRIMARY-EXPRESSION RESTO_POSTFIX_EXP
 	 * 168. POSTFIX-EXPRESSION → TIPO_SIMPLE POSTFIX-4 POSTFIX-2 RESTO_POSTFIX_EXP
-	 * 170. POSTFIX-EXPRESSION →  ~ POSTFIX-EXPRESSION
+	 * 
+	 * 170. POSTFIX-EXPRESSION →  ~ POSTFIX-EXPRESSION1
+	 * 					{ POSTFIX-EXPRESSION.tipo_s := POSTFIX-EXPRESSION1.tipo_s}
 	 * @return 
 	 * @throws Exception 
 	 */
@@ -2928,7 +2930,7 @@ public class AnalizadorSintactico {
 		} else if  (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {
 			parse.add(170);
 			nextToken();
-			postfix_expression();
+			tipo = postfix_expression();
 		} else if(tipo_simple() != null) {
 			parse.add(168);
 			postfix4();
@@ -3204,67 +3206,96 @@ public class AnalizadorSintactico {
 		
 	/**
 	 * 176. INITIALIZER-LIST → ASSIGNMENT-EXPRESSION RESTO_INIT 
+	 * 	{ if (ASSIGNMENT-EXPRESSION.tipo_s != error_tipo) then
+     *  		RESTO-INIT.tipo_h := ASSIGNMENT-EXPRESSION.tipo_s;
+     *           if (RESTO-INIT.tipo_s == vacio) then
+     *                INITIALIZER-LIST.tipo_s := ASSIGNMENT-EXPRESSION.tipo_s
+     *            else 
+     *            	INITIALIZER-LIST.tipo_s := RESTO-INIT.tipo_s
+     *	  else    
+     *	  	INITIALIZER-LIST.tipo_s := error_tipo }
 	 * @throws Exception 
 	 */
 	private ExpresionTipo initializer_list() throws Exception{
-		ExpresionTipo aux = null;
+		ExpresionTipo aux1,aux2,aux3 = null;
 		parse.add(176);
-		assignment_expression();
-		resto_init();
-		return aux;
+		aux1 = assignment_expression();
+		if ( !aux1.getTipoBasico().equals("error_tipo")) {
+			aux3 = aux1;
+			aux2 = resto_init(aux3);
+			if (aux2.getTipoBasico().equals("vacio")) {
+				return new ExpresionTipo(aux1.getTipoBasico());
+			} else {
+				return new ExpresionTipo(aux2.getTipoBasico());
+			}
+		} else {
+			return new ExpresionTipo(TipoBasico.error_tipo);
+		}
 	}
 	
 	/**
 	 * 177. RESTO_INIT → , INITIALIZER_LIST
+	 * 					{ RESTO_INIT.tipo_s := INITIALIZER_LIST.tipo_s }
 	 * 178. RESTO_INIT → lambda
-	 * 					{RESTO_INIT.tipo_s := vacio}
+	 * 					{ RESTO_INIT.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private void resto_init() throws Exception{
+	private ExpresionTipo resto_init(ExpresionTipo tipo_h) throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){
 			parse.add(177);
 			nextToken();
-			initializer_list();
+			return initializer_list();
 		}
 		else {
 			parse.add(178);
-			//return new ExpresionTipo(TipoBasico.vacio);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
 	}
 			
 	/**
 	 * 179. UNARY_EXPRESSION → incremento CAST_EXPRESSION
+	 * 							{ UNARY-EXPRESSION.tipo_s := CAST-EXPRESSION.tipo_s }
 	 * 180. UNARY_EXPRESSION → decremento CAST_EXPRESSION
+	 * 							{ UNARY-EXPRESSION.tipo_s := CAST-EXPRESSION.tipo_s }
 	 * 181. UNARY_EXPRESSION → UNARY-OPERATOR CAST_EXPRESSION
+	 * 							{ if (UNARY-OPERATOR.tipo_s != null) then 
+	 * 								UNARY-EXPRESSION.tipo_s := CAST-EXPRESSION.tipo_s;
+	 * 							else
+	 * 							    UNARY-EXPRESSION.tipo_s := error_tipo }
 	 * 182. UNARY_EXPRESSION → sizeof RESTO_UNARY
+	 * 							{ UNARY-EXPRESSION.tipo_s := RESTO-UNARY.tipo_s }
 	 * 183. UNARY_EXPRESSION → alignof (type-id)
+	 * 
 	 * 184. UNARY_EXPRESSION → noexcept NOEXCEPT_EXPRESSION
+	 * 							{ UNARY-EXPRESSION.tipo_s := NOEXCEPT-EXPRESSION.tipo_s }
 	 * 142. UNARY_EXPRESSION → new TIPO ( RESTO_NEW
 	 * 143. UNARY_EXPRESSION → delete RESTO_DELETE
 	 * 185. UNARY_EXPRESSION → POSTFIX_EXPRESSION
+	 * 							{ UNARY-EXPRESSION.tipo_s := POSTFIX-EXPRESSION.tipo_s }
 	 * @throws Exception 
 	 */
-	private void unary_expression() throws Exception{
+	private ExpresionTipo unary_expression() throws Exception{
+		ExpresionTipo aux = null;
 		if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)){
 			parse.add(179);
 			nextToken();
-			cast_expression();
+			aux = cast_expression();
 		}
 		else if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.DECREMENTO)){
 			parse.add(180);
 			nextToken();
-			cast_expression();
+			aux = cast_expression();
 		}
-		else if(unary_operator()){
+		else if(unary_operator() != null){
 			parse.add(181);
 			//nextToken();
-			cast_expression();
+			aux = cast_expression();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA)
 				&& (Integer)token.getAtributo()==50 /*sizeof*/ ){
 			parse.add(182);
 			nextToken();
-			resto_unary();
+			aux = resto_unary();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA)
 				&& (Integer)token.getAtributo()==1 /*alignof*/ ){
@@ -3295,7 +3326,7 @@ public class AnalizadorSintactico {
 				&& (Integer)token.getAtributo()==39 /*noexcept*/ ){
 			parse.add(184);
 			nextToken();
-			noexcept_expression();
+			aux = noexcept_expression();
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA)
 				&& (Integer)token.getAtributo()==38 /*new*/ ){
 			parse.add(142);
@@ -3322,16 +3353,20 @@ public class AnalizadorSintactico {
 			resto_delete();
 		}else{
 			parse.add(185);
-			postfix_expression();
+			aux = postfix_expression();
 		}
+		return aux;
 	}
 	
 	/**
 	 * 186. RESTO_UNARY → ( TIPO )
+	 * 						{ RESTO_UNARY.tipo_s  := TIPO.tipo_s }
 	 * 187. RESTO_UNARY → UNARY-EXPRESSION
+	 * 						{ RESTO_UNARY.tipo_s := UNARY-EXPRESSION.tipo_s }
 	 * @throws Exception 
 	 */
-	private void resto_unary() throws Exception{
+	private ExpresionTipo resto_unary() throws Exception{
+		ExpresionTipo aux = null;
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
 			nextToken();
 			//if(tipo()){
@@ -3339,6 +3374,7 @@ public class AnalizadorSintactico {
 				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)){
 					parse.add(186);
 					nextToken();
+					aux = tipo();
 				}else{
 					// error
 					gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");
@@ -3350,46 +3386,56 @@ public class AnalizadorSintactico {
 				//ruptura=parse.size();
 			}
 		}else{
-			unary_expression();
+			aux = unary_expression();
 		}
+		return aux;
 	}
 	
 	/**
 	 * 188. UNARY-OPERATOR → *
+	 * 						{ UNARY-OPERATOR.tipo_s := vacio }
 	 * 189. UNARY-OPERATOR → &
+	 * 						{ UNARY-OPERATOR.tipo_s := vacio }
 	 * 190. UNARY-OPERATOR → +
+	 * 						{ UNARY-OPERATOR.tipo_s := vacio }
 	 * 191. UNARY-OPERATOR → !
+	 * 						{ UNARY-OPERATOR.tipo_s := vacio }
 	 * 192. UNARY-OPERATOR → sombrero
+	 * 						{ UNARY-OPERATOR.tipo_s := vacio }
 	 * 138. UNARY-OPERATOR → -
+	 * 
+	 * ahora en la regla 181 pregunto if(unary_operator() != null) en lugar de preguntar por el valor booleano
 	**/
-	private boolean unary_operator(){
+	private ExpresionTipo unary_operator(){
+		ExpresionTipo aux = null;
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 			parse.add(188);
 			nextToken();
-			return true;
+			aux = new ExpresionTipo(TipoBasico.vacio);
 		}else if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.BIT_AND)){
 			parse.add(189);
 			nextToken();
-			return true;
+			aux = new ExpresionTipo(TipoBasico.vacio);
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.SUMA)){
 			parse.add(190);
 			nextToken();
-			return true;
+			aux = new ExpresionTipo(TipoBasico.vacio);
 		}else if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.NOT)){
 			parse.add(191);
 			nextToken();
-			return true;
+			aux = new ExpresionTipo(TipoBasico.vacio);
 		}else if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)){
 			parse.add(192);
 			nextToken();
-			return true;
+			aux = new ExpresionTipo(TipoBasico.vacio);
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.RESTA)){
 			parse.add(138);
 			nextToken();
-			return true;
+			aux = new ExpresionTipo(TipoBasico.vacio); // TODO a quien le haya tocado... ¿le parece bien?
 		}else{
-			return false;
+			aux = new ExpresionTipo(TipoBasico.error_tipo); //no se si deberia poner esto o no....
 		}
+		return aux;
 	}
 
 	/**
@@ -3496,20 +3542,24 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 194. CAST-EXPRESSION → UNARY-EXPRESSION
+	 * 						{ CAST-EXPRESSION.tipo_s := UNARY-EXPRESSION.tipo_s }
 	 * 195. CAST-EXPRESSION → ( RESTO_CAST
+	 * 						{ CAST-EXPRESSION.tipo_s := RESTO_CAST.tipo_s }
+
 	 * @return 
 	 * @throws Exception 
 	 */
 	private ExpresionTipo cast_expression() throws Exception{
+		ExpresionTipo aux = null;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(195);
 			nextToken();
-			resto_cast();
+			aux = resto_cast();
 		} else {
 			parse.add(194);
-			unary_expression();
+			aux = unary_expression();
 		}
-		return null;
+		return aux;
 	}
 	
 	/**
@@ -3551,17 +3601,19 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 196. PM-EXPRESSION → CAST-EXPRESSION
+	 * 						{ PM-EXPRESSION.tipo_s := CAST-EXPRESSION.tipo_s }
 	 * 197. PM-EXPRESSION → .* CAST-EXPRESSION
 	 * 198. PM-EXPRESSION → -> CAST-EXPRESSION
 	 * @throws Exception 
 	 */
 	private ExpresionTipo pm_expression() throws Exception{
+		ExpresionTipo aux = null;
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO)){
 			nextToken();
 			if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 				nextToken();
 				parse.add(197);
-				cast_expression();
+				aux = cast_expression();
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `*` ");
@@ -3575,8 +3627,7 @@ public class AnalizadorSintactico {
 			parse.add(196);
 			cast_expression();
 		}
-		return new ExpresionTipo(TipoBasico.vacio); //Devolver esto en vez de "null" para evitar posibles errores!!!! 
-		//return null; //QUITAR DESPUES DE IMPLEMENTACION
+		return aux;
 	}
 	
 	

@@ -27,6 +27,9 @@ import javax.swing.JTextArea;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import compilador.analizadorLexico.AnalizadorLexico;
+import compilador.analizadorLexico.Token.OpLogico;
+import compilador.analizadorSemantico.ExpresionTipo;
+import compilador.analizadorSemantico.ExpresionTipo.TipoBasico;
 import compilador.analizadorSintactico.AnalizadorSintactico;
 import compilador.gestionErrores.GestorErrores;
 
@@ -374,9 +377,28 @@ public class Compilador extends JFrame {
 		return botonTokens;
 	}
 
+	public static void comprobarExpresiones(){
+		ExpresionTipo e1,e2;
+		System.out.println("------------------------------");
+		System.out.println("OPERADORES LOGICOS: ");
+		for(TipoBasico t1 : TipoBasico.values()){
+			e1 = new ExpresionTipo(t1);
+			for(TipoBasico t2 : TipoBasico.values()){
+				e2 = new ExpresionTipo(t2);
+				for(OpLogico op : OpLogico.values()){
+					System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonEquivLog(e1, e2, op).getTipoBasico().toString());
+				}
+			}	
+		}
+		System.out.println("-----------------------------");
+		
+	}
+	
 	public static void main(String[] args) {
 		Compilador c = new Compilador();
 		c.setEnabled(true);
 		c.setVisible(true);
+		
+		Compilador.comprobarExpresiones();
 	}
 }

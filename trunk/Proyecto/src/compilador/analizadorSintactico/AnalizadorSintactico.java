@@ -788,17 +788,19 @@ public class AnalizadorSintactico {
 	 * 			{ TIPO.tipo := TIPO_SIMPLE.tipo }
 	 */
 	private ExpresionTipo tipo() { // TODO terminar este método
-		ExpresionTipo tipo_s = null;
+		ExpresionTipo tipo_s =new ExpresionTipo(TipoBasico.vacio);
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(6);
 			tipo_s = new Objeto(((EntradaTS)token.getAtributo()).getLexema());
 			nextToken();
+			System.out.println("6");
+			return tipo_s;
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && 
 				gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
 			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			nextToken();
-			
+			System.out.println("7");
 			if(tipo_s!=null && token.getAtributo()!=null){
 				if(tipo_s.esTipoBasico())
 					//System.out.println("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());
@@ -826,22 +828,38 @@ public class AnalizadorSintactico {
 
 	/**	
 	 *  8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
+	 *  			{ INIC_CONST.tipo_h := TIPO.tipo_s;
+   	 *  			  if ((Tipo.tipo_s==LITERAL.tipo_s) &&(Tipo.tipo_s!=error_tipo) &&(INIC_CONST!=error_tipo) &&(Cosas'.tipo_s!=error_tipo))
+   	 *				  then COSAS.tipo_s := vacio
+   	 *				  else .COSAS.tipo := error_tipo }
 	 *  9. COSAS → TIPO ID COSAS2 COSAS
+	 *  			{ COSAS2.tipo_h = TIPO.tipo_s
+ 	 *		          if  (TIPO.tipo_s != error_tipo) and (COSAS2.tipo_h != error_tipo) and (COSAS1.tipo_s != error_tipo ) and (consulta(id.lexema) == null ) then
+     * 				  COSAS.tipo_s = vacio
+ 	 *				  else CUERPO_ST.tipo = error_tipo  } 
 	 * 10. COSAS → void ID ( LISTA_PARAM ) COSAS3 COSAS
-	 * 				{ 	if (LISTA_PARAM.tipo != error_tipo) & (COSAS3 != error_tipo) & (COSAS' != error_tipo)
+	 * 				{ 	if (LISTA_PARAM.tipo_s != error_tipo) & (COSAS3.tipo_s != error_tipo) & (COSAS'.tipo_s != error_tipo)
 	 * 					then COSAS.tipo := vacio
 	 * 					else COSAS.tipo := error_tipo  } 
 	 * 11. COSAS → enum ID { LISTANOMBRES } ; COSAS
+	 * 				{  if ((LISTANOMBRES.tipo_s != error_tipo) &&(COSAS'.tipo_s != error_tipo) )
+     *				   then COSAS.tipo_s := vacio
+     *				   else COSAS.tipo_s := error_tipo  } 
 	 * 12. COSAS → struct RESTO_ST COSAS
+	 * 				{  if ((RESTO_ST.tipo_s != error_tipo) &&(COSAS'.tipo_s != error_tipo) )
+     * 				   then COSAS.tipo_s := vacio
+     *				   else COSAS.tipo_s := error_tipo  } 
 	 * 13. COSAS → lambda
 	 * 				{COSAS.tipo_s:=vacio}
 	 * @throws Exception 
 	 */
 	private ExpresionTipo cosas() throws Exception {
+		ExpresionTipo aux;
 		if(!token.esIgual(TipoToken.EOF)) {
 			if(token.esIgual(TipoToken.PAL_RESERVADA, 9 /*const*/)){
 				parse.add(8);
 				nextToken();
+				System.out.println("8");
 				//if(tipo()) {
 				ExpresionTipo TIPO_tipo_s=tipo();
 				if(TIPO_tipo_s!=null){
@@ -849,105 +867,148 @@ public class AnalizadorSintactico {
 					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 						idConst(); // ID = LITERAL
 						inic_const();
+						ExpresionTipo INIC_CONST_tipo_h=TIPO_tipo_s;
 						if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 							gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \";\"");
+							return new ExpresionTipo(TipoBasico.error_tipo);
 							//ruptura=parse.size();
 						} else {
 							nextToken();
-							cosas();
+							//cosas();
+							ExpresionTipo COSAS1_tipo_s=cosas();
+							if((!TIPO_tipo_s.equals(TipoBasico.error_tipo))&&(!INIC_CONST_tipo_h.equals(TipoBasico.error_tipo))&&(!COSAS1_tipo_s.equals(TipoBasico.error_tipo))){
+								return new ExpresionTipo(TipoBasico.vacio);
+							}
+							else{
+								return new ExpresionTipo(TipoBasico.error_tipo);
+							}
 						}
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la variable");
+						return new ExpresionTipo(TipoBasico.error_tipo);
 						//ruptura=parse.size();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta tipo de la variable");
+					return new ExpresionTipo(TipoBasico.error_tipo);
 					//ruptura=parse.size();
 				}
 			//} else if (tipo()) {
-			}else if (tipo()!=null){
-				parse.add(9);
-				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-					id();
-					cosas2();	
-					cosas();			
-				} else {
-					gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la variable");
-					//ruptura=parse.size();
-				}
-			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 69 /* void */)){
+			}else if(token.esIgual(TipoToken.PAL_RESERVADA, 69 /* void */)){
 				parse.add(10);
 				nextToken();
-				ExpresionTipo aux1,aux2,aux3;
+				ExpresionTipo LISTA_PARAM_tipo_s,COSAS3_tipo_s,COSAS1_tipo_s;
 				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 					nextToken();
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
 						nextToken();
-						aux1 = lista_param();
+						LISTA_PARAM_tipo_s = lista_param();
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 							nextToken();
-							aux2 = cosas3();
-							aux3 = cosas();
-							if(aux1.getTipoBasico()!=TipoBasico.error_tipo && aux2.getTipoBasico()!=TipoBasico.error_tipo && aux3.getTipoBasico()!=TipoBasico.error_tipo)
+							COSAS3_tipo_s = cosas3();
+							COSAS1_tipo_s = cosas();
+							if(LISTA_PARAM_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS3_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 								return new ExpresionTipo(TipoBasico.vacio);
 							else
 								return new ExpresionTipo(TipoBasico.error_tipo);
 						} else {
 							if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)||token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 								gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \")\"");
-								return null;
+								return new ExpresionTipo(TipoBasico.error_tipo);
 								//ruptura=parse.size();
 							}
 							else{
 								gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");//"Palabra o termino \""+lexico.getLexema()+"\" inesperado.");
-								return null;
+								return new ExpresionTipo(TipoBasico.error_tipo);
 								//ruptura=parse.size();
 							}
 						}
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"(\"");
-						return null;
+						return new ExpresionTipo(TipoBasico.error_tipo);
 						//ruptura=parse.size();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre de la funcion");
-					return null;
+					return new ExpresionTipo(TipoBasico.error_tipo);
 					//ruptura=parse.size();
 				}
-			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 23)){
+			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 23 /* enum */)){
 				parse.add(11);
 				nextToken();
+				System.out.println("11");
+				ExpresionTipo LISTANOMBRES_tipo_s,COSAS1_tipo_s;
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
 					id();
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 						nextToken();
-						listaNombres();
+						//listaNombres();
+						LISTANOMBRES_tipo_s=listaNombres();
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 							nextToken();
 							if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 								gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \";\"");
+								return new ExpresionTipo(TipoBasico.error_tipo);
 								//ruptura=parse.size();
 							} else {
 								nextToken();
-								cosas();
+								//cosas();
+								COSAS1_tipo_s=cosas();
+								if(LISTANOMBRES_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+									return new ExpresionTipo(TipoBasico.vacio);
+								else
+									return new ExpresionTipo(TipoBasico.error_tipo);
 							}
 						} else{
 							gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"}\"");
+							return new ExpresionTipo(TipoBasico.error_tipo);
 							//ruptura=parse.size();
 						}
 					} else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"{\"");
+						return new ExpresionTipo(TipoBasico.error_tipo);
 						//ruptura=parse.size();
 					}
 				} else{
-					gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre de lista");	//No me gusta... :(
+					gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre de lista");	
+					return new ExpresionTipo(TipoBasico.error_tipo);
 					//ruptura=parse.size();
 				}
-			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 54)){
+			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /* struct */)){
 				parse.add(12);
+				System.out.println("12");
+				ExpresionTipo RESTO_ST_tipo_s,COSAS1_tipo_s;
 				nextToken();
-				resto_st();
-				cosas();
+				//resto_st();
+				//cosas();
+				RESTO_ST_tipo_s=resto_st();
+				COSAS1_tipo_s=cosas();
+				if(RESTO_ST_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+					return new ExpresionTipo(TipoBasico.vacio);
+				else
+					return new ExpresionTipo(TipoBasico.error_tipo);
+			} else if ((aux=tipo())!=null){
+				parse.add(9);
+				System.out.println("9");
+				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+					id();
+					ExpresionTipo COSAS2_tipo_h,COSAS1_tipo_s;
+					//cosas2();	
+					//cosas();	
+					COSAS2_tipo_h=aux;
+					cosas2();
+					COSAS1_tipo_s=cosas();
+					if((!aux.equals(TipoBasico.error_tipo))&&(!COSAS2_tipo_h.equals(TipoBasico.error_tipo))&&(!COSAS1_tipo_s.equals(TipoBasico.error_tipo))){
+						return new ExpresionTipo(TipoBasico.vacio);
+					}
+					else{
+						return new ExpresionTipo(TipoBasico.error_tipo);
+					}
+				} else {
+					gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la variable");
+					return new ExpresionTipo(TipoBasico.error_tipo);
+					//ruptura=parse.size();
+				}
 			} else {
 				parse.add(13);
 				return new ExpresionTipo(TipoBasico.vacio);
@@ -963,12 +1024,10 @@ public class AnalizadorSintactico {
 		
 	/** 
 	 * 14. LISTANOMBRES → ID RESTO_ListaNombres
-	 * {
-	 * LISTANOMBRES.tipo_h = Vector(ID)
-	 * LISTANOMBRES.tipo_s:=RESTO_LISTANOMBRES.tipo_s)
-	 * }
+	 * 						{ LISTANOMBRES.tipo_h = Vector(ID)
+	 * 						  LISTANOMBRES.tipo_s:=RESTO_LISTANOMBRES.tipo_s)}
 	 * 15. LISTANOMBRES → lambda
-	 *{ LISTANOMBRES.tipo_s := vacio }
+	 *						{ LISTANOMBRES.tipo_s := vacio }
 	 * @throws Exception 
 	 */
 	private ExpresionTipo listaNombres() throws Exception {
@@ -1034,43 +1093,64 @@ public class AnalizadorSintactico {
 
 	/**	
 	 * 16. COSAS2 → ( LISTA_PARAM ) COSAS3
+	 * 				{ if ((LISTA_PARAM.tipo_s != error_tipo) && (COSAS3.tipo_s != error_tipo))
+     *				  then COSAS2.tipo_s := vacio
+     *				  else COSAS2.tipo_s := error_tipo  } 
 	 * 17. COSAS2 → INICIALIZACION  DECLARACIONES ;
+	 * 				{ INICIALIZACION.tipo_h := COSAS2.tipo_h;
+   	 *				  DECLARACIONES.tipo_h := COSAS2.tipo_h;
+   	 *				  if ((DECLARACIONES.tipo_s!=error_tipo) &&(INICIALIZACION.tipo_s!=error_tipo))
+   	 *				  then COSAS2.tipo_s := vacio
+   	 *				  else .COSAS2.tipo := error_tipo }
 	 * @throws Exception 
 	 */
-	private void cosas2() throws Exception {
-		//16. COSAS2 → ( LISTA_PARAM ) COSAS3
+	private ExpresionTipo cosas2() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
+			ExpresionTipo LISTA_PARAM_tipo_s,COSAS3_tipo_s;
 			parse.add(16);
 			nextToken();
-			lista_param();
+			//lista_param();
+			LISTA_PARAM_tipo_s=lista_param();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 				nextToken();
 				estamosEnFuncion = true;
-				cosas3();
+				//cosas3();
+				COSAS3_tipo_s=cosas3();
 				estamosEnFuncion = false;
+				if(LISTA_PARAM_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS3_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+					return new ExpresionTipo(TipoBasico.vacio);
+				else
+					return new ExpresionTipo(TipoBasico.error_tipo);
 			} else {
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)||token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \")\"");
+					return new ExpresionTipo(TipoBasico.error_tipo);
 					//ruptura=parse.size();
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");
+					return new ExpresionTipo(TipoBasico.error_tipo);
 					//ruptura=parse.size();
 				}
 			}
 		} 
-		//17. COSAS2 → INICIALIZACION  DECLARACIONES ;
 		else {
+			ExpresionTipo COSAS2_tipo_s,INICIALIZACION_tipo_h,DECLARACIONES_tipo_h;
 			parse.add(17);
+			COSAS2_tipo_s=cosas2();
 			//inicializacion(); 
-			inicializacion(null); //TODO: llamada con expresion de tipos correcta!!
+			INICIALIZACION_tipo_h=inicializacion(COSAS2_tipo_s); //TODO: llamada con expresion de tipos correcta!!
 			//declaraciones();		
-			declaraciones(null); //TODO: llamada con expresion de tipos correcta!!
+			DECLARACIONES_tipo_h=declaraciones(COSAS2_tipo_s); //TODO: llamada con expresion de tipos correcta!!
 			if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado. Falta separador \";\"");
 				//ruptura=parse.size();
 			}
 			nextToken();
+			if(INICIALIZACION_tipo_h.getTipoBasico()!=TipoBasico.error_tipo && DECLARACIONES_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)
+				return new ExpresionTipo(TipoBasico.vacio);
+			else
+				return new ExpresionTipo(TipoBasico.error_tipo);
 		}
 	}
 	
@@ -1091,24 +1171,25 @@ public class AnalizadorSintactico {
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(19);
 			nextToken();
-			ExpresionTipo aux = cuerpo();
+			ExpresionTipo CUERPO_tipo_s = cuerpo();
 			if (!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)) {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta }");
+				return new ExpresionTipo(TipoBasico.error_tipo);
 			}
 			nextToken();
-			return aux;
+			return CUERPO_tipo_s;
 		}
 		else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba \";\" o \"{\" ");
-			return null;
+			return new ExpresionTipo(TipoBasico.error_tipo);
 			//ruptura=parse.size();
 		}
 		
 	}
 
 	/**20. LISTA_PARAM → CONSTANTE TIPO ID PASO RESTO_LISTA
-	 * 					{ 	if (CONSTANTE.tipo != error_tipo) & (TIPO.tipo != error_tipo) & 
-	 * 						   (PASO.tipo != error_tipo) & (RESTO_LISTA.tipo != error_tipo) 
+	 * 					{	if (CONSTANTE.tipo_s != error_tipo) & (TIPO_tipo_s != error_tipo) & 
+	 * 						   (PASO_tipo_s != error_tipo) & (RESTO_LISTA_tipo_s != error_tipo) 
 	 * 						then LISTA_PARAM.tipo := vacio
 	 * 						else LISTA_PARAM.tipo := error_tipo  } 
 	 * 21. LISTA_PARAM → lambda
@@ -1121,28 +1202,28 @@ public class AnalizadorSintactico {
 			return new ExpresionTipo(TipoBasico.vacio);
 		}else{
 			parse.add(20);
-			ExpresionTipo aux1,aux2,aux3,aux4;
-			aux1 = constante();
-			aux2 = tipo();
+			ExpresionTipo CONSTANTE_tipo_s,TIPO_tipo_s,PASO_tipo_s,RESTO_LISTA_tipo_s;
+			CONSTANTE_tipo_s = constante();
+			TIPO_tipo_s = tipo();
 			//if(tipo()){
-			if(aux2!=null){
-				aux3 = paso();
+			if(TIPO_tipo_s!=null){
+				PASO_tipo_s = paso();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 					id();
-					aux4 = restoLista();
-					if(aux1.getTipoBasico()!=TipoBasico.error_tipo && aux2.getTipoBasico()!=TipoBasico.error_tipo && aux3.getTipoBasico()!=TipoBasico.error_tipo && aux4.getTipoBasico()!=TipoBasico.error_tipo)
+					RESTO_LISTA_tipo_s = restoLista();
+					if(CONSTANTE_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && TIPO_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && PASO_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && RESTO_LISTA_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 						return new ExpresionTipo(TipoBasico.vacio);
 					else
 						return new ExpresionTipo(TipoBasico.error_tipo);
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta identificador de lista de parametros");
-					return null;
+					return new ExpresionTipo(TipoBasico.error_tipo);
 					//ruptura=parse.size();
 				}
 			}else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta tipo de lista de parametros");
-				return null;
+				return new ExpresionTipo(TipoBasico.error_tipo);
 				//ruptura=parse.size();
 			}
 		}
@@ -1212,10 +1293,12 @@ public class AnalizadorSintactico {
 
 	/**	
 	 * 24. DIMENSION → [ NUM_ENTERO ] DIMENSION
+	 * 					{ DIMENSION.tipo_s := TIPOSIMPLE.entero }
 	 * 25. DIMENSION → lambda
+	 * 					{ DIMENSION.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private void dimension() throws Exception {
+	private ExpresionTipo dimension() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)) {
 			parse.add(24);
 			nextToken();
@@ -1223,121 +1306,179 @@ public class AnalizadorSintactico {
 				nextToken();
 				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)){
 					nextToken();
+					ExpresionTipo tipoSimple= new ExpresionTipo(TipoBasico.entero);
 					dimension();
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \"]\"");
+					return new ExpresionTipo(TipoBasico.error_tipo);
 					//ruptura=parse.size();
 				}
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba un numero entero");
+				return new ExpresionTipo(TipoBasico.error_tipo);
 				//ruptura=parse.size();
 			}
 		}
 		else{
 			parse.add(25);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
+		return new ExpresionTipo(TipoBasico.vacio);
 		
 	}
 
 	/**	
 	 * 26. INIC_DIM → = INIC_DIM2
+	 * 					{ INIC_DIM_tipo_s := INIC_DIM2.tipo_s }
 	 * 27. INIC_DIM → lambda
+	 * 					{ INIC_DIM.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private void inicDim() throws Exception {
+	private ExpresionTipo inicDim() throws Exception {
 		if(token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
 			parse.add(26);
 			nextToken();
-			inicDim2();
+			//inicDim2();
+			ExpresionTipo INIC_DIM_tipo_s=inicDim2();
 		}
 		else{
 			parse.add(27);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
+		return new ExpresionTipo(TipoBasico.vacio);
 	}
 
 
 	/**	28. INIC_DIM2 → { INIC_DIM3 }
+	 * 					{ INIC_DIM2.tipo_s := INIC_DIM3.tipo_s }
 	 * @throws Exception 
 	 */
-	private void inicDim2() throws Exception {
+	private ExpresionTipo inicDim2() throws Exception {
 		if(!token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_LLAVE)){
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"{\"");
+			return new ExpresionTipo(TipoBasico.error_tipo);
 			//ruptura=parse.size();
 		}
 		else{
 			parse.add(28);
 			nextToken();
-			inicDim3();
+			//inicDim3();
+			ExpresionTipo INIC_DIM2_tipo_s=inicDim3();
 			if(!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)){
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"}\"");
+				return new ExpresionTipo(TipoBasico.error_tipo);
 				//ruptura=parse.size();
 			}
 			else{
 				nextToken();
 			}
 		}
+		return new ExpresionTipo(TipoBasico.vacio);
 	}
 
 	/**	29. INIC_DIM3 → LITERAL INIC_DIM4 
-		30. INIC_DIM3 → INIC_DIM2 INIC_DIM5
+	 * 					{  if ((LITERAL.tipo_s != error_tipo) && (INIC_DIM4.tipo_s != error_tipo))                                                                                                    {  if ((LITERAL.tipo_s != error_tipo) && (INIC_DIM4.tipo_s != error_tipo))
+     *					   then INIC_DIM3.tipo_s := vacio
+     *					   else INIC_DIM3.tipo_s := error_tipo  } 
+	 *	30. INIC_DIM3 → INIC_DIM2 INIC_DIM5
+	 *					{  if((INIC_DIM2.tipo_s != error_tipo) && (INIC_DIM5.tipo_s != error_tipo)) 
+     *					   then INIC_DIM3.tipo_s := vacio
+     *					   else INIC_DIM3.tipo_s := error_tipo  } 
 	 * @throws Exception 
 	 */
-	private void inicDim3() throws Exception {
+	private ExpresionTipo inicDim3() throws Exception {
 		if(!token.esIgual(TipoToken.EOF)){
-			if(literal() != null){ // El metodo literal() lee el siguiente token
+			ExpresionTipo LITERAL_TIPOSIMPLE=literal();
+			if(LITERAL_TIPOSIMPLE != null){ // El metodo literal() lee el siguiente token
 				parse.add(29);
-				inicDim4();
+				//inicDim4();
+				ExpresionTipo INIC_DIM4_tipo_s=inicDim4();
+				if(LITERAL_TIPOSIMPLE.getTipoBasico()!=TipoBasico.error_tipo && INIC_DIM4_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+					return new ExpresionTipo(TipoBasico.vacio);
+				else
+					return new ExpresionTipo(TipoBasico.error_tipo);
 			}
 			else{
 				parse.add(30);
-				inicDim2();
-				inicDim5();
+				//inicDim2();
+				//inicDim5();
+				ExpresionTipo INIC_DIM2_tipo_s,INIC_DIM5_tipo_s;
+				INIC_DIM2_tipo_s=inicDim2();
+				INIC_DIM5_tipo_s=inicDim5();
+				if(INIC_DIM2_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && INIC_DIM5_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+					return new ExpresionTipo(TipoBasico.vacio);
+				else
+					return new ExpresionTipo(TipoBasico.error_tipo);
 			}
 		}
 		else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Fin de fichero inesperado");
+			return new ExpresionTipo(TipoBasico.error_tipo);
 			//ruptura=parse.size();
 		}
 	}
 
 	/**	31. INIC_DIM4 → , LITERAL INIC_DIM4 
-		32. INIC_DIM4 → lambda
+	 * 					{  if ((LITERAL.tipo_s != error_tipo) && (INIC_DIM4.tipo_s != error_tipo))
+     *					   then INIC_DIM4.tipo_s := vacio
+     *					   else INIC_DIM4.tipo_s := error_tipo  } 
+	 *	32. INIC_DIM4 → lambda
+	 *					{ INIC_DIM4.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private void inicDim4() throws Exception {
+	private ExpresionTipo inicDim4() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 			parse.add(31);
 			nextToken();
-			if(literal() == null){
-				gestorErr.insertaErrorSintactico(linea, columna,
-						"Falta token literal");
+			ExpresionTipo LITERAL_TIPOSIMPLE=literal();
+			if(LITERAL_TIPOSIMPLE == null){
+				gestorErr.insertaErrorSintactico(linea, columna,"Falta token literal");
+				return new ExpresionTipo(TipoBasico.error_tipo);
 				//ruptura=parse.size();
 			}
 			else{
-				inicDim4();
+				//inicDim4();
+				ExpresionTipo INIC_DIM4_tipo_s=inicDim4();
+				if(LITERAL_TIPOSIMPLE.getTipoBasico()!=TipoBasico.error_tipo && INIC_DIM4_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+					return new ExpresionTipo(TipoBasico.vacio);
+				else
+					return new ExpresionTipo(TipoBasico.error_tipo);
 			}
 		}
 		else{
 			parse.add(32);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
 		
 	}
 
-	/**	33. INIC_DIM5 → , INIC_DIM2 INIC_DIM5
-		34. INIC_DIM5 → lambda 
+	/**	33. INIC_DIM5 → , INIC_DIM2 INIC_DIM5 
+	 *					{  if((INIC_DIM2.tipo_s != error_tipo) && (INIC_DIM5.tipo_s != error_tipo)) 
+     *					   then INIC_DIM3.tipo_s := vacio
+     *					   else INIC_DIM3.tipo_s := error_tipo  } 
+	 *	34. INIC_DIM5 → lambda 
+	 *					{ INIC_DIM5.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private void inicDim5() throws Exception {
+	private ExpresionTipo inicDim5() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 			parse.add(33);
 			nextToken();
-			inicDim2();
-			inicDim5();
+			//inicDim2();
+			//inicDim5();
+			ExpresionTipo INIC_DIM2_tipo_s,INIC_DIM5_tipo_s;
+			INIC_DIM2_tipo_s=inicDim2();
+			INIC_DIM5_tipo_s=inicDim5();
+			if(INIC_DIM2_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && INIC_DIM5_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+				return new ExpresionTipo(TipoBasico.vacio);
+			else
+				return new ExpresionTipo(TipoBasico.error_tipo);
 		}
 		else{
 			parse.add(34);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
 	}
 
@@ -1346,7 +1487,7 @@ public class AnalizadorSintactico {
 	 * 36. INIC_CONST → lambda
 	 * @throws Exception 
 	 */
-	private void inic_const() throws Exception {
+	private ExpresionTipo inic_const() throws Exception {
 //		System.out.println("declaracion constante " + entradaTS.getLexema());
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 			parse.add(35);
@@ -1362,7 +1503,10 @@ public class AnalizadorSintactico {
 		}
 		else { ///Si es lambda
 			parse.add(36);
-		}	
+			System.out.println("36");//TODO
+			return new ExpresionTipo(TipoBasico.vacio);
+		}
+		return new ExpresionTipo(TipoBasico.vacio);	
 	}
 
 	

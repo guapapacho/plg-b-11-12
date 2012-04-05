@@ -1308,6 +1308,7 @@ public class AnalizadorSintactico {
 					nextToken();
 					ExpresionTipo tipoSimple= new ExpresionTipo(TipoBasico.entero);
 					dimension();
+					return tipoSimple;
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \"]\"");
@@ -1325,8 +1326,6 @@ public class AnalizadorSintactico {
 			parse.add(25);
 			return new ExpresionTipo(TipoBasico.vacio);
 		}
-		return new ExpresionTipo(TipoBasico.vacio);
-		
 	}
 
 	/**	
@@ -1484,6 +1483,10 @@ public class AnalizadorSintactico {
 
 	/**
 	 * 35. INIC_CONST → , ID = LITERAL INIC_CONST
+	 * 					{ INIC_CONST1.tipo_s := LITERAL.TIPOSIMPLE } 
+	 *   				  if ((LITERAL.tipo_s != error_tipo) && (INIC_CONST1.tipo_s != error_tipo))                                                                                                     {  if ((LITERAL.tipo_s != error_tipo) && (INIC_CONST.tipo_s != error_tipo))
+     *					  then INIC_CONST.tipo_s := vacio
+     *					  else INIC_CONST.tipo_s := error_tipo  } 
 	 * 36. INIC_CONST → lambda
 	 * @throws Exception 
 	 */
@@ -1512,35 +1515,51 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 37. DECLARACIONES → , ID INICIALIZACION DECLARACIONES
+	 * 						{ INICIALIZACION.tipo_h := DECLARACIONES.tipo_h;
+   	 *						  DECLARACIONES'.tipo_h := DECLARACIONES.tipo_h;
+   	 *						  if (ID.tipo_s == DECLARACIONES.tipo_h) && (INICIALIZACION.tipo_s != error_tipo) && (DECLARACIONES.tipo_s != error_tipo)
+   	 *						  then DECLARACIONES.tipo_s := vacio
+   	 *						  else DECLARACIONES.tipo_s := error_tipo }
 	 * 38. DECLARACIONES → lambda
 	 * 			{ DECLARACIONES.tipo_s := vacio }
 	 * @throws Exception 
 	 */
 	private ExpresionTipo declaraciones(ExpresionTipo tipo_h) throws Exception {
-//		System.out.println("declaracion variable " + entradaTS.getLexema());
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 			parse.add(37);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 				id();
 				//inicializacion(); 
-				inicializacion(tipo_h);
+				ExpresionTipo INICIALIZACION_tipo_h=inicializacion(tipo_h);
 				//declaraciones();
-				declaraciones(tipo_h);
+				ExpresionTipo DECLARACIONES_tipo_h=declaraciones(tipo_h);
+				ExpresionTipo tipo_s = new Objeto(((EntradaTS)token.getAtributo()).getLexema());
+				if((tipo_s==DECLARACIONES_tipo_h)&&(INICIALIZACION_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)&&(DECLARACIONES_tipo_h.getTipoBasico()!=TipoBasico.error_tipo))
+					return new ExpresionTipo(TipoBasico.vacio);
+				else
+					return new ExpresionTipo(TipoBasico.error_tipo);
+				
 			} else {
-				gestorErr.insertaErrorSintactico(linea, columna,"Falta el identificador. Palabra o termino \""+token.atrString()+"\" inesperado.");		
+				gestorErr.insertaErrorSintactico(linea, columna,"Falta el identificador. Palabra o termino \""+token.atrString()+"\" inesperado.");
+				return new ExpresionTipo(TipoBasico.error_tipo);
 				//ruptura=parse.size();
 			}		
 		} else {
 			parse.add(38);
 			return new ExpresionTipo(TipoBasico.vacio);
 		}
-		return null;
 	}
 	
 	/**
 	 * 39. INICIALIZACION → OP_ASIGNACION ASSIGNMENT_EXPRESSION
+	 * 						{ if (ASSIGNMENT_EXPRESSION.tipo_s == INICIALIZACION.tipo_s) 
+   	 *						  then INICIALIZACION.tipo_s := vacio
+   	 *						  else INICIALIZACION.tipo_s := error_tipo }
 	 * 40. INICIALIZACION → [NUM_ENTERO] DIMENSION INIC_DIM
+	 * 						{ if((NUM_ENTERO_tipo!=error_tipo)&&(DIMENSION_tipo!=error_tipo)&&(INIC_DIM_tipo_s!=error_tipo))
+	 * 						  then INICIALIZACION.tipo_s:=vacio
+	 * 						  else INICIALIZACION.tipo_s:=error_tipo}
 	 * 41. INICIALIZACION → lambda
 	 * 						{ INICIALIZACION.tipo := vacio }
 	 * @throws Exception 
@@ -1549,18 +1568,13 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.OP_ASIGNACION)) {
 			parse.add(39);
 			nextToken();
-			assignment_expression();
-			//expression();
-			/*if(esLiteral()){
-				nextToken();
-			}
-			else{
-				gestorErr.insertaErrorSintactico(linea, columna,
-						"Inicialización incorrecta, se espera un literal");
-			}*/
-			
+			//assignment_expression();
+			ExpresionTipo ASSIGNMENT_EXPRESSION_tipo_s=assignment_expression();
+			if(ASSIGNMENT_EXPRESSION_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+				return new ExpresionTipo(TipoBasico.vacio);
+			else 
+				return new ExpresionTipo(TipoBasico.error_tipo);			
 		}
-		//40. INICIALIZACION → [NUM_ENTERO] DIMENSION INIC_DIM
 		else if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_CORCHETE)){
 			parse.add(40);
 			nextToken();
@@ -1568,8 +1582,13 @@ public class AnalizadorSintactico {
 				nextToken();
 				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)){
 					nextToken();
-					dimension();
-					inicDim();
+					ExpresionTipo tipoSimple= new ExpresionTipo(TipoBasico.entero);
+					ExpresionTipo DIMENSION_tipo=dimension();
+					ExpresionTipo INIC_DIM_tipo_s=inicDim();
+					if((tipoSimple.getTipoBasico()!=TipoBasico.error_tipo)&&(DIMENSION_tipo.getTipoBasico()!=TipoBasico.error_tipo)&&(INIC_DIM_tipo_s.getTipoBasico()!=TipoBasico.error_tipo))
+						return new ExpresionTipo(TipoBasico.vacio);
+					else 
+						return new ExpresionTipo(TipoBasico.error_tipo);
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \"]\"");
@@ -1589,11 +1608,22 @@ public class AnalizadorSintactico {
 	}
 
 	/**
-	 * 42. INSTRUCCION → ID INSTRUCCION2 <-- SE PUEDE QUITAR!!
 	 * 43. INSTRUCCION → struct RESTO_ST
-	 * 44. INSTRUCCION → cin INS_LECT
+	 * 					 {	if RESTO_ST_tipo_s!=error_tipo 
+	 * 						then INSTRUCCION_tipo_s:=vacio
+	 * 						else INSTRUCCION_tipo_s:=error_tipo}
+	 * 44. INSTRUCCION → cin INS_LECT 
+	 * 					 {	if INS_LECT_tipo_s!=error_tipo 
+	 * 						then INSTRUCCION_tipo_s:=vacio
+	 * 						else INSTRUCCION_tipo_s:=error_tipo}
 	 * 45. INSTRUCCION → cout INS_ESC
+	 * 					 {	if INS_ESC_tipo_s!=error_tipo 
+	 * 						then INSTRUCCION_tipo_s:=vacio
+	 * 						else INSTRUCCION_tipo_s:=error_tipo}
 	 * 46. INSTRUCCION → const INS_DEC
+	 * 					 {	if INS_DEC_tipo_s!=error_tipo 
+	 * 						then INSTRUCCION_tipo_s:=vacio
+	 * 						else INSTRUCCION_tipo_s:=error_tipo}
 	 * 47. INSTRUCCION → TIPO INS_DEC2
 	 * 					{ INS_DEC2.tipo := TIPO.tipo;
 	 * 					  if (TIPO.tipo != error_tipo) & INS_DEC2.tipo != error_tipo)
@@ -1606,49 +1636,54 @@ public class AnalizadorSintactico {
 	 */
 	
 	private ExpresionTipo instruccion() throws Exception {
-		ExpresionTipo aux1,aux2;
-		/*if(token.esIgual(TipoToken.IDENTIFICADOR)) { 
-			parse.add(42);
-			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
-			nextToken();
-			return instruccion2();
-			}
-		else */
+		
 		if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /*struct*/ )){ //INS_REG
 			parse.add(43);
 			nextToken();
-			//ins_reg();
-			resto_st();
+			//resto_st();
+			ExpresionTipo RESTO_ST_tipo_s=resto_st();
+			if(RESTO_ST_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+				return new ExpresionTipo(TipoBasico.vacio);
+			else
+				return new ExpresionTipo(TipoBasico.error_tipo);
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA, 74 /*cin*/ )){ //INS_LECT
 			parse.add(44);
 			nextToken();
-			ins_lect();
+			//ins_lect();
+			ExpresionTipo INS_LECT_tipo_s=ins_lect();
+			if(INS_LECT_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+				return new ExpresionTipo(TipoBasico.vacio);
+			else
+				return new ExpresionTipo(TipoBasico.error_tipo);
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA, 75 /*cout*/ )){ //INS_ESC
 			parse.add(45);
 			nextToken();
-			ins_esc(); 
+			//ins_esc(); 
+			ExpresionTipo INS_ESC_tipo_s=ins_esc();
+			if(INS_ESC_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+				return new ExpresionTipo(TipoBasico.vacio);
+			else
+				return new ExpresionTipo(TipoBasico.error_tipo);
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA, 9 /*const*/ )){ //INS_DEC
 			parse.add(46); 
 			nextToken();
-			ins_dec();
+			//ins_dec();
+			ExpresionTipo INS_DEC_tipo_s=ins_dec();
+			if(INS_DEC_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+				return new ExpresionTipo(TipoBasico.vacio);
+			else
+				return new ExpresionTipo(TipoBasico.error_tipo);
 		}
-		//else if (tipo()) { //INS_DEC2
 		else{
-			aux1 = tipo();
-			if(aux1!=null){
-				//System.out.println("Si es tipo...");
-				/*if(punt())
-					nextToken();*/
+			ExpresionTipo TIPO_tipo = tipo();
+			if(TIPO_tipo!=null){
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
-					//System.out.println("Si es identificador...");
 					parse.add(47); 
-					aux2 = ins_dec2(aux1);
-					//System.out.println("aux1 :"+aux1.getTipoBasico().toString());
-					//System.out.println("aux2 :"+aux2.getTipoBasico().toString());
-					if(aux1.getTipoBasico() != TipoBasico.error_tipo && aux2.getTipoBasico() != TipoBasico.error_tipo)
+					ExpresionTipo INS_DEC2_tipo = ins_dec2(TIPO_tipo);
+					if(TIPO_tipo.getTipoBasico() != TipoBasico.error_tipo && INS_DEC2_tipo.getTipoBasico() != TipoBasico.error_tipo)
 						return new ExpresionTipo(TipoBasico.vacio);
 					else
 						return new ExpresionTipo(TipoBasico.error_tipo);
@@ -1671,33 +1706,18 @@ public class AnalizadorSintactico {
 			else if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) { //INS_VACIA
 				parse.add(48);
 				nextToken();
+				return new ExpresionTipo(TipoBasico.vacio);
 			} else{
 				parse.add(133);
-				aux1 = expressionOpt();
+				ExpresionTipo aux1 = expressionOpt();
 				if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
 					nextToken();
 					return aux1;
 				}else{
-					//error
-					//gestorErr.insertaErrorSintactico(linea, columna,
-					//"Falta separador \";\"");
-					//ruptura=parse.size();
-					
-					//return false;
-					return null;
+					return new ExpresionTipo(TipoBasico.error_tipo);
 				}
 			}
 		}
-		/*
-		
-		else {
-			gestorErr.insertaErrorSintactico(linea, columna,
-			"Falta separador \";\"");
-			return false;
-		}
-		*/
-		
-		//return true;
 		return new ExpresionTipo(TipoBasico.vacio);
 	}
 	
@@ -1706,7 +1726,7 @@ public class AnalizadorSintactico {
 	 * 51. INS_DEC → TIPO PUNT ID OpAsignacion LITERAL INIC_CONST ;
 	 * @throws Exception 
 	 */
-	private void ins_dec() throws Exception {
+	private ExpresionTipo ins_dec() throws Exception {
 		ExpresionTipo aux1,aux2;
 		aux1= tipo();
 		//if (tipo()) {
@@ -1751,6 +1771,7 @@ public class AnalizadorSintactico {
 				//ruptura=parse.size();
 			}
 		}
+		return null;
 		
 	}
 	

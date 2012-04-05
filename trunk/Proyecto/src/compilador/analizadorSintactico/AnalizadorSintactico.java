@@ -3458,7 +3458,7 @@ public class AnalizadorSintactico {
 	 * 192. UNARY-OPERATOR → sombrero
 	 * 						{ UNARY-OPERATOR.tipo_s := vacio }
 	 * 138. UNARY-OPERATOR → -
-	 * 
+	 * 						{ UNARY-OPERATOR.tipo_s := vacio }
 	 * ahora en la regla 181 pregunto if(unary_operator() != null) en lugar de preguntar por el valor booleano
 	**/
 	private ExpresionTipo unary_operator(){
@@ -3486,9 +3486,7 @@ public class AnalizadorSintactico {
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.RESTA)){
 			parse.add(138);
 			nextToken();
-			aux = new ExpresionTipo(TipoBasico.vacio); // TODO a quien le haya tocado... ¿le parece bien?
-		}else{
-			aux = new ExpresionTipo(TipoBasico.error_tipo); //no se si deberia poner esto o no....
+			aux = new ExpresionTipo(TipoBasico.vacio);
 		}
 		return aux;
 	}
@@ -3663,17 +3661,15 @@ public class AnalizadorSintactico {
 				parse.add(197);
 				aux = cast_expression();
 			}else{
-				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `*` ");
-				//ruptura=parse.size();
 			}
 		} else if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.PUNTERO)){
 			parse.add(198);
 			nextToken();
-			cast_expression();
+			aux = cast_expression();
 		} else{
 			parse.add(196);
-			cast_expression();
+			aux = cast_expression();
 		}
 		return aux;
 	}

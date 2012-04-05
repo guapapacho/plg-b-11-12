@@ -996,7 +996,7 @@ public class AnalizadorSintactico {
 					//cosas2();	
 					//cosas();	
 					COSAS2_tipo_h=aux;
-					cosas2();
+					cosas2(COSAS2_tipo_h);
 					COSAS1_tipo_s=cosas();
 					if((!aux.equals(TipoBasico.error_tipo))&&(!COSAS2_tipo_h.equals(TipoBasico.error_tipo))&&(!COSAS1_tipo_s.equals(TipoBasico.error_tipo))){
 						return new ExpresionTipo(TipoBasico.vacio);
@@ -1102,9 +1102,10 @@ public class AnalizadorSintactico {
    	 *				  if ((DECLARACIONES.tipo_s!=error_tipo) &&(INICIALIZACION.tipo_s!=error_tipo))
    	 *				  then COSAS2.tipo_s := vacio
    	 *				  else .COSAS2.tipo := error_tipo }
+	 * @param cosas2_tipo_h 
 	 * @throws Exception 
 	 */
-	private ExpresionTipo cosas2() throws Exception {
+	private ExpresionTipo cosas2(ExpresionTipo COSAS2_tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
 			ExpresionTipo LISTA_PARAM_tipo_s,COSAS3_tipo_s;
 			parse.add(16);
@@ -1137,11 +1138,11 @@ public class AnalizadorSintactico {
 		else {
 			ExpresionTipo COSAS2_tipo_s,INICIALIZACION_tipo_h,DECLARACIONES_tipo_h;
 			parse.add(17);
-			COSAS2_tipo_s=cosas2();
+			///COSAS2_tipo_s=cosas2();?????????
 			//inicializacion(); 
-			INICIALIZACION_tipo_h=inicializacion(COSAS2_tipo_s); //TODO: llamada con expresion de tipos correcta!!
+			INICIALIZACION_tipo_h=inicializacion(COSAS2_tipo_h); //TODO: llamada con expresion de tipos correcta!!
 			//declaraciones();		
-			DECLARACIONES_tipo_h=declaraciones(COSAS2_tipo_s); //TODO: llamada con expresion de tipos correcta!!
+			DECLARACIONES_tipo_h=declaraciones(COSAS2_tipo_h); //TODO: llamada con expresion de tipos correcta!!
 			if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado. Falta separador \";\"");
 				//ruptura=parse.size();
@@ -1534,8 +1535,8 @@ public class AnalizadorSintactico {
 				ExpresionTipo INICIALIZACION_tipo_h=inicializacion(tipo_h);
 				//declaraciones();
 				ExpresionTipo DECLARACIONES_tipo_h=declaraciones(tipo_h);
-				ExpresionTipo tipo_s = new Objeto(((EntradaTS)token.getAtributo()).getLexema());
-				if((tipo_s==DECLARACIONES_tipo_h)&&(INICIALIZACION_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)&&(DECLARACIONES_tipo_h.getTipoBasico()!=TipoBasico.error_tipo))
+//EXCEPCION		//ExpresionTipo tipo_s = new Objeto(((EntradaTS)token.getAtributo()).getLexema());
+/*MIRAR*/		if(/*(tipo_s.getTipoNoBasico()==DECLARACIONES_tipo_h.getTipoNoBasico())&&**/(INICIALIZACION_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)&&(DECLARACIONES_tipo_h.getTipoBasico()!=TipoBasico.error_tipo))
 					return new ExpresionTipo(TipoBasico.vacio);
 				else
 					return new ExpresionTipo(TipoBasico.error_tipo);

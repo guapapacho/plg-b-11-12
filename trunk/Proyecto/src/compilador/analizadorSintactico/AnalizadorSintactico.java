@@ -72,7 +72,6 @@ public class AnalizadorSintactico {
 		declaraciones = new Vector<String>();
 		tokens = new Vector<Token>();
 		ventana = new Vector<Token>();
-		nextToken();
 		gestorTS = GestorTablasSimbolos.getGestorTS();
 		gestorErr = GestorErrores.getGestorErrores();
 		tipo = null;
@@ -82,13 +81,14 @@ public class AnalizadorSintactico {
 		estamosEnSwitch = false;
 		estamosEnFuncion = false;
 		try {
+			nextToken();
 			programa();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	private void nextToken() {
+	private void nextToken() throws Exception {
 		tokenAnterior = token;		
 		linea = lexico.getLinea();
 		columna = lexico.getColumna();
@@ -121,7 +121,7 @@ public class AnalizadorSintactico {
 	}
 
 
-	private void id() {
+	private void id() throws Exception {
 		entradaTS = (EntradaTS)token.getAtributo();
 //		entradaTS.setTipo(tipo); TODO usando ExpresionTipo
 		entradaTS.setConstante(false);
@@ -131,8 +131,9 @@ public class AnalizadorSintactico {
 	/**
 	 * Metodo que devuelve el tipo del LITERAL y lee el siguiente token
 	 * Devuelve null si no es un literal.
+	 * @throws Exception 
 	 */
-	private ExpresionTipo literal() {
+	private ExpresionTipo literal() throws Exception {
 		//TODO hacer algo con los valores, si hace falta...
 		if(token.esIgual(TipoToken.LIT_CADENA)) {
 //			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
@@ -807,8 +808,9 @@ public class AnalizadorSintactico {
 	 * 			{ TIPO.tipo := ?? }								
 	 * 7. TIPO → TIPO_SIMPLE
 	 * 			{ TIPO.tipo := TIPO_SIMPLE.tipo }
+	 * @throws Exception 
 	 */
-	private ExpresionTipo tipo() { // TODO terminar este método
+	private ExpresionTipo tipo() throws Exception { // TODO terminar este método
 		ExpresionTipo tipo_s =ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(6);
@@ -837,7 +839,7 @@ public class AnalizadorSintactico {
 		return tipo_s;
 	}
 	
-	private ExpresionTipo tipo_simple() {
+	private ExpresionTipo tipo_simple() throws Exception {
 		ExpresionTipo tipo = ExpresionTipo.getError();
 		if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
@@ -1258,8 +1260,9 @@ public class AnalizadorSintactico {
 	 * 				{ CONSTANTE.tipo := vacio }
 	 * 260. CONSTANTE → lambda
 	 * 				{ CONSTANTE.tipo := vacio }
+	 * @throws Exception 
 	 */
-	private ExpresionTipo constante() {
+	private ExpresionTipo constante() throws Exception {
 		if(token.esIgual(TipoToken.PAL_RESERVADA, 9 /* const */)){
 			parse.add(259);
 			nextToken();
@@ -1275,8 +1278,9 @@ public class AnalizadorSintactico {
 	 * 			{ PASO.tipo := vacio }
 	 *  125.PASO → lambda 
 	 * 			{ PASO.tipo := vacio }
+	 * @throws Exception 
 	 */
-	private ExpresionTipo paso() {
+	private ExpresionTipo paso() throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.BIT_AND)) {
 			parse.add(123);
 		/*	Object valor = token.getAtributo(); 
@@ -3435,8 +3439,9 @@ public class AnalizadorSintactico {
 	 * 					{POSTFIX4.tipo_s := vacio}
 	 * 172. POSTFIX4 → lambda
 	 * 					{POSTFIX4.tipo_s := vacio}
+	 * @throws Exception 
 	 */
-	private ExpresionTipo postfix4() {
+	private ExpresionTipo postfix4() throws Exception {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(171);
 			nextToken();
@@ -3684,8 +3689,9 @@ public class AnalizadorSintactico {
 	 * 138. UNARY-OPERATOR → -
 	 * 						{ UNARY-OPERATOR.tipo_s := vacio }
 	 * ahora en la regla 181 pregunto if(unary_operator() != null) en lugar de preguntar por el valor booleano
+	 * @throws Exception 
 	**/
-	private ExpresionTipo unary_operator(){
+	private ExpresionTipo unary_operator() throws Exception{
 		ExpresionTipo aux = null;
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 			parse.add(188);

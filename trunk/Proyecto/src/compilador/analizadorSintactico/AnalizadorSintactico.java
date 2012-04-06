@@ -3353,9 +3353,10 @@ public class AnalizadorSintactico {
 		} else if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(160);
 			nextToken(); 
-			return resto_postfix_exp2();
+			tipo = resto_postfix_exp2();
 		} else {
 			parse.add(161);
+			tipo = ExpresionTipo.getVacio();
 		}
 		
 		return tipo;
@@ -3374,7 +3375,7 @@ public class AnalizadorSintactico {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 			parse.add(162);
 			nextToken();
-			return ExpresionTipo.getVacio();
+			aux = ExpresionTipo.getVacio();
 		} else {
 			parse.add(163);
 			aux = initializer_list();
@@ -3422,7 +3423,7 @@ public class AnalizadorSintactico {
 			}
 		} else {
 			unqualified_id();
-			return ExpresionTipo.getVacio();
+			aux = ExpresionTipo.getVacio();
 			//aux = unqualified_id(); TODO cambiar por este
 		}
 		return aux;
@@ -3479,7 +3480,7 @@ public class AnalizadorSintactico {
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 			parse.add(174);
 			nextToken();
-			return ExpresionTipo.getVacio();
+			aux = ExpresionTipo.getVacio();
 		} else {
 			parse.add(175);
 			aux = initializer_list();
@@ -3520,6 +3521,7 @@ public class AnalizadorSintactico {
 				return new ExpresionTipo(aux2.getTipoBasico());
 			}
 		} else {
+			gestorErr.insertaErrorSemantico(linea, columna, "LALALALALALAALALA"); // TODO cambiar el mensaje
 			return ExpresionTipo.getError();
 		}
 	}
@@ -3943,6 +3945,7 @@ public class AnalizadorSintactico {
 				return new ExpresionTipo(aux2.getTipoBasico());
 			}
 		} else {
+			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
 		}
 	}
@@ -4016,9 +4019,11 @@ public class AnalizadorSintactico {
 							((aux.getTipoBasico().equals("real") && tipo_h.getTipoBasico().equals("real")))) {
 				return new ExpresionTipo(TipoBasico.real);
 			} else {
+				gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 				return ExpresionTipo.getError();
 			}	
 		}else {
+			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
 		}
 	}
@@ -4046,6 +4051,7 @@ public class AnalizadorSintactico {
 				return new ExpresionTipo(aux2.getTipoBasico());
 			}
 		} else {
+			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
 		}
 	}
@@ -4107,9 +4113,11 @@ public class AnalizadorSintactico {
 							((aux.getTipoBasico().equals("real") && tipo_h.getTipoBasico().equals("real")))) {
 				return new ExpresionTipo(TipoBasico.real);
 			} else {
+				gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 				return ExpresionTipo.getError();
 			}	
 		}else {
+			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
 		}
 		
@@ -4142,6 +4150,7 @@ public class AnalizadorSintactico {
 				return new ExpresionTipo(aux2.getTipoBasico());
 			}
 		} else {
+			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
 		}
 		
@@ -4190,6 +4199,7 @@ public class AnalizadorSintactico {
 			//¿Cual es el tipo que tengo que devolver??
 			return null;
 		} else {
+			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
 		}
 			

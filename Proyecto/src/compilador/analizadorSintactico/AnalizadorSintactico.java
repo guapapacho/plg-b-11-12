@@ -1,6 +1,7 @@
 package compilador.analizadorSintactico;
 
 
+import java.util.Hashtable;
 import java.util.Vector;
 
 import compilador.analizadorLexico.*;
@@ -53,6 +54,10 @@ public class AnalizadorSintactico {
 	private boolean estamosEnSwitch;
 	/** Marca si estamos en una funcion */
 	private boolean estamosEnFuncion;
+	/** Marca las etiquetas a las que se salta con goto en la función */
+	private Vector<String> etiquetasConGoto;
+	/** Marca las etiquetas definidas en la función */
+	private Hashtable<String, String> etiquetasSinGoto;
 	/** Nombre de la clase si es una clase o null si no lo es */
 	private String nombreClase;
 	
@@ -214,6 +219,22 @@ public class AnalizadorSintactico {
 			string += "\nTipo: " + token.getTipo() + "\t Atr: " + token.getAtributo();
 		return string+"\n";
 	}	
+	
+	private void inicializaMarcadoresGoto() {
+		etiquetasConGoto = new Vector<String>();
+		etiquetasSinGoto = new Hashtable<String,String>();
+	}
+	
+	private ExpresionTipo compruebaEtiquetasGoto() {
+		boolean error = false;
+		for(String etiqueta : etiquetasConGoto) {
+			if(!etiquetasSinGoto.containsKey(etiqueta)) {
+				error = true;
+				gestorErr.insertaErrorSemantico(linea, columna, "La etiqueta '"+etiqueta+"' no está declarada en la función.");
+			}
+		}
+		return error ? ExpresionTipo.getError() : ExpresionTipo.getVacio();
+	}
 	
 	/**
 	 * 1. PROGRAMA → LIBRERIA RESTO_PROGRAMA eof
@@ -1164,29 +1185,30 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	*/
 	private ExpresionTipo cosas3() throws Exception {
-		
+		ExpresionTipo CUERPO_tipo_s = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 			parse.add(18);
 			nextToken();
-//			System.out.println("cabecera funcion " + entradaTS.getLexema());
 			return ExpresionTipo.getVacio();
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(19);
 			nextToken();
-			ExpresionTipo CUERPO_tipo_s = cuerpo();
+			inicializaMarcadoresGoto();
+			CUERPO_tipo_s = cuerpo();
+			ExpresionTipo aux = compruebaEtiquetasGoto();
+			if(aux.equals(TipoBasico.error_tipo)) {
+				CUERPO_tipo_s = ExpresionTipo.getError();
+			}
 			if (!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)) {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta }");
-				return ExpresionTipo.getError();
 			}
 			nextToken();
 			return CUERPO_tipo_s;
 		}
 		else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba \";\" o \"{\" ");
-			return ExpresionTipo.getError();
-			//ruptura=parse.size();
 		}
-		
+		return CUERPO_tipo_s;
 	}
 
 	/**20. LISTA_PARAM → CONSTANTE TIPO ID PASO RESTO_LISTA
@@ -1610,6 +1632,8 @@ public class AnalizadorSintactico {
 	}
 
 	/**
+	 * 42. INSTRUCCION → ID :
+	 *  				 {  INSTRUCCION_tipo_s:=vacio }
 	 * 43. INSTRUCCION → struct RESTO_ST
 	 * 					 {	if RESTO_ST_tipo_s!=error_tipo 
 	 * 						then INSTRUCCION_tipo_s:=vacio
@@ -1681,7 +1705,13 @@ public class AnalizadorSintactico {
 		}
 		else{
 			ExpresionTipo TIPO_tipo = tipo();
-			//if(TIPO_tipo!=null){
+			// TODO: añadir modo NoMeto
+			if(tokenAnterior.esIgual(TipoToken.IDENTIFICADOR) && token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)) {
+				parse.add(42); 
+				String etiqueta = (String) tokenAnterior.getAtributo();
+				this.etiquetasSinGoto.put(etiqueta, etiqueta);
+			}
+			// TODO: quitar modo NoMeto
 			if(TIPO_tipo.getTipoBasico() != TipoBasico.vacio) {
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
 					parse.add(47); 
@@ -2476,11 +2506,16 @@ public class AnalizadorSintactico {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
 			}
 		}  else if(token.esIgual(TipoToken.PAL_RESERVADA, 31 /*goto*/)) {
+			// TODO: cambiar a modo NoMeto, jaaja
 			parse.add(128);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				nextToken();
+				if(token.getAtributo() instanceof String) {
+					etiquetasConGoto.add((String) token.getAtributo());
+				}
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
+					// TODO: quitar modo NoMeto, jaaja
 					nextToken();
 					cuerpo();
 				} else { 

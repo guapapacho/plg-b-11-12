@@ -3105,7 +3105,11 @@ public class AnalizadorSintactico {
 	 * 					  else
 	 * 					      RESTO_CAST.tipo := RESTO_POSTFIX_EXP.tipo
 	 * 					}
-	 * 168. POSTFIX-EXPRESSION → TIPO_SIMPLE POSTFIX-4 POSTFIX-2 RESTO_POSTFIX_EXP
+	 * 168. POSTFIX-EXPRESSION → TIPO_SIMPLE POSTFIX-2 RESTO_POSTFIX_EXP
+	 * 					{ if ((TIPO_SIMPLE.tipo!=error_tipo) && (POSTFIX-2!=error_tipo) && (RESTO_POSTFIX_EXP!=error_tipo)) then
+	 * 					
+	 * 					else
+	 * 						POSTFIX-EXPRESSION.tipo_s := error_tipo }
 	 * 
 	 * 170. POSTFIX-EXPRESSION →  ~ POSTFIX-EXPRESSION1
 	 * 					{ POSTFIX-EXPRESSION.tipo_s := POSTFIX-EXPRESSION1.tipo_s}
@@ -3162,7 +3166,7 @@ public class AnalizadorSintactico {
 			tipo = postfix_expression();
 		} else if(tipo_simple() != null) {
 			parse.add(168);
-			postfix4();
+			//postfix4();
 			postfix2();
 			resto_postfix_exp(null);
 		} else {

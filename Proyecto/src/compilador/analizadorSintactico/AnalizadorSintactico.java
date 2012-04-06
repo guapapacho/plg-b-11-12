@@ -1680,7 +1680,8 @@ public class AnalizadorSintactico {
 		}
 		else{
 			ExpresionTipo TIPO_tipo = tipo();
-			if(TIPO_tipo!=null){
+			//if(TIPO_tipo!=null){
+			if(TIPO_tipo.getTipoBasico() != TipoBasico.vacio) {
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
 					parse.add(47); 
 					ExpresionTipo INS_DEC2_tipo = ins_dec2(TIPO_tipo);
@@ -1924,8 +1925,6 @@ public class AnalizadorSintactico {
 				           		//inserta(id1.entrada,TIPO_SEM, Registro(CUERPO_ST.tipo))
 				           		return new ExpresionTipo(TipoBasico.vacio); }
 				        else {
-				        	gestorErr.insertaErrorSemantico(linea, columna, "El struct tiene un id repetido");
-							System.out.println("El identificador que se encuentra en la posicion indicada esta repetido");	
 							return new ExpresionTipo(TipoBasico.error_tipo);	
 				        }	
 					} else {
@@ -1948,8 +1947,6 @@ public class AnalizadorSintactico {
 			else if (CUERPO_ST_tipo.getTipoBasico() == TipoBasico.vacio)
 				NOMBRES_tipo_h = new Registro(null);
 			else { 
-				gestorErr.insertaErrorSemantico(linea, columna, "El struct tiene un id repetido");
-				System.out.println("El identificador que se encuentra en la posicion indicada esta repetido");	
 				return new ExpresionTipo(TipoBasico.error_tipo);	
 			}
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
@@ -1997,7 +1994,7 @@ public class AnalizadorSintactico {
 		ExpresionTipo RESTO_VAR_tipo;
 		ExpresionTipo CUERPO_ST_tipo;
 		String IDlexema;
-		if(TIPO_tipo != null){
+		if(TIPO_tipo.getTipoBasico() != TipoBasico.vacio){
 			parse.add(62);
 			if (token.esIgual(TipoToken.IDENTIFICADOR)) {
 				IDlexema = token.atrString();
@@ -2024,7 +2021,8 @@ public class AnalizadorSintactico {
 						return new Producto(IDlexema,TIPO_tipo);
 						}
 						catch(Exception e) { //Si algun id esta repetido en el struct Producto lanza excepcion y se mete por aqui
-							    return new ExpresionTipo(TipoBasico.error_tipo);
+							gestorErr.insertaErrorSemantico(linea, columna, "El identificador "+IDlexema+" del struct esta repetido");    
+							return new ExpresionTipo(TipoBasico.error_tipo);
 						}
 					}	
 					else 
@@ -2077,6 +2075,7 @@ public class AnalizadorSintactico {
 						return RESTO_VAR1_tipo;
 					}
 					catch(Exception e){
+						gestorErr.insertaErrorSemantico(linea, columna, "El identificador "+IDlexema+" del struct esta repetido");    
 						return new ExpresionTipo(TipoBasico.error_tipo);
 					}
 				}
@@ -2494,7 +2493,8 @@ public class AnalizadorSintactico {
 			ExpresionTipo aux1, aux2;
 			aux1 = instruccion();
 			//if(instruccion())
-			if(aux1!=null){
+			//if(aux1!=null){
+			if(aux1.getTipoBasico() != TipoBasico.error_tipo){
 				//System.out.println("Llamada recursiva a cuerpo...");
 				aux2 = cuerpo();
 				if(aux1.getTipoBasico() != TipoBasico.error_tipo && aux2.getTipoBasico() != TipoBasico.error_tipo)
@@ -2510,11 +2510,11 @@ public class AnalizadorSintactico {
 					return new ExpresionTipo(TipoBasico.vacio);
 				 } else {
 					gestorErr.insertaErrorSintactico(linea, columna, "Token inesperado.");
-					//ruptura=parse.size();
+					return null;
 				 }
 			}
 		}	
-		return null;
+		return new ExpresionTipo(TipoBasico.vacio);
 	}
 
 	/** 
@@ -3536,7 +3536,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
 				nextToken();
-				if(tipo()!=null){
+				if(tipo().getTipoBasico()!=TipoBasico.vacio){
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 						parse.add(183);
 						nextToken();
@@ -3558,7 +3558,7 @@ public class AnalizadorSintactico {
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo()==38 /*new*/ ){
 			parse.add(142);
 			nextToken();
-			if(tipo()!=null){
+			if(tipo().getTipoBasico()!=TipoBasico.vacio){
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
 					nextToken();
 					resto_new();
@@ -3591,7 +3591,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
 			nextToken();
 			//if(tipo()){
-			if(tipo()!=null){
+			if(tipo().getTipoBasico()!=TipoBasico.vacio){
 				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)){
 					parse.add(186);
 					nextToken();

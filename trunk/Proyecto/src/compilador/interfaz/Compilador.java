@@ -35,6 +35,7 @@ import compilador.analizadorSemantico.ExpresionTipo;
 import compilador.analizadorSemantico.ExpresionTipo.TipoBasico;
 import compilador.analizadorSintactico.AnalizadorSintactico;
 import compilador.gestionErrores.GestorErrores;
+import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
 
 /**
  * @author Grupo 1
@@ -359,6 +360,7 @@ public class Compilador extends JFrame {
 					}
 					else{
 						in=new StringBufferInputStream(contenido);
+						GestorTablasSimbolos.resetTablasSimbolos();
 						GestorErrores gestor = GestorErrores.getGestorErrores();
 						gestor.resetErrores();
 						AnalizadorLexico anLex = new AnalizadorLexico(in);						

@@ -37,6 +37,10 @@ public class GestorTablasSimbolos {
 		inicializaTiposSimples();
 	}
 	
+	public static void resetTablasSimbolos() {
+		instance = new GestorTablasSimbolos();
+	}
+	
 	/**
 	 * Añade un nuevo ambito a la lista y modifica los parametros que haga falta
 	 * campo lexema es el id del lexema (procedimiento, bucle, if, switch,..) 

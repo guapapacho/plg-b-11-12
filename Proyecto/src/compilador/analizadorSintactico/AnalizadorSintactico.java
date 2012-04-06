@@ -3201,16 +3201,10 @@ public class AnalizadorSintactico {
 			parse.add(170);
 			nextToken();
 			tipo = postfix_expression();
-		} else if(tipo_simple() != null) { 
+		} else if ((tipo=tipo()).equals(TipoBasico.vacio)){ 
 			parse.add(168);
-			if (!tipo_simple().equals(TipoBasico.error_tipo)) {
-				tipo = tipo_simple();
-				postfix2(tipo);
-				resto_postfix_exp(tipo);
-			} else {
-				gestorErr.insertaErrorSemantico(linea, columna, "ERROR. El tipo no era valido");
-				tipo = ExpresionTipo.getError();
-			}
+			postfix2(tipo);
+			resto_postfix_exp(tipo);
 		} else {
 			parse.add(154);
 			ExpresionTipo aux = primary_expression();

@@ -40,6 +40,10 @@ public class TablaSimbolos {
 	public void addContenido(TablaSimbolos contenido) {
 		contenidos.add(contenido);
 	}
+	
+	public void removeLastContenido() {
+		contenidos.remove(contenidos.lastElement());
+	}
 
 	public boolean contiene(String lexema) {
 		return entradasTS.containsKey(lexema);

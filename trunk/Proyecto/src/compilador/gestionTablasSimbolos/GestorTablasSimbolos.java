@@ -60,6 +60,11 @@ public class GestorTablasSimbolos {
 		bloque_actual = bloque_actual.getContinente();
 	}
 	
+	public void eliminaBloque() {
+		cierraBloque();
+		bloque_actual.removeLastContenido();
+	}
+	
 	/**
 	 * Busca a ver si esta el identificador en el ambito actual, si no esta lo inserta y devuelve 
 	 * el puntero a la entrada de la tabla de simbolos correspondiente. 

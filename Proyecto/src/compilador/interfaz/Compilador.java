@@ -27,6 +27,9 @@ import javax.swing.JTextArea;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import compilador.analizadorLexico.AnalizadorLexico;
+import compilador.analizadorLexico.Token.OpAritmetico;
+import compilador.analizadorLexico.Token.OpAsignacion;
+import compilador.analizadorLexico.Token.OpComparacion;
 import compilador.analizadorLexico.Token.OpLogico;
 import compilador.analizadorSemantico.ExpresionTipo;
 import compilador.analizadorSemantico.ExpresionTipo.TipoBasico;
@@ -381,16 +384,72 @@ public class Compilador extends JFrame {
 		ExpresionTipo e1,e2;
 		System.out.println("------------------------------");
 		System.out.println("OPERADORES LOGICOS: ");
+		System.out.println("------------------------------");
 		for(TipoBasico t1 : TipoBasico.values()){
 			e1 = new ExpresionTipo(t1);
 			for(TipoBasico t2 : TipoBasico.values()){
 				e2 = new ExpresionTipo(t2);
 				for(OpLogico op : OpLogico.values()){
-					System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonEquivLog(e1, e2, op).getTipoBasico().toString());
+					if(e1.getTipoBasico()!=TipoBasico.error_tipo && e1.getTipoBasico()!=TipoBasico.vacio
+							&& e2.getTipoBasico()!=TipoBasico.error_tipo && e2.getTipoBasico()!=TipoBasico.vacio)
+						if(ExpresionTipo.sonEquivLog(e1, e2, op)!=null)
+							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonEquivLog(e1, e2, op).getTipoBasico().toString());
 				}
 			}	
 		}
 		System.out.println("-----------------------------");
+		System.out.println();
+		System.out.println("------------------------------");
+		System.out.println("OPERADORES DE ASIGNACION: ");
+		System.out.println("------------------------------");
+		for(TipoBasico t1 : TipoBasico.values()){
+			e1 = new ExpresionTipo(t1);
+			for(TipoBasico t2 : TipoBasico.values()){
+				e2 = new ExpresionTipo(t2);
+				for(OpAsignacion op : OpAsignacion.values()){
+					if(e1.getTipoBasico()!=TipoBasico.error_tipo && e1.getTipoBasico()!=TipoBasico.vacio
+							&& e2.getTipoBasico()!=TipoBasico.error_tipo && e2.getTipoBasico()!=TipoBasico.vacio)
+						if(ExpresionTipo.sonEquivAsig(e1, e2, op)!=null)
+							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonEquivAsig(e1, e2, op).getTipoBasico().toString());
+				}
+			}	
+		}
+		System.out.println("-----------------------------");
+		System.out.println();
+		System.out.println("------------------------------");
+		System.out.println("OPERADORES DE COMPARACION: ");
+		System.out.println("------------------------------");
+		for(TipoBasico t1 : TipoBasico.values()){
+			e1 = new ExpresionTipo(t1);
+			for(TipoBasico t2 : TipoBasico.values()){
+				e2 = new ExpresionTipo(t2);
+				for(OpComparacion op : OpComparacion.values()){
+					if(e1.getTipoBasico()!=TipoBasico.error_tipo && e1.getTipoBasico()!=TipoBasico.vacio
+							&& e2.getTipoBasico()!=TipoBasico.error_tipo && e2.getTipoBasico()!=TipoBasico.vacio)
+						if(ExpresionTipo.sonEquivComp(e1, e2, op)!=null)
+							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonEquivComp(e1, e2, op).getTipoBasico().toString());
+				}
+			}	
+		}
+		System.out.println("-----------------------------");
+		System.out.println();
+		System.out.println("------------------------------");
+		System.out.println("OPERADORES ARITMETICOS: ");
+		System.out.println("------------------------------");
+		for(TipoBasico t1 : TipoBasico.values()){
+			e1 = new ExpresionTipo(t1);
+			for(TipoBasico t2 : TipoBasico.values()){
+				e2 = new ExpresionTipo(t2);
+				for(OpAritmetico op : OpAritmetico.values()){
+					if(e1.getTipoBasico()!=TipoBasico.error_tipo && e1.getTipoBasico()!=TipoBasico.vacio
+							&& e2.getTipoBasico()!=TipoBasico.error_tipo && e2.getTipoBasico()!=TipoBasico.vacio)
+						if(ExpresionTipo.sonEquivArit(e1, e2, op)!=null)
+							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonEquivArit(e1, e2, op).getTipoBasico().toString());
+				}
+			}	
+		}
+		System.out.println("-----------------------------");
+		
 		
 	}
 	

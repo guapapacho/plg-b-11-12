@@ -1,5 +1,8 @@
 package compilador.analizadorSemantico;
 
+import compilador.analizadorLexico.Token.OpAritmetico;
+import compilador.analizadorLexico.Token.OpAsignacion;
+import compilador.analizadorLexico.Token.OpComparacion;
 import compilador.analizadorLexico.Token.OpLogico;
 
 public class ExpresionTipo {
@@ -9,6 +12,7 @@ public class ExpresionTipo {
 	
 	public enum TipoBasico{logico, caracter, entero, real, error_tipo, vacio}; 
 	public enum TipoNoBasico{vector, producto, registro, union, puntero, funcion, objeto, cadena}
+
 	/*
 	switch(e1.getTipoBasico()){
 	case logico:
@@ -47,16 +51,20 @@ public class ExpresionTipo {
 	}
 	*/
 	
+	/**-------------------------------------------------------------------------------------------------------------
+	* SOBRERO("~"), CIRCUNFLEJO("ˆ"), DOS_MENORES("<<"), DOS_MAYORES(">>"),			
+	* AND("&&"), ANDEQ(""), BIT_AND("&"), BIT_OR("|"), COMPL("~"), NOT("!"), NOT_EQ(""), OR("||"), OR_EQ(""), XOR("^"), XOR_EQ("");			
+	* -------------------------------------------------------------------------------------------------------------**/	
 	public static ExpresionTipo sonEquivLog(ExpresionTipo e1, ExpresionTipo e2, OpLogico op){
 		switch(op){
-		case CIRCUNFLEJO: case XOR: case XOR_EQ: case DOS_MENORES: case DOS_MAYORES: case BIT_AND: case ANDEQ: case BIT_OR: case OR_EQ:
+		case CIRCUNFLEJO: case XOR: case DOS_MENORES: case DOS_MAYORES: case BIT_AND: case BIT_OR:
 			switch(e1.getTipoBasico()){
 			case logico: case caracter: case entero:
 				switch (e2.getTipoBasico()){
 				case logico: case caracter: case entero: return new ExpresionTipo(TipoBasico.entero);
-				default: return new ExpresionTipo(TipoBasico.error_tipo);
+				default: return null;
 				}
-			default: return new ExpresionTipo(TipoBasico.error_tipo);
+			default: return null;
 			}
 		 case AND: case OR: 
 			switch(e1.getTipoBasico()){
@@ -64,19 +72,124 @@ public class ExpresionTipo {
 				switch (e2.getTipoBasico()){
 				case logico: return e1;
 				case caracter: case entero: case real: return new ExpresionTipo(TipoBasico.entero); 
-				default: return new ExpresionTipo(TipoBasico.error_tipo);
+				default: return null;
 				}
 			case caracter: case entero: case real:
 				switch (e2.getTipoBasico()){
 				case logico: case caracter: case entero: case real: return new ExpresionTipo(TipoBasico.entero);
-				default: return new ExpresionTipo(TipoBasico.error_tipo);
+				default: return null;
 				}
-			default: return new ExpresionTipo(TipoBasico.error_tipo);
+			default: return null;
 			}
-		default: return new ExpresionTipo(TipoBasico.error_tipo);
+		 case NOT:  // Con un operador unario, solo se tiene en cuenta el primer operando (ExpresionTipo)
+			 switch(e1.getTipoBasico()){
+			 case logico: return e1;
+			 case caracter: case entero: case real: return new ExpresionTipo(TipoBasico.entero);
+			 default: return null;	
+			 }
+		 default: return null;
 		}			
 	}
 	
+	/**-------------------------------------------------------------------------------------------------------------
+	* IGUALDAD("=="), DISTINTO("!="), MENOR("<"), MAYOR(">"), MENOR_IGUAL("<="), MAYOR_IGUAL(">=");
+	* -------------------------------------------------------------------------------------------------------------**/	
+	public static ExpresionTipo sonEquivComp(ExpresionTipo e1, ExpresionTipo e2, OpComparacion op){
+		switch(op){
+		case IGUALDAD: case DISTINTO: case MENOR: case MAYOR: case MENOR_IGUAL: case MAYOR_IGUAL:
+			switch(e1.getTipoBasico()){
+			case logico: case caracter: case entero: case real:
+				switch (e2.getTipoBasico()){
+				case logico: case caracter: case entero: case real: return new ExpresionTipo(TipoBasico.logico);
+				default: return null;
+				}
+			default: return null;
+			}
+		default: return null;
+		}		
+	}
+			
+	/**-------------------------------------------------------------------------------------------------------------
+	* SUMA("+"), RESTA("-"), INCREMENTO("++"), DECREMENTO("--"), MULTIPLICACION("*"), DIVISION("/"), PORCENTAJE("%");
+	* -------------------------------------------------------------------------------------------------------------**/	
+	public static ExpresionTipo sonEquivArit(ExpresionTipo e1, ExpresionTipo e2, OpAritmetico op){
+		switch(op){
+		case SUMA: case RESTA: case MULTIPLICACION: case DIVISION:
+			switch(e1.getTipoBasico()){
+			case logico: case caracter: case entero:
+				switch (e2.getTipoBasico()){
+				case logico: case caracter: case entero: return new ExpresionTipo(TipoBasico.entero); 
+				case real: return new ExpresionTipo(TipoBasico.real);
+				default : return null;
+				}
+			case real:
+				switch (e2.getTipoBasico()){
+				case logico: case caracter: case entero: case real: return new ExpresionTipo(TipoBasico.real); 
+				default : return null;
+				}
+			default : return null;
+			}
+		case PORCENTAJE:
+			switch(e1.getTipoBasico()){
+			case logico: case caracter: case entero:
+				switch (e2.getTipoBasico()){
+				case logico: case caracter: case entero: return new ExpresionTipo(TipoBasico.entero); 
+				default : return null;
+				}
+			default : return null;
+			}
+		// Con los operadores unarios, solo se tiene en cuenta el primer operando (ExpresionTipo)
+		case INCREMENTO: 
+			switch(e1.getTipoBasico()){
+			case logico: case caracter: return new ExpresionTipo(TipoBasico.entero);
+			case entero: case real: return e1;
+			default : return null;
+			}
+		case DECREMENTO:
+			switch(e1.getTipoBasico()){
+			case caracter: return new ExpresionTipo(TipoBasico.entero);
+			case entero: case real: return e1;
+			default : return null;
+			}
+		default : return null;
+		}	
+	}
+	
+	/**
+	* -------------------------------------------------------------------------------------------------------------
+	* ASIGNACION("="), MAS_IGUAL("+="), MENOS_IGUAL("-="), POR_IGUAL("*="), DIV_IGUAL("/="), PORCENTAJE_IGUAL("%="),
+	* CIRCUNFLEJO_IGUAL("^="), AND_IGUAL("&="), OR_IGUAL("|="), MAYOR_MAYOR_IGUAL(">>="), MENOR_MENOR_IGUAL("<<="),
+	* PUNTERO("*");
+	* -------------------------------------------------------------------------------------------------------------
+	* En las asignaciones, independientemente del tipo de la derecha, 
+	* siempre se retorna el tipo correspondiente a la variable asignada
+	**/
+	public static ExpresionTipo sonEquivAsig(ExpresionTipo e1, ExpresionTipo e2, OpAsignacion op){
+		switch(op){
+		case ASIGNACION: case MAS_IGUAL: case MENOS_IGUAL: case POR_IGUAL: case DIV_IGUAL: 
+			switch(e1.getTipoBasico()){
+			case logico: case caracter: case entero: case real:
+				switch (e2.getTipoBasico()){
+				case logico: case caracter: case entero: case real: return e1;  
+				default : return null;
+				}
+			default : return null;
+			}
+		case PORCENTAJE_IGUAL: case CIRCUNFLEJO_IGUAL: case AND_IGUAL: case OR_IGUAL: 
+		case MAYOR_MAYOR_IGUAL: case MENOR_MENOR_IGUAL: 
+		// En estos casos el tipo real no es admitido ni a derecha ni a izquierda del operador...
+			switch(e1.getTipoBasico()){
+			case logico: case caracter: case entero:
+				switch (e2.getTipoBasico()){
+				case logico: case caracter: case entero: return e1;  
+				default : return null;
+				}
+			default : return null;
+			}
+		default : return null;
+		}
+	}
+		
 	public ExpresionTipo(TipoNoBasico tipo){
 		this.basico = false;
 		this.tipoNoBasico = tipo;

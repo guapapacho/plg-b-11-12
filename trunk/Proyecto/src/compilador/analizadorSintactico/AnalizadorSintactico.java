@@ -840,7 +840,7 @@ public class AnalizadorSintactico {
 	}
 	
 	private ExpresionTipo tipo_simple() throws Exception {
-		ExpresionTipo tipo = ExpresionTipo.getError();
+		ExpresionTipo tipo = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
 			tipo = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
@@ -3213,7 +3213,7 @@ public class AnalizadorSintactico {
 			parse.add(170);
 			nextToken();
 			tipo = postfix_expression();
-		} else if (!(tipo=tipo()).equals(TipoBasico.vacio)){ 
+		} else if (!(tipo=tipo_simple()).equals(TipoBasico.vacio)){ 
 			parse.add(168);
 			postfix2(tipo);
 			resto_postfix_exp(tipo);

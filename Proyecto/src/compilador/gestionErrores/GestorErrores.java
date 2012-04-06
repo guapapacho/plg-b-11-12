@@ -11,6 +11,8 @@ public class GestorErrores {
 	private static GestorErrores instance;
 	/** Array que contiene la lista de errores */
     private ArrayList<TError> errors;
+    /** Array que contiene la lista de warnings */
+    private ArrayList<TWarning> warnings;
 	
 	public enum TipoError {
 		LEXICO("léxico"), SINTACTICO("sintáctico"), SEMANTICO("semántico");
@@ -43,6 +45,33 @@ public class GestorErrores {
 		
 			public TError(TipoError tipo, String string, int linea, int columna){
 				this.tipo = tipo;
+				this.mensaje = string;
+				this.linea = linea;
+				this.columna = columna;
+			}
+		}
+		
+		/**
+		 * Triplete sencillo con el que insertamos warnings
+		 */
+		public class TWarning {
+			private int linea;
+			private int columna;
+			private String mensaje;
+		
+			public int getLinea() {
+				return linea;
+			}
+		
+			public int getColumna() {
+				return columna;
+			}
+		
+			public String toString() {
+				return "Error en L: "+linea+" C: "+columna+" - "+mensaje;
+			}
+		
+			public TWarning(String string, int linea, int columna){
 				this.mensaje = string;
 				this.linea = linea;
 				this.columna = columna;
@@ -87,6 +116,10 @@ public class GestorErrores {
 
     public void insertaErrorSemantico(int l, int n,String mensaje) {
         errors.add(new TError(TipoError.SEMANTICO, mensaje, l, n));
+    }
+    
+    public void insertaWarning(int l, int n, String mensaje) {
+        warnings.add(new TWarning(mensaje, l, n));
     }
     
     public ArrayList<TError> devuelveErrores(){

@@ -3836,8 +3836,8 @@ public class AnalizadorSintactico {
 	/**
 	 * 196. PM-EXPRESSION → CAST-EXPRESSION
 	 * 						{ PM-EXPRESSION.tipo_s := CAST-EXPRESSION.tipo_s }
-	 * 197. PM-EXPRESSION → .* CAST-EXPRESSION
-	 * 198. PM-EXPRESSION → -> CAST-EXPRESSION
+	 * 197. PM-EXPRESSION → . * CAST-EXPRESSION
+	 * 198. PM-EXPRESSION → -> * CAST-EXPRESSION
 	 * @throws Exception 
 	 */
 	private ExpresionTipo pm_expression() throws Exception{
@@ -3847,14 +3847,21 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 				nextToken();
 				parse.add(197);
+				//Esto es mas complicado
 				aux = cast_expression();
 			}else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `*` ");
 			}
 		} else if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.PUNTERO)){
-			parse.add(198);
 			nextToken();
-			aux = cast_expression();
+			if (token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
+				parse.add(198);
+				nextToken();
+				//Esto es mas complicado
+				aux = cast_expression();
+			}else{
+				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `*` ");
+			}
 		} else{
 			parse.add(196);
 			aux = cast_expression();

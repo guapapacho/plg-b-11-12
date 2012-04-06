@@ -60,6 +60,10 @@ public class GestorTablasSimbolos {
 		bloque_actual = bloque_actual.getContinente();
 	}
 	
+	/**
+	 * Elimina el ámbito actual y regresa a su padre
+	 * (usar en el caso de las cabeceras)
+	 */
 	public void eliminaBloque() {
 		cierraBloque();
 		bloque_actual.removeLastContenido();

@@ -13,7 +13,7 @@ public class ExpresionTipo {
 	private static ExpresionTipo instanceError;
 	
 	public enum TipoBasico{logico, caracter, entero, real, error_tipo, vacio}; 
-	public enum TipoNoBasico{vector, producto, registro, union, puntero, funcion, objeto, cadena}
+	public enum TipoNoBasico{enumerado, vector, producto, registro, union, puntero, funcion, objeto, cadena}
 
 	/*
 	switch(e1.getTipoBasico()){

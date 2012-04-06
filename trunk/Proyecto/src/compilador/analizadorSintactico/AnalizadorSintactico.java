@@ -817,7 +817,7 @@ public class AnalizadorSintactico {
 	}
 	
 	private ExpresionTipo tipo_simple() {
-		ExpresionTipo tipo = null;
+		ExpresionTipo tipo = ExpresionTipo.getError();
 		if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
 			tipo = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
@@ -3107,11 +3107,12 @@ public class AnalizadorSintactico {
 	 * 					      RESTO_CAST.tipo := RESTO_POSTFIX_EXP.tipo
 	 * 					}
 	 * 168. POSTFIX-EXPRESSION → TIPO_SIMPLE POSTFIX-2 RESTO_POSTFIX_EXP
-	 * 					{ if ((TIPO_SIMPLE.tipo!=error_tipo) && (POSTFIX-2!=error_tipo) && (RESTO_POSTFIX_EXP!=error_tipo)) then
-	 * 					
+	 * 					{ if (TIPO_SIMPLE.tipo_s!=error_tipo) then
+	 * 						POSTFIX-2.tipo_h := TIPO_SIMPLE.tipo_s
+	 * 						RESTO_POSTFIX_EXP.tipo_h := TIPO_SIMPLE.tipo_s
+	 * 						POSTFIX-EXPRESSION.tipo_s := TIPO_SIMPLE.tipo_s
 	 * 					else
-	 * 						POSTFIX-EXPRESSION.tipo_s := error_tipo }
-	 * 
+	 * 						POSTFIX-EXPRESSION.tipo_s := error_tipo } 
 	 * 170. POSTFIX-EXPRESSION →  ~ POSTFIX-EXPRESSION1
 	 * 					{ POSTFIX-EXPRESSION.tipo_s := POSTFIX-EXPRESSION1.tipo_s}
 	 * @return 
@@ -3151,7 +3152,7 @@ public class AnalizadorSintactico {
 					gestorErr.insertaErrorSemantico(linea, columna, "No es una función o la función no está declarada");
 					tipo = ExpresionTipo.getError();
 				} else	if(!params.paramsEquivalentes(((Funcion)tipoSem).getDominio())) {
-					gestorErr.insertaErrorSemantico(linea, columna, "Paramteros de la funcion incorrectos");
+					gestorErr.insertaErrorSemantico(linea, columna, "Parametros de la funcion incorrectos");
 					tipo = ExpresionTipo.getError();
 				}
 			}
@@ -3167,9 +3168,14 @@ public class AnalizadorSintactico {
 			tipo = postfix_expression();
 		} else if(tipo_simple() != null) {
 			parse.add(168);
-			//postfix4();
-			postfix2();
-			resto_postfix_exp(null);
+			if (!tipo_simple().equals(TipoBasico.error_tipo)) {
+				tipo = tipo_simple();
+				postfix2(tipo);
+				resto_postfix_exp(tipo);
+			} else {
+				gestorErr.insertaErrorSemantico(linea, columna, "ERROR. El tipo no era valido");
+				tipo = ExpresionTipo.getError();
+			}
 		} else {
 			parse.add(154);
 			ExpresionTipo aux = primary_expression();
@@ -3409,7 +3415,7 @@ public class AnalizadorSintactico {
 	 * 					{ POSTFIX-2.tipo_s := POSTFIX-3.tipo_s }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo postfix2() throws Exception {
+	private ExpresionTipo postfix2(ExpresionTipo tipo_h) throws Exception {
 		ExpresionTipo aux = null;
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(173);

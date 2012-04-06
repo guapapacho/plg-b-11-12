@@ -1035,7 +1035,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(14);
 			id();
-			ExpresionTipo tipo_h = new compilador.analizadorSemantico.Vector(entradaTS.getLexema());
+			ExpresionTipo tipo_h = new Enumerado(entradaTS.getLexema());
 			ExpresionTipo resto_ln = resto_ln(tipo_h);
 			if(resto_ln.getTipoBasico() == TipoBasico.error_tipo)
 				gestorErr.insertaErrorSemantico(linea, columna, "Identificador repetido dentro del enumerado");

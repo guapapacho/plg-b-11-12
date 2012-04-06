@@ -2844,7 +2844,7 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
 				if(EXPRESSION_tipo.getTipoBasico() != TipoBasico.error_tipo)
-					return resto_case2();
+					return resto_case2(EXPRESSION_tipo);
 				else
 					return ExpresionTipo.getError();
 			}
@@ -2865,7 +2865,7 @@ public class AnalizadorSintactico {
 	 * 			{ RESTO_CASE2.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo resto_case2() throws Exception {
+	private ExpresionTipo resto_case2(ExpresionTipo EXPRESSION_tipo) throws Exception {
 		numDefaults = 0;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 			parse.add(261);
@@ -2875,7 +2875,7 @@ public class AnalizadorSintactico {
 			parse.add(262);
 			nextToken();
 			estamosEnSwitch = true;
-			ExpresionTipo aux1 = cuerpo_case();
+			ExpresionTipo aux1 = cuerpo_case(EXPRESSION_tipo);
 			estamosEnSwitch = false;
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 				nextToken();
@@ -2896,7 +2896,9 @@ public class AnalizadorSintactico {
 
 	/** TODO deberia funcionar con cuerpo si este no tuviese la regla cuerpo -> }
 	 * 98. CUERPO_CASE --> case LITERAL : CUERPO CUERPO_CASE
-	 * { if (CUERPO.tipo != error_tipo) and  (CUERPO_CASE1.tipo != error_tipo) then 
+	 * {
+	 *  if(LITERAL_tipo es_equivalente CUERPO_CASE_tipo_h) and
+	 *  (CUERPO.tipo != error_tipo) and  (CUERPO_CASE1.tipo != error_tipo) then 
        		CUERPO_CASE.tipo = vacio
 		else CUERPO_CASE.tipo = error_tipo 
 	   }
@@ -2906,18 +2908,24 @@ public class AnalizadorSintactico {
 	 * 				  else CUERPO_CASE.tipo_s := error_tipo } 
 	 * @throws Exception 
 	 */
-	private ExpresionTipo cuerpo_case() throws Exception {
+	private ExpresionTipo cuerpo_case(ExpresionTipo EXPRESSION_tipo) throws Exception {
 		ExpresionTipo CUERPO_tipo;
 		ExpresionTipo CUERPO_CASE1_tipo;
+		ExpresionTipo LITERAL_tipo;
 		if(token.esIgual(TipoToken.PAL_RESERVADA,6 /*case*/)) {
 			parse.add(98);
 			nextToken();
-			if(literal() != null)
+			LITERAL_tipo = literal();
+			if(LITERAL_tipo != null)
 			{
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
 					nextToken();
+					if(ExpresionTipo.sonEquivLog(EXPRESSION_tipo, LITERAL_tipo, OpLogico.AND) == null){	
+						gestorErr.insertaErrorSemantico(linea, columna, "No coincide el identificador del case...");
+						return new ExpresionTipo(TipoBasico.error_tipo);
+					}
 					CUERPO_tipo = cuerpo();
-					CUERPO_CASE1_tipo = cuerpo_case();
+					CUERPO_CASE1_tipo = cuerpo_case(EXPRESSION_tipo);
 					if(CUERPO_tipo.getTipoBasico() != TipoBasico.error_tipo &&
 						CUERPO_CASE1_tipo.getTipoBasico() != TipoBasico.error_tipo)
 						return ExpresionTipo.getVacio();
@@ -2939,7 +2947,7 @@ public class AnalizadorSintactico {
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
 					nextToken();
 					ExpresionTipo aux1 = cuerpo();
-					ExpresionTipo aux2 = cuerpo_case();
+					ExpresionTipo aux2 = cuerpo_case(EXPRESSION_tipo);
 					if(aux1.getTipoBasico()!=TipoBasico.error_tipo && aux2.getTipoBasico()!=TipoBasico.error_tipo)
 						return ExpresionTipo.getVacio();
 					else 
@@ -3442,7 +3450,7 @@ public class AnalizadorSintactico {
 	/**
 	 * 173. POSTFIX-2 → ( POSTFIX-3
 	 * 					{ POSTFIX-2.tipo_s := POSTFIX-3.tipo_s }
-	 * @throws Exception 
+	 * @throws Exception 0 
 	 */
 	private ExpresionTipo postfix2(ExpresionTipo tipo_h) throws Exception {
 		ExpresionTipo aux = null;

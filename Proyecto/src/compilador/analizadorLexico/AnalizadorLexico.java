@@ -22,6 +22,13 @@ public class AnalizadorLexico {
 	 */
 	private boolean modoDeclaracion;
 
+	/**
+	 * Booleano que indica si se encuentra en modo noMeto
+	 *(modo especial para casos como enumerados y structs en los cuales no hay que 
+	 * meter id's en la TS) 
+	 */
+	private boolean modoNoMeto;
+
 
 	/**
 	 * Gestor de errores
@@ -90,6 +97,7 @@ public class AnalizadorLexico {
 		this.gestorErrores = GestorErrores.getGestorErrores();
 		this.gestorTS = GestorTablasSimbolos.getGestorTS();
 		this.modoDeclaracion = true;
+		this.modoNoMeto = false;
 	}
 	
 	public String getLexemaAnterior(){
@@ -105,8 +113,9 @@ public class AnalizadorLexico {
 	/**
 	 * Metodo que devuelve el siguiente token
 	 * @return token
+	 * @throws Exception 
 	 */
-	public Token scan(){
+	public Token scan() throws Exception{
 		estado = 0;
 		Token token = null;
 		lexemaAnterior = lexema;
@@ -766,30 +775,34 @@ public class AnalizadorLexico {
 					 if(indice == null ) //si es un identificador	
 					 {	 
 						//Dependiendo de si se esta en modo declaracion se insertara el atributo en la TS o se consultara para comprobar su existencia. 
-						 if(modoDeclaracion) {
+						 if(modoDeclaracion && !modoNoMeto) {
 							 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
 							 if (puntero == null) { //si no esta en la T.S. se inserta.
 								 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
 							 }
-							 else 
-							 {
+							 else {
 								 //si ya esta habria que mirar si se encuentra en el mismo ambito o no. 
-								 //Si ya hay un id con ese mismo nombre en el mismo ambito deberia lanzar error en vez de devolver el token
-								 if(gestorTS.buscaIdBloqueActual(lexema) == null) {// si no esta en la tabla actual hay que insertarlo
+								 //Si ya hay un id con ese mismo nombre en el mismo ambito deberia lanzar error y devolver el token para seguir con el analisis semantico
+								 if(gestorTS.buscaIdBloqueActual(lexema) == null) {
 									 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
 								 } else {
 									 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.buscaIdGeneral(lexema), comentario);
-									 //gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
-									 //return new Token(TipoToken.ERROR,null, comentario);
+									 gestorErrores.insertaErrorSemantico(numlinea, numcolumna,"Multiple declaracion de "+lexema);
 								 }
 							}
 						 }
-						 else { // si no esta en modo declaracion
+						 else if(modoNoMeto) {
+							 return new Token(TipoToken.IDENTIFICADOR,lexema,comentario);
+						 }
+						 else { // si no esta en modo declaracion ni en modo noMeto
 							 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
-//							 if(puntero == null) {
-							//si puntero == null error semantico (variable no declarada)
-								 token = new Token(TipoToken.IDENTIFICADOR, puntero, comentario); 
-//							 }
+							 if(puntero == null) {
+								 //error semantico (variable no declarada)
+								 gestorErrores.insertaErrorSemantico(numlinea, numcolumna,"Identificador "+lexema+" no declarado");
+								 throw new Exception("Uso de identificador no declarado");
+							 }
+							 else
+								 token = new Token(TipoToken.IDENTIFICADOR, puntero, comentario);
 						 }
 					 }	
 					 else { // es una palabra reservada
@@ -1037,6 +1050,14 @@ public class AnalizadorLexico {
 
 	public void setModoDeclaracion(boolean modoDeclaracion) {
 		this.modoDeclaracion = modoDeclaracion;
+	}
+	
+	public boolean isModoNoMeto() {
+		return modoNoMeto;
+	}
+
+	public void setModoNoMeto(boolean modoDeclaracion) {
+		this.modoNoMeto = modoDeclaracion;
 	}
     
 }

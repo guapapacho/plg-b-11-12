@@ -2464,7 +2464,7 @@ public class AnalizadorSintactico {
 				nextToken();
 				ExpresionTipo tipo = null;
 				if(estamosEnFuncion && aux.equals(TipoBasico.vacio)) {
-					gestorErr.insertaErrorSemantico(linea, columna, "Es obligatorio devolver algo de tipo ..."); //TODO
+					gestorErr.insertaErrorSemantico(linea, columna, "Falta instrucción de retorno.");
 					tipo = ExpresionTipo.getError();
 				} else if(!estamosEnFuncion && !aux.equals(TipoBasico.vacio)) {
 					gestorErr.insertaErrorSemantico(linea, columna, "No se puede devolver nada. Solo se puede usar 'return;'.");

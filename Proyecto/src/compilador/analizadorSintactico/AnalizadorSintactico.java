@@ -2823,26 +2823,27 @@ public class AnalizadorSintactico {
 	}
 	
 	/** 
-	 * TODO nuevos numeros de regla!
-	 * 97aaaa. RESTO_CASE2 --> { CUERPO_CASE }
-	 * 97bbbb. RESTO_CASE2 --> ; 
+	 * 261. RESTO_CASE2 --> { CUERPO_CASE }
+	 * 			{ RESTO_CASE2.tipo_s := CUERPO_CASE.tipo_s } 
+	 * 262. RESTO_CASE2 --> ; 
+	 * 			{ RESTO_CASE2.tipo_s := vacio }
 	 * @throws Exception 
 	 */
 	private ExpresionTipo resto_case2() throws Exception {
 		numDefaults = 0;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
-			parse.add(97); // TODO cambiar numero de regla
-			//return true;
+			parse.add(261);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
-			parse.add(97); // TODO cambiar numero de regla
+			parse.add(262);
 			nextToken();
 			estamosEnSwitch = true;
-			cuerpo_case();
+			ExpresionTipo aux1 = cuerpo_case();
 			estamosEnSwitch = false;
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 				nextToken();
-				//return true;
+				return aux1;
 			}
 			else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta '}'");
@@ -2863,7 +2864,10 @@ public class AnalizadorSintactico {
        		CUERPO_CASE.tipo = vacio
 		else CUERPO_CASE.tipo = error_tipo 
 	   }
-	 * TODO 98aaa. CUERPO_CASE --> default : CUERPO CUERPO_CASE 
+	 * 263. CUERPO_CASE --> default : CUERPO CUERPO_CASE'
+	 * 				{ if(CUERPO.tipo_s!=error_tipo && CUERPO_CASE'.tipo_s!=error_tipo)
+	 * 				  then CUERPO_CASE.tipo_s := vacio
+	 * 				  else CUERPO_CASE.tipo_s := error_tipo } 
 	 * @throws Exception 
 	 */
 	private ExpresionTipo cuerpo_case() throws Exception {
@@ -2893,13 +2897,17 @@ public class AnalizadorSintactico {
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA,17 /*default*/)){
 			if(numDefaults < 1) {
-				parse.add(98); //TODO cambiar num regla
+				parse.add(263);
 				numDefaults++;
 				nextToken();
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
 					nextToken();
-					cuerpo();
-					cuerpo_case();
+					ExpresionTipo aux1 = cuerpo();
+					ExpresionTipo aux2 = cuerpo_case();
+					if(aux1.getTipoBasico()!=TipoBasico.error_tipo && aux2.getTipoBasico()!=TipoBasico.error_tipo)
+						return new ExpresionTipo(TipoBasico.vacio);
+					else 
+						return new ExpresionTipo(TipoBasico.error_tipo);
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta ':'");
 				}
@@ -3659,47 +3667,61 @@ public class AnalizadorSintactico {
 
 	/**
 	 * 251.RESTO_NEW → )
+	 * 				{ RESTO_NEW.tipo_s := vacio }
 	 * 252.RESTO_NEW → EXPRESSION_LIST )
+	 * 				{ RESTO_NEW.tipo_s := EXPRESSION_LIST.tipo_s } 
 	 * @throws Exception 
 	 */
-	private void resto_new() throws Exception{
+	private ExpresionTipo resto_new() throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 			parse.add(251);
 			nextToken();
+			return new ExpresionTipo(TipoBasico.vacio);
 		}else{
 			parse.add(252);
-			expression_list();
+			ExpresionTipo aux1 = expression_list();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
 			}else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ')' ");
 			}
+			return aux1;
 		}
 		
 	}
 	
 	/**
 	 * 253. EXPRESSION_LIST → EXPRESSION RESTO_LISTA_EXP
+	 * 						{ if(EXPRESSION.tipo_s != error_tipo)
+	 * 						  then EXPRESSION_LIST.tipo_s := RESTO_LISTA_EXP.tipo_s
+	 * 						  else EXPRESSION_LIST.tipo_s := error_tipo }
 	 * @throws Exception 
 	 */
-	private void expression_list() throws Exception{
+	private ExpresionTipo expression_list() throws Exception{
 		parse.add(253);
-		expression();
-		resto_lista_exp();
+		ExpresionTipo aux1 = expression();
+		ExpresionTipo aux2 = resto_lista_exp();
+		if(aux1.getTipoBasico()!=TipoBasico.error_tipo && aux2.getTipoBasico()!=TipoBasico.error_tipo)
+			return new ExpresionTipo(TipoBasico.vacio);
+		else
+			return new ExpresionTipo(TipoBasico.error_tipo);
 	}
 	
 	/**
 	 * 254. RESTO_LISTA_EXP → , EXPRESSION_LIST
+	 * 						{ RESTO_LISTA_EXP.tipo_s := EXPRESSION_LIST.tipo_s }
 	 * 255. RESTO_LISTA_EXP → lambda
+	 * 						{ RESTO_LISTA_EXP.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private void resto_lista_exp() throws Exception{
+	private ExpresionTipo resto_lista_exp() throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){
 			parse.add(254);
 			nextToken();
-			expression_list();
+			return expression_list();
 		}else{
 			parse.add(255);
+			return new ExpresionTipo(TipoBasico.vacio);
 		}
 	}
 	
@@ -4327,13 +4349,6 @@ public class AnalizadorSintactico {
 				return aux2;
 			else
 				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para operacion logica binaria"
-			
-			/*if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
-				return new ExpresionTipo(TipoBasico.logico);
-			else{
-				// TODO insertar error: "tipos no compatibles para comparacion logica" 
-				return new ExpresionTipo(TipoBasico.error_tipo);
-			}*/
 		}
 		else{
 			parse.add(223);
@@ -4345,7 +4360,7 @@ public class AnalizadorSintactico {
 	 * 							  { if (AND_EXPRESSION.tipo_s != error_tipo)
 	 * 								then   RESTO_EXCLUSIVE.tipo_h := AND_EXPRESSION.tipo_s;
 	 * 										if (RESTO_EXCLUSIVE.tipo_s == vacio) 
-	 * 										then EXCLUSIVE_OR_EXPRESSION.tipo_s == AND_EXPRESSION.tipo_s
+	 * 										then EXCLUSIVE_OR_EXPRESSION.tipo_s := AND_EXPRESSION.tipo_s
 	 * 										else EXCLUSIVE_OR_EXPRESSION.tipo_s := RESTO_EXCLUSIVE.tipo_s    
 	 * 								else   EXCLUSIVE_OR_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception */
@@ -4373,12 +4388,11 @@ public class AnalizadorSintactico {
 			parse.add(225);
 			nextToken();
 			ExpresionTipo aux1 = exclusive_or_expression();
-			if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
-				return new ExpresionTipo(TipoBasico.logico);
-			else{
-				// TODO insertar error: "tipos no compatibles para comparacion logica" 
-				return new ExpresionTipo(TipoBasico.error_tipo);
-			}
+			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.CIRCUNFLEJO);
+			if(aux2!=null)
+				return aux2;
+			else
+				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para operacion logica binaria"
 		}
 		else{
 			parse.add(226);
@@ -4390,7 +4404,7 @@ public class AnalizadorSintactico {
 	 * 							  { if (EXCLUSIVE_OR_EXPRESSION.tipo_s != error_tipo)
 	 * 								then   RESTO_INCL_OR.tipo_h := EXCLUSIVE_OR_EXPRESSION.tipo_s;
 	 * 										if (RESTO_INCL_OR.tipo_s == vacio) 
-	 * 										then INCL_OR_EXPRESSION.tipo_s == EXCLUSIVE_OR_EXPRESSION.tipo_s
+	 * 										then INCL_OR_EXPRESSION.tipo_s := EXCLUSIVE_OR_EXPRESSION.tipo_s
 	 * 										else INCL_OR_EXPRESSION.tipo_s := RESTO_INCL_OR.tipo_s    
 	 * 								else   INCL_OR_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception */
@@ -4418,12 +4432,11 @@ public class AnalizadorSintactico {
 			parse.add(228);
 			nextToken();
 			ExpresionTipo aux1 = incl_or_expression();
-			if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
-				return new ExpresionTipo(TipoBasico.logico);
-			else{
-				// TODO insertar error: "tipos no compatibles para comparacion logica" 
-				return new ExpresionTipo(TipoBasico.error_tipo);
-			}
+			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.BIT_OR);
+			if(aux2!=null)
+				return aux2;
+			else
+				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para operacion logica binaria"
 		}
 		else{
 			parse.add(229);
@@ -4435,7 +4448,7 @@ public class AnalizadorSintactico {
 	 * 							  { if (INCL_OR_EXPRESSION.tipo_s != error_tipo)
 	 * 								then   RESTO_LOG_AND.tipo_h := INCL_OR_EXPRESSION.tipo_s;
 	 * 										if (RESTO_LOG_AND.tipo_s == vacio) 
-	 * 										then LOG_AND_EXPRESSION.tipo_s == INCL_OR_EXPRESSION.tipo_s
+	 * 										then LOG_AND_EXPRESSION.tipo_s := INCL_OR_EXPRESSION.tipo_s
 	 * 										else LOG_AND_EXPRESSION.tipo_s := RESTO_LOG_AND.tipo_s    
 	 * 								else   LOG_AND_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception */
@@ -4462,13 +4475,11 @@ public class AnalizadorSintactico {
 			parse.add(231);
 			nextToken();
 			ExpresionTipo aux1 = log_and_expression();
-			if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
-				return new ExpresionTipo(TipoBasico.logico);
-			else{
-				// TODO insertar error: "tipos no compatibles para comparacion logica" 
-				return new ExpresionTipo(TipoBasico.error_tipo);
-			}
-
+			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.AND);
+			if(aux2!=null)
+				return aux2;
+			else
+				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para operacion logica"
 		}
 		else{
 			parse.add(232);
@@ -4480,7 +4491,7 @@ public class AnalizadorSintactico {
 	 * 							  { if (LOG_AND_EXPRESSION.tipo_s != error_tipo)
 	 * 								then   RESTO_LOG_OR.tipo_h := LOG_AND_EXPRESSION.tipo_s;
 	 * 										if (RESTO_LOG_OR.tipo_s == vacio) 
-	 * 										then LOG_OR_EXPRESSION.tipo_s == LOG_AND_EXPRESSION.tipo_s
+	 * 										then LOG_OR_EXPRESSION.tipo_s := LOG_AND_EXPRESSION.tipo_s
 	 * 										else LOG_OR_EXPRESSION.tipo_s := RESTO_LOG_OR.tipo_s    
 	 * 								else   LOG_OR_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception */
@@ -4508,12 +4519,11 @@ public class AnalizadorSintactico {
 			parse.add(234);
 			nextToken();
 			ExpresionTipo aux1 = log_or_expression();
-			if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
-				return new ExpresionTipo(TipoBasico.logico);
-			else{
-				// TODO insertar error: "tipos no compatibles para comparacion logica" 
-				return new ExpresionTipo(TipoBasico.error_tipo);
-			}
+			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.OR);
+			if(aux2!=null)
+				return aux2;
+			else
+				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para operacion logica"
 		}
 		else{
 			parse.add(235);
@@ -4550,9 +4560,11 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)){
 				nextToken();
 				ExpresionTipo aux2 = assignment_expression();
-				if(tipo_h.equals(TipoBasico.logico)){ // TODO cambiar por llamada a SonEquivalentes(...)
-					if(aux1.equals(aux2)) // TODO cambiar por llamada a SonEquivalentes(...)
-						return tipo_h; // Retorna el tipo mas restrictivo??
+				if(ExpresionTipo.sonEquivLog(tipo_h, new ExpresionTipo(TipoBasico.logico), OpLogico.AND)!=null){
+					ExpresionTipo aux3 = ExpresionTipo.sonEquivArit(aux1, aux2, OpAritmetico.SUMA); 
+					// Realmente retorna el tipo del resultado?????
+					if(aux3!=null)
+						return aux3; 
 					else{
 						// TODO insertar error: "tipos no compatibles para asignación" 
 						return new ExpresionTipo(TipoBasico.error_tipo);
@@ -4580,7 +4592,7 @@ public class AnalizadorSintactico {
 	 * 							  { if (LOG_OR_EXPRESSION.tipo_s != error_tipo)
 	 * 								then   RESTO_ASSIG.tipo_h := LOG_OR_EXPRESSION.tipo_s;
 	 * 										if (RESTO_ASSIG.tipo_s == vacio) 
-	 * 										then ASSIGNMENT_EXPRESSION.tipo_s == LOG_OR_EXPRESSION.tipo_s
+	 * 										then ASSIGNMENT_EXPRESSION.tipo_s := LOG_OR_EXPRESSION.tipo_s
 	 * 										else ASSIGNMENT_EXPRESSION.tipo_s := RESTO_ASSIG.tipo_s    
 	 * 								else   ASSIGNMENT_EXPRESSION.tipo_s := error_tipo }
 	 * @throws Exception 
@@ -4611,12 +4623,14 @@ public class AnalizadorSintactico {
 			parse.add(243);
 			nextToken();
 			ExpresionTipo aux1 = assignment_expression();
-			if(aux1.equals(tipo_h)) // TODO cambiar por llamada a SonEquivalentes(...)
-				return tipo_h; // Retorna el tipo de la variable a la que se asigna "valor"
+			ExpresionTipo aux2 = ExpresionTipo.sonEquivAsig(aux1, tipo_h, OpAsignacion.ASIGNACION);
+			if(aux2!=null)
+				return aux2;
 			else{
 				// TODO insertar error: "tipos no compatibles para asignación" 
 				return new ExpresionTipo(TipoBasico.error_tipo);
 			}
+				
 		}
 		else{
 			parse.add(242);

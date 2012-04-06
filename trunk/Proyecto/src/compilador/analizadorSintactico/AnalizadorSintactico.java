@@ -1709,13 +1709,13 @@ public class AnalizadorSintactico {
 		}
 		else{
 			ExpresionTipo TIPO_tipo = tipo();
-			// TODO: añadir modo NoMeto
+			lexico.setModoNoMeto(true);
 			if(tokenAnterior.esIgual(TipoToken.IDENTIFICADOR) && token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)) {
 				parse.add(42); 
 				String etiqueta = (String) tokenAnterior.getAtributo();
 				this.etiquetasSinGoto.put(etiqueta, etiqueta);
 			}
-			// TODO: quitar modo NoMeto
+			lexico.setModoNoMeto(false);
 			if(TIPO_tipo.getTipoBasico() != TipoBasico.vacio) {
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
 					parse.add(47); 
@@ -2510,7 +2510,7 @@ public class AnalizadorSintactico {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
 			}
 		}  else if(token.esIgual(TipoToken.PAL_RESERVADA, 31 /*goto*/)) {
-			// TODO: cambiar a modo NoMeto, jaaja
+			lexico.setModoNoMeto(true);
 			parse.add(128);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
@@ -2518,8 +2518,8 @@ public class AnalizadorSintactico {
 				if(token.getAtributo() instanceof String) {
 					etiquetasConGoto.add((String) token.getAtributo());
 				}
+				lexico.setModoNoMeto(false);
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
-					// TODO: quitar modo NoMeto, jaaja
 					nextToken();
 					cuerpo();
 				} else { 

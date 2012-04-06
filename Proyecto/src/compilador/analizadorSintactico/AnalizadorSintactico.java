@@ -3213,7 +3213,7 @@ public class AnalizadorSintactico {
 			parse.add(170);
 			nextToken();
 			tipo = postfix_expression();
-		} else if ((tipo=tipo()).equals(TipoBasico.vacio)){ 
+		} else if (!(tipo=tipo()).equals(TipoBasico.vacio)){ 
 			parse.add(168);
 			postfix2(tipo);
 			resto_postfix_exp(tipo);

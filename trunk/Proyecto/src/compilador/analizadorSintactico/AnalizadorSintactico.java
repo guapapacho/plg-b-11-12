@@ -791,7 +791,8 @@ public class AnalizadorSintactico {
 		ExpresionTipo tipo_s =ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(6);
-			tipo_s = new Objeto(((EntradaTS)token.getAtributo()).getLexema());
+			//tipo_s = new Objeto(((EntradaTS)token.getAtributo()).getLexema());
+			tipo_s = ((EntradaTS)token.getAtributo()).getTipo();
 			nextToken();
 			System.out.println("6");
 			return tipo_s;
@@ -833,7 +834,7 @@ public class AnalizadorSintactico {
    	 *				  then COSAS.tipo_s := vacio
    	 *				  else .COSAS.tipo := error_tipo }
 	 *  9. COSAS → TIPO ID COSAS2 COSAS
-	 *  			{ COSAS2.tipo_h = TIPO.tipo_s
+	 *  			{ COSAS2.tipo_h := TIPO.tipo_s
  	 *		          if  (TIPO.tipo_s != error_tipo) and (COSAS2.tipo_h != error_tipo) and (COSAS1.tipo_s != error_tipo ) and (consulta(id.lexema) == null ) then
      * 				  COSAS.tipo_s = vacio
  	 *				  else CUERPO_ST.tipo = error_tipo  } 
@@ -4370,8 +4371,10 @@ public class AnalizadorSintactico {
 			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.BIT_AND);
 			if(aux2!=null)
 				return aux2;
-			else
-				return ExpresionTipo.getError();// TODO insertar error: "tipos no compatibles para operacion logica binaria"
+			else{
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para operacion logica binaria");
+				return ExpresionTipo.getError();
+			}
 		}
 		else{
 			parse.add(223);

@@ -4182,8 +4182,10 @@ public class AnalizadorSintactico {
 			ExpresionTipo aux2 = ExpresionTipo.sonEquivComp(aux1, tipo_h, OpComparacion.MENOR);
 			if(aux2!=null)
 				return aux2;
-			else
-				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para comparacion logica" 
+			else{
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica");
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR)){
 			parse.add(214);
@@ -4192,8 +4194,10 @@ public class AnalizadorSintactico {
 			ExpresionTipo aux2 = ExpresionTipo.sonEquivComp(aux1, tipo_h, OpComparacion.MAYOR);
 			if(aux2!=null)
 				return aux2;
-			else
-				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para comparacion logica" 
+			else{
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica");
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR_IGUAL)){
 			parse.add(216);
@@ -4202,8 +4206,10 @@ public class AnalizadorSintactico {
 			ExpresionTipo aux2 = ExpresionTipo.sonEquivComp(aux1, tipo_h, OpComparacion.MAYOR_IGUAL);
 			if(aux2!=null)
 				return aux2;
-			else
-				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para comparacion logica" 
+			else{
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica");
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MENOR_IGUAL)){
 			parse.add(217);
@@ -4212,8 +4218,10 @@ public class AnalizadorSintactico {
 			ExpresionTipo aux2 = ExpresionTipo.sonEquivComp(aux1, tipo_h, OpComparacion.MENOR_IGUAL);
 			if(aux2!=null)
 				return aux2;
-			else
-				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para comparacion logica" 
+			else{
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica");
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else{
 			parse.add(215);
@@ -4286,8 +4294,10 @@ public class AnalizadorSintactico {
 			ExpresionTipo aux2 = ExpresionTipo.sonEquivComp(aux1, tipo_h, OpComparacion.IGUALDAD);
 			if(aux2!=null)
 				return aux2;
-			else
-				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para comparacion logica"
+			else{
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica");
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.DISTINTO)){
 			parse.add(220);
@@ -4296,8 +4306,10 @@ public class AnalizadorSintactico {
 			ExpresionTipo aux2 = ExpresionTipo.sonEquivComp(aux1, tipo_h, OpComparacion.DISTINTO);
 			if(aux2!=null)
 				return aux2;
-			else
-				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para comparacion logica"
+			else{
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica");
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else {
 			parse.add(169);
@@ -4388,11 +4400,14 @@ public class AnalizadorSintactico {
 			parse.add(225);
 			nextToken();
 			ExpresionTipo aux1 = exclusive_or_expression();
+			System.out.println("izquierda: "+tipo_h.getTipoBasico().toString()+"\nderecha"+aux1.getTipoBasico().toString());
 			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.CIRCUNFLEJO);
 			if(aux2!=null)
 				return aux2;
-			else
-				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para operacion logica binaria"
+			else{
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para operacion logica binaria");
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else{
 			parse.add(226);
@@ -4478,8 +4493,10 @@ public class AnalizadorSintactico {
 			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.AND);
 			if(aux2!=null)
 				return aux2;
-			else
-				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para operacion logica"
+			else{
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para operacion logica");
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else{
 			parse.add(232);
@@ -4522,8 +4539,10 @@ public class AnalizadorSintactico {
 			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.OR);
 			if(aux2!=null)
 				return aux2;
-			else
-				return new ExpresionTipo(TipoBasico.error_tipo);// TODO insertar error: "tipos no compatibles para operacion logica"
+			else{
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para operacion logica");
+				return new ExpresionTipo(TipoBasico.error_tipo);
+			}
 		}
 		else{
 			parse.add(235);
@@ -4566,12 +4585,12 @@ public class AnalizadorSintactico {
 					if(aux3!=null)
 						return aux3; 
 					else{
-						// TODO insertar error: "tipos no compatibles para asignación" 
+						gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para asignacion");
 						return new ExpresionTipo(TipoBasico.error_tipo);
 					}
 				}
 				else{
-					// TODO insertar error: "tipo no compatible con booleano" 
+					gestorErr.insertaErrorSemantico(linea, columna,"Tipo no compatibles con booleano");
 					return new ExpresionTipo(TipoBasico.error_tipo);
 				}
 			}
@@ -4627,7 +4646,7 @@ public class AnalizadorSintactico {
 			if(aux2!=null)
 				return aux2;
 			else{
-				// TODO insertar error: "tipos no compatibles para asignación" 
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para asignacion");
 				return new ExpresionTipo(TipoBasico.error_tipo);
 			}
 				

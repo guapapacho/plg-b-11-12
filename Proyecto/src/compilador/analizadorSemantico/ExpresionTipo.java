@@ -9,6 +9,8 @@ public class ExpresionTipo {
 	private boolean basico;
 	private TipoBasico tipoBasico;
 	private TipoNoBasico tipoNoBasico;
+	private static ExpresionTipo instanceVacio;
+	private static ExpresionTipo instanceError;
 	
 	public enum TipoBasico{logico, caracter, entero, real, error_tipo, vacio}; 
 	public enum TipoNoBasico{vector, producto, registro, union, puntero, funcion, objeto, cadena}
@@ -189,7 +191,7 @@ public class ExpresionTipo {
 		default : return null;
 		}
 	}
-		
+	
 	public ExpresionTipo(TipoNoBasico tipo){
 		this.basico = false;
 		this.tipoNoBasico = tipo;
@@ -200,6 +202,18 @@ public class ExpresionTipo {
 		this.basico = true;
 		this.tipoBasico = tipo;
 		this.tipoNoBasico = null;
+	}
+	
+	public static ExpresionTipo getError() {
+		if(instanceError == null)
+			instanceError = new ExpresionTipo(TipoBasico.error_tipo);
+		return instanceError;
+	}
+	
+	public static ExpresionTipo getVacio() {
+		if(instanceVacio == null)
+			instanceVacio = new ExpresionTipo(TipoBasico.vacio);
+		return instanceVacio;
 	}
 	
 	public TipoBasico getTipoBasico() {
@@ -277,5 +291,7 @@ public class ExpresionTipo {
 		//TODO terminar este método. habría que ver si los parametros tienen el mismo tipo y si en c se permite pasar menos params
 		return true;
 	}
+	
+	
 	
 }

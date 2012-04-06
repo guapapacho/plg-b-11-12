@@ -1009,7 +1009,7 @@ public class AnalizadorSintactico {
 					return ExpresionTipo.getVacio();
 				else
 					return ExpresionTipo.getError();
-			} else if ((aux=tipo())!=null){
+			} else if (!(aux=tipo()).equals(TipoBasico.vacio)){
 				parse.add(9);
 				System.out.println("9");
 				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
@@ -3201,7 +3201,7 @@ public class AnalizadorSintactico {
 			parse.add(170);
 			nextToken();
 			tipo = postfix_expression();
-		} else if(tipo_simple() != null) {
+		} else if(tipo_simple() != null) { 
 			parse.add(168);
 			if (!tipo_simple().equals(TipoBasico.error_tipo)) {
 				tipo = tipo_simple();

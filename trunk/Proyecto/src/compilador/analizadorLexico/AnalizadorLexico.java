@@ -792,7 +792,7 @@ public class AnalizadorLexico {
 							}
 						 }
 						 else if(modoNoMeto) {
-							 return new Token(TipoToken.IDENTIFICADOR,lexema,comentario);
+							 token = new Token(TipoToken.IDENTIFICADOR,lexema,comentario);
 						 }
 						 else { // si no esta en modo declaracion ni en modo noMeto
 							 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
@@ -1049,6 +1049,8 @@ public class AnalizadorLexico {
 	}
 
 	public void setModoDeclaracion(boolean modoDeclaracion) {
+		if(modoDeclaracion == true)
+			modoNoMeto=false;
 		this.modoDeclaracion = modoDeclaracion;
 	}
 	
@@ -1056,8 +1058,10 @@ public class AnalizadorLexico {
 		return modoNoMeto;
 	}
 
-	public void setModoNoMeto(boolean modoDeclaracion) {
-		this.modoNoMeto = modoDeclaracion;
+	public void setModoNoMeto(boolean modoNoMeto) {
+		if(modoNoMeto == true)
+			modoDeclaracion = false;
+		this.modoNoMeto = modoNoMeto;
 	}
     
 }

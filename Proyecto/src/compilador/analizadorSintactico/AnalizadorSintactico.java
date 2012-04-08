@@ -3984,24 +3984,28 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo resto_mult(ExpresionTipo tipo_h/*RESTO-MULT.tipo_h*/) throws Exception{
-		ExpresionTipo aux = null; //MULTIPLICATIVE-EXPRESSION.tipo_s
+		ExpresionTipo aux1,aux2 = null; //MULTIPLICATIVE-EXPRESSION.tipo_s
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 			nextToken();
 			parse.add(200);
-			aux = multiplicative_expression();
+			aux1 = multiplicative_expression();
+			aux2 = ExpresionTipo.sonEquivArit(aux1,tipo_h,OpAritmetico.MULTIPLICACION);
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.DIVISION)){
 			nextToken();
 			parse.add(201);
-			aux = multiplicative_expression();
+			aux1 = multiplicative_expression();
+			aux2 = ExpresionTipo.sonEquivArit(aux1,tipo_h,OpAritmetico.DIVISION);
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.PORCENTAJE)){
 			nextToken();
 			parse.add(202);
-			aux = multiplicative_expression();
+			aux1 = multiplicative_expression();
+			aux2 = ExpresionTipo.sonEquivArit(aux1,tipo_h,OpAritmetico.PORCENTAJE);
 		} else{
 			parse.add(203);
 			//lambda
 			return ExpresionTipo.getVacio();
 		}
+		/*
 		// { if (RESTO_MULT.tipo_h == PM-EXPRESSION.tipo_s) then
 		if (tipo_h.getTipoBasico().equals("tengo que coger el valor de PM expression")) { //Supuestamente me viene en la misma variable ¿?¿?¿?¿?
 			if (aux.getTipoBasico().equals("entero") && tipo_h.getTipoBasico().equals("entero")) {
@@ -4017,7 +4021,8 @@ public class AnalizadorSintactico {
 		}else {
 			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
-		}
+		}*/
+		return aux2;
 	}
 	
 	/**
@@ -4081,21 +4086,24 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo resto_add(ExpresionTipo tipo_h) throws Exception{
-		ExpresionTipo aux = null;
+		ExpresionTipo aux1,aux2 = null;
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.SUMA)){
 			parse.add(205);
 			nextToken();
-			aux = additive_expression();
+			aux1 = additive_expression();
+			aux2 = ExpresionTipo.sonEquivArit(aux1,tipo_h,OpAritmetico.SUMA);
 		}
 		else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.RESTA)){
 			parse.add(206);
 			nextToken();
-			aux = additive_expression();
+			aux1 = additive_expression();
+			aux2 = ExpresionTipo.sonEquivArit(aux1,tipo_h,OpAritmetico.RESTA);
 		} else{
 			parse.add(207);
 			// lambda
 			return ExpresionTipo.getVacio();
 		}
+		/*
 		//if (RESTO_ADD.tipo_h == ADDITIVE_EXPRESSION.tipo_s) then
 		if (tipo_h.getTipoBasico().equals("tengo que coger el valor de ADDITIVE expression")) { //Supuestamente me viene en la misma variable ¿?¿?¿?¿?
 			if (aux.getTipoBasico().equals("entero") && tipo_h.getTipoBasico().equals("entero")) {
@@ -4112,6 +4120,8 @@ public class AnalizadorSintactico {
 			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
 		}
+		*/
+		return aux2;
 		
 	}
 	
@@ -4171,22 +4181,24 @@ public class AnalizadorSintactico {
 	 * */
 	
 	private ExpresionTipo resto_shift(ExpresionTipo tipo_h) throws Exception {
-		ExpresionTipo aux = null;
+		ExpresionTipo aux1,aux2 = null;
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.DOS_MENORES)){
 			parse.add(209);
 			nextToken();
-			aux = shift_expression();
+			aux1 = shift_expression();
+			aux2 = ExpresionTipo.sonEquivLog(aux1,tipo_h,OpLogico.DOS_MENORES);
 		}
 		else if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.DOS_MAYORES)){
 			parse.add(210);
 			nextToken();
-			aux = shift_expression();
+			aux1 = shift_expression();
+			aux2 = ExpresionTipo.sonEquivLog(aux1,tipo_h,OpLogico.DOS_MAYORES);
 		}
 		else{
 			parse.add(211);
 			return ExpresionTipo.getVacio();
 		}
-		
+		/*
 		if (aux.getTipoBasico().equals(tipo_h)) {
 			//¿Cual es el tipo que tengo que devolver??
 			return null;
@@ -4194,6 +4206,8 @@ public class AnalizadorSintactico {
 			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
 		}
+		*/
+		return aux2;
 			
 	}
 	

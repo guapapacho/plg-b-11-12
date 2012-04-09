@@ -1195,9 +1195,10 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */	private ExpresionTipo lista_param() throws Exception {
 		
-		 if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
+		 if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {///////////////////////////////////////
 				parse.add(21);
-				return new Producto();
+				//return new Producto();
+				return ExpresionTipo.getVacio();
 			}else{
 				parse.add(20);
 				ExpresionTipo TIPO_tipo_s,PASO_tipo_s,RESTO_LISTA_tipo_s;
@@ -1230,11 +1231,11 @@ public class AnalizadorSintactico {
 					}
 					else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta identificador de lista de parametros");
-						return ExpresionTipo.getError();
+						return null;
 					}
 				}else{
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta tipo de lista de parametros");
-					return ExpresionTipo.getError();
+					return null;
 				}
 			}
 		} 

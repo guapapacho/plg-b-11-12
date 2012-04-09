@@ -1170,19 +1170,19 @@ public class AnalizadorSintactico {
 			}
 			if (!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)) {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta }");
+				return null;
 			}
-//			if((ExpresionTipo.sonEquivComp(params, CUERPO_tipo_s, OpComparacion.IGUALDAD))!=null){
-//				ExpresionTipo funcion = new Funcion((Producto) params, tipo_id);
-//				entradaTS.setTipo(funcion); //??
-//			}
+			if((ExpresionTipo.sonEquivComp(params, CUERPO_tipo_s, OpComparacion.IGUALDAD))!=null){
+				ExpresionTipo funcion = new Funcion((Producto) params, tipo_id);
+				CUERPO_tipo_s = funcion; 
+			}
 			gestorTS.cierraBloque();//se termina la funcion, cerramos el bloque
-			nextToken();
 			return CUERPO_tipo_s;
 		}
 		else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba \";\" o \"{\" ");
+			return null;
 		}
-		return CUERPO_tipo_s;
 	}
 
 	/**20. LISTA_PARAM → CONSTANTE TIPO ID PASO RESTO_LISTA

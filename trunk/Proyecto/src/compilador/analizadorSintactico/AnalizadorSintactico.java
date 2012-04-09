@@ -1302,7 +1302,8 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(23);
-			return new Producto();
+			//return new Producto();
+			return ExpresionTipo.getVacio();
 		}
 	}
 
@@ -1328,14 +1329,12 @@ public class AnalizadorSintactico {
 				}
 				else{
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \"]\"");
-					return ExpresionTipo.getError();
-					//ruptura=parse.size();
+					return null;
 				}
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba un numero entero");
-				return ExpresionTipo.getError();
-				//ruptura=parse.size();
+				return null;
 			}
 		}
 		else{

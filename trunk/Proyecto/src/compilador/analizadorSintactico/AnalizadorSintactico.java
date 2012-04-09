@@ -796,13 +796,11 @@ public class AnalizadorSintactico {
 			parse.add(6);
 			tipo_s = ((EntradaTS)token.getAtributo()).getTipo();
 			nextToken();
-			System.out.println("6");
 			return tipo_s;
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
 			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			nextToken();
-			System.out.println("7");
 			if(tipo_s!=null && token.getAtributo()!=null && (token.getAtributo() instanceof EntradaTS)){
 				if(tipo_s.esTipoBasico())
 					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());

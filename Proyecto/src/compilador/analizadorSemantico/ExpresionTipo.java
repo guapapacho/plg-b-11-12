@@ -6,6 +6,8 @@ import compilador.analizadorLexico.Token.OpComparacion;
 import compilador.analizadorLexico.Token.OpLogico;
 
 public class ExpresionTipo {
+	/** Solo para parametros de funciones: indica si se pasa por referencia, por defecto, falso **/
+	protected boolean pasoReferencia = false;
 	private boolean basico;
 	private TipoBasico tipoBasico;
 	private TipoNoBasico tipoNoBasico;
@@ -292,6 +294,13 @@ public class ExpresionTipo {
 		return true;
 	}
 	
-	
+
+	public boolean isPasoReferencia() {
+		return pasoReferencia;
+	}
+
+	public void setPasoReferencia(boolean pasoReferencia) {
+		this.pasoReferencia = pasoReferencia;
+	}
 	
 }

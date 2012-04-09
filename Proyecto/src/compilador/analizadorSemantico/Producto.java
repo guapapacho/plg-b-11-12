@@ -11,6 +11,12 @@ public class Producto extends ExpresionTipo {
 	 * identificador y el tipo semantico **/
 	private Hashtable<String,ExpresionTipo> tablaProd;
 	
+	public Producto()
+	{
+		super(TipoNoBasico.producto);
+		this.tablaProd = new Hashtable<String,ExpresionTipo>();
+	}
+	
 	public Producto(String s, ExpresionTipo e)
 	{
 		super(TipoNoBasico.producto);

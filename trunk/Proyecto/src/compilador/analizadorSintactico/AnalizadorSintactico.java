@@ -1181,10 +1181,10 @@ public class AnalizadorSintactico {
 			if (!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)) {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta }");
 			}
-			if((ExpresionTipo.sonEquivComp(params, CUERPO_tipo_s, OpComparacion.IGUALDAD))!=null){
-				ExpresionTipo funcion = new Funcion((Producto) params, tipo_id);
-				entradaTS.setTipo(funcion); //??
-			}
+//			if((ExpresionTipo.sonEquivComp(params, CUERPO_tipo_s, OpComparacion.IGUALDAD))!=null){
+//				ExpresionTipo funcion = new Funcion((Producto) params, tipo_id);
+//				entradaTS.setTipo(funcion); //??
+//			}
 			gestorTS.cierraBloque();//se termina la funcion, cerramos el bloque
 			nextToken();
 			return CUERPO_tipo_s;
@@ -1719,6 +1719,7 @@ public class AnalizadorSintactico {
 				this.etiquetasSinGoto.put(etiqueta, etiqueta);
 			}
 			lexico.setModoNoMeto(false);
+			lexico.setModoDeclaracion(true);
 			if(TIPO_tipo.getTipoBasico() != TipoBasico.vacio) {
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
 					parse.add(47); 

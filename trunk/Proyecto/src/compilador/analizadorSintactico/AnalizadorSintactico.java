@@ -897,7 +897,12 @@ public class AnalizadorSintactico {
 					nextToken();
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
 						nextToken();
+						//abre nuevo ambito en la tabla de simbolos
+						gestorTS.abreBloque();
 						LISTA_PARAM_tipo_s = lista_param();
+						//completa el tipo semantico en la tabla de simbolos
+						//Funcion(Dominio,Imagen) como es void ponemos null
+						entradaTS.setTipo(new Funcion(((Producto)LISTA_PARAM_tipo_s),null));
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 							nextToken();
 							COSAS3_tipo_s = cosas3(LISTA_PARAM_tipo_s,id_tipo);
@@ -930,18 +935,16 @@ public class AnalizadorSintactico {
 				nextToken();
 				ExpresionTipo LISTANOMBRES_tipo_s,COSAS1_tipo_s;
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
-					String IDlexema = (String)token.getAtributo();
+					String IDlexema = token.atrString();
 					id();
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
-						lexico.setModoNoMeto(true);
 						nextToken();
 						LISTANOMBRES_tipo_s=listaNombres();
 						if(LISTANOMBRES_tipo_s.getTipoBasico() != TipoBasico.error_tipo)
+							//TIPO DEFINIDO No se puede usar							
 							gestorTS.buscaIdBloqueActual(IDlexema).setTipo(LISTANOMBRES_tipo_s);
-							//gestorTS.buscaIdBloqueActual(IDlexema).setTipo((Producto)LISTANOMBRES_tipo_s);
+							
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
-							lexico.setModoNoMeto(false);////
-							lexico.setModoDeclaracion(true);
 							nextToken();
 							if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 								gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \";\"");
@@ -1022,12 +1025,13 @@ public class AnalizadorSintactico {
 	private ExpresionTipo listaNombres() throws Exception {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(14);
-			id();
-			ExpresionTipo tipo_h = new Enumerado(entradaTS.getLexema());
+			entradaTS = (EntradaTS)token.getAtributo();
+			entradaTS.setConstante(true);
+			entradaTS.setTipo(new ExpresionTipo(TipoBasico.entero));
+			ExpresionTipo tipo_h = new Enumerado(token.atrString());
+			nextToken();
 			ExpresionTipo resto_ln = resto_ln(tipo_h);
-			if(resto_ln.getTipoBasico() == TipoBasico.error_tipo)
-				gestorErr.insertaErrorSemantico(linea, columna, "Identificador repetido dentro del enumerado");
-			return resto_ln; //supongo que aqui habra que decir al lexico que inserte, si no se pierde...
+			return resto_ln;
 		}
 		else{
 			parse.add(15);
@@ -1056,13 +1060,18 @@ public class AnalizadorSintactico {
 			parse.add(102);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
-				id();
-				String IDlexema = entradaTS.getLexema();
+				entradaTS = (EntradaTS)token.getAtributo();
+				entradaTS.setConstante(true);
+				entradaTS.setTipo(new ExpresionTipo(TipoBasico.entero));
+				String IDlexema = token.atrString();
+				nextToken();
 				ExpresionTipo RESTO_listaNombres1 = resto_ln(tipo_h);
 				if(RESTO_listaNombres1.getTipoBasico() != TipoBasico.error_tipo)
 				{
-					if(!((Enumerado)RESTO_listaNombres1).ponElemento(IDlexema))
+					if(!((Enumerado)RESTO_listaNombres1).ponElemento(IDlexema)) {
+						gestorErr.insertaErrorSemantico(linea, columna, "Identificador "+IDlexema+" repetido dentro del enumerado");
 						return ExpresionTipo.getError();
+					}	
 					else {
 						return RESTO_listaNombres1;
 					}
@@ -1098,6 +1107,8 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
 			ExpresionTipo LISTA_PARAM_tipo_s,COSAS3_tipo_s;
 			parse.add(16);
+			//abre nuevo bloque en la TS
+			gestorTS.abreBloque();
 			nextToken();
 			//lista_param();
 			LISTA_PARAM_tipo_s=lista_param();
@@ -1155,6 +1166,7 @@ public class AnalizadorSintactico {
 		ExpresionTipo CUERPO_tipo_s = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 			parse.add(18);
+			gestorTS.eliminaBloque();
 			nextToken();
 			return ExpresionTipo.getVacio();
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
@@ -1171,8 +1183,9 @@ public class AnalizadorSintactico {
 			}
 			if((ExpresionTipo.sonEquivComp(params, CUERPO_tipo_s, OpComparacion.IGUALDAD))!=null){
 				ExpresionTipo funcion = new Funcion((Producto) params, tipo_id);
-				entradaTS.setTipo(funcion);
+				entradaTS.setTipo(funcion); //??
 			}
+			gestorTS.cierraBloque();//se termina la funcion, cerramos el bloque
 			nextToken();
 			return CUERPO_tipo_s;
 		}
@@ -1192,37 +1205,49 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */	private ExpresionTipo lista_param() throws Exception {
 		
-		if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
-			parse.add(21);
-			return ExpresionTipo.getVacio();
-		}else{
-			parse.add(20);
-			ExpresionTipo CONSTANTE_tipo_s,TIPO_tipo_s,PASO_tipo_s,RESTO_LISTA_tipo_s;
-			CONSTANTE_tipo_s = constante();
-			TIPO_tipo_s = tipo();
-			//if(tipo()){
-			if(TIPO_tipo_s!=null){
-				PASO_tipo_s = paso();
-				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-					id();
-					RESTO_LISTA_tipo_s = restoLista();
-					if(CONSTANTE_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && TIPO_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && PASO_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && RESTO_LISTA_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
-						return ExpresionTipo.getVacio();
-					else
-						return ExpresionTipo.getError();
-				}
-				else{
-					gestorErr.insertaErrorSintactico(linea, columna, "Falta identificador de lista de parametros");
-					return ExpresionTipo.getError();
-					//ruptura=parse.size();
-				}
+		 if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
+				parse.add(21);
+				return new Producto();
 			}else{
-				gestorErr.insertaErrorSintactico(linea, columna, "Falta tipo de lista de parametros");
-				return ExpresionTipo.getError();
-				//ruptura=parse.size();
+				parse.add(20);
+				ExpresionTipo TIPO_tipo_s,PASO_tipo_s,RESTO_LISTA_tipo_s;
+				boolean constante = constante();
+				TIPO_tipo_s = tipo();
+				if(!TIPO_tipo_s.getTipoBasico().equals(TipoBasico.vacio)){
+					PASO_tipo_s = paso();
+					
+					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+						entradaTS = (EntradaTS)token.getAtributo();
+						entradaTS.setConstante(constante);
+									
+						if(PASO_tipo_s.getTipoNoBasico() == TipoNoBasico.puntero)
+							entradaTS.setTipo(new Puntero(TIPO_tipo_s));
+						else if(PASO_tipo_s.getTipoBasico() == TipoBasico.vacio) 
+							entradaTS.setTipo(TIPO_tipo_s);
+						else {
+							TIPO_tipo_s.setPasoReferencia(true);
+							entradaTS.setTipo(TIPO_tipo_s);
+						}	
+						
+						String IDlexema = token.atrString();
+						nextToken();					
+						RESTO_LISTA_tipo_s = restoLista();
+						if(RESTO_LISTA_tipo_s.getTipoBasico()!=TipoBasico.error_tipo){
+							((Producto)RESTO_LISTA_tipo_s).ponProducto(IDlexema, RESTO_LISTA_tipo_s);
+							return RESTO_LISTA_tipo_s;}
+						else
+							return ExpresionTipo.getError();
+					}
+					else{
+						gestorErr.insertaErrorSintactico(linea, columna, "Falta identificador de lista de parametros");
+						return ExpresionTipo.getError();
+					}
+				}else{
+					gestorErr.insertaErrorSintactico(linea, columna, "Falta tipo de lista de parametros");
+					return ExpresionTipo.getError();
+				}
 			}
-		}
-	} 
+		} 
 	
 	/**
 	 * 259. CONSTANTE → const
@@ -1231,14 +1256,15 @@ public class AnalizadorSintactico {
 	 * 				{ CONSTANTE.tipo := vacio }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo constante() throws Exception {
+	private boolean constante() throws Exception {
 		if(token.esIgual(TipoToken.PAL_RESERVADA, 9 /* const */)){
 			parse.add(259);
-			nextToken();
+			return true;
 		} else {
 			parse.add(260);
+			return false;
 		}
-		return ExpresionTipo.getVacio();
+		//return ExpresionTipo.getVacio();
 	}
 
 	/** 123.PASO → & 
@@ -1255,12 +1281,14 @@ public class AnalizadorSintactico {
 		/*	Object valor = token.getAtributo(); 
 			System.out.println("Paso parametro: " + valor); */
 			nextToken();
+			return null; //si devuelve null se trata de paso por referencia.
 		}
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)) {
 			parse.add(124);
 		/*	Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 			System.out.println("Paso parametro: " + valor); */
 			nextToken();
+			return new ExpresionTipo(TipoNoBasico.puntero);
 		}
 		else
 			parse.add(125);
@@ -1283,7 +1311,7 @@ public class AnalizadorSintactico {
 		}
 		else{
 			parse.add(23);
-			return ExpresionTipo.getVacio();
+			return new Producto();
 		}
 	}
 
@@ -1910,7 +1938,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){ 
 			String IDlexema = token.atrString();
 			parse.add(60);
-			//Añadir tipo semantico de IDlexema?¿?¿ Este id puede estar declarado pero no como registro.No se puede usar
+			//TIPO DEFINIDO No se puede usar
 			gestorTS.buscaIdBloqueActual(IDlexema).setTipo(new ExpresionTipo(TipoNoBasico.registro));
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
@@ -2134,7 +2162,7 @@ public class AnalizadorSintactico {
 				gestorTS.buscaIdBloqueActual(IDlexema).setTipo(nombres_tipo_h);
 				nextToken();
 				NOMBRES1_tipo = nombres(NOMBRES1_tipo_h);
-				if(NOMBRES1_tipo.getTipoBasico() != TipoBasico.error_tipo /*&& gestorTS.buscaIdBloqueActual(IDlexema) == null*/) //El id no tiene que estar declarado
+				if(NOMBRES1_tipo.getTipoBasico() != TipoBasico.error_tipo)
 					return ExpresionTipo.getVacio();
 				else
 					return ExpresionTipo.getError();
@@ -2162,7 +2190,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo ins_lect() throws Exception { 
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MAYORES)){
 			parse.add(68);
-			lexico.setModoDeclaracion(false); lexico.setModoNoMeto(false);
+			lexico.setModoDeclaracion(false); lexico.setModoNoMeto(false);//comienza el modo "uso de variables"
 			nextToken();
 			return resto_lect();
 		}
@@ -2184,29 +2212,26 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo resto_lect() throws Exception {
-		if(token.esIgual(TipoToken.IDENTIFICADOR)){ //FALTA ALGO MAS AQUI???
+		if(token.esIgual(TipoToken.IDENTIFICADOR)){ 
 			parse.add(69);
-			if(gestorTS.buscaIdGeneral(token.atrString()) != null) {		
+			nextToken();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
+				lexico.setModoDeclaracion(true);//termina el modo "uso variables"
 				nextToken();
-				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
-					lexico.setModoDeclaracion(true);
-					nextToken();
-					return ExpresionTipo.getVacio();
-				}
-				else{
-					gestorErr.insertaErrorSintactico(linea, columna,
-							"Lectura terminada incorrectamente, falta ';'" +
-							"Palabra o termino "+token.atrString()+" inseperado.");
-					return null;
-				}
+				return ExpresionTipo.getVacio();
 			}
-			else return ExpresionTipo.getError(); //error semantico
+			else{
+				gestorErr.insertaErrorSintactico(linea, columna,
+						"Lectura terminada incorrectamente, falta ';'" +
+						"Palabra o termino "+token.atrString()+" inseperado.");
+				return null;
+			}
 		}
 		else if(esLiteral()){
 			parse.add(70);
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
-				lexico.setModoDeclaracion(true);
+				lexico.setModoDeclaracion(true);//termina modo "uso variables"
 				nextToken();
 				return  ExpresionTipo.getVacio();
 			}
@@ -2231,7 +2256,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo ins_esc() throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
 			parse.add(63);
-			lexico.setModoDeclaracion(false); lexico.setModoNoMeto(false);
+			lexico.setModoDeclaracion(false); lexico.setModoNoMeto(false);//comienza el modo "uso de variables"
 			nextToken();
 			return resto_esc();
 		}
@@ -2246,10 +2271,7 @@ public class AnalizadorSintactico {
 	 * 72. RESTO_ESC →  LITERAL INS_ESC2
 	 *  {  RESTO_ESC.tipo = INS_ESC2.tipo }
 	 * 73. RESTO_ESC →  ID INS_ESC2
-	 * { if (consulta(id.lexema) != null) then //el id tiene que estar declarado
-           RESTO_ESC.tipo = INS_ESC2.tipo
-         else
-           RESTO_ESC.tipo = error_tipo }
+           RESTO_ESC.tipo = INS_ESC2.tipo }
 	 * 74. RESTO_ESC →  endl INS_ESC2
 	 *  {  RESTO_ESC.tipo = INS_ESC2.tipo }
 	 * @throws Exception 
@@ -2292,7 +2314,7 @@ public class AnalizadorSintactico {
 		}
 		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 			parse.add(76);
-			lexico.setModoDeclaracion(true);
+			lexico.setModoDeclaracion(true);//termina el modo uso de variables
 			nextToken();
 			return ExpresionTipo.getVacio();
 		}

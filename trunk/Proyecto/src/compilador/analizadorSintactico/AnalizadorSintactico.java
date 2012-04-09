@@ -254,9 +254,7 @@ public class AnalizadorSintactico {
 		libreria();
 		resto_programa();
 		if (!token.esIgual(TipoToken.EOF)) {
-			gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");//+lexico.getLexema()+"\" inesperado.");
-			System.out.println("1");
-			//ruptura=parse.size();
+			gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");
 		}
 	}
 	
@@ -274,24 +272,14 @@ public class AnalizadorSintactico {
 				parse.add(2);
 				nextToken();
 				if(token.esIgual(TipoToken.PAL_RESERVADA, 77)) {
-					//token.esIgual(TipoToken.IDENTIFICADOR) && 
-					//"include".equals( ((EntradaTS)token.getAtributo()).getLexema() )) {
 					nextToken();
-					//resto_libreria();
-					//TODO: return resto_libreria();
-					System.out.println("2");//TODO
 					return resto_libreria();
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta palabra \"include\"");
 					return null;
-					//ruptura=parse.size();
 				}
-					//gestorErr.insertaErrorSintactico(linea, columna,
-						//"Falta la palabra reservada \"include\"");				
-				//}
 			} else {
 				parse.add(3);
-				System.out.println("3");//TODO
 				return ExpresionTipo.getVacio();
 			}
 		} else {
@@ -314,15 +302,8 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.LIT_CADENA)) {
 			parse.add(4);
 			nextToken();
-			//System.out.println("libreria con lit cadena");
-			//libreria();
-			System.out.println("4");//TODO
 			ExpresionTipo LIBRERIA_tipo_s=libreria();
 			return LIBRERIA_tipo_s;
-			//if(LIBRERIA_tipo_s.getTipoBasico() != TipoBasico.error_tipo)
-				//return ExpresionTipo.getVacio();
-			//else
-				//return ExpresionTipo.getError();
 		} else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MENOR)) {
 			parse.add(5);
 			nextToken();
@@ -334,8 +315,6 @@ public class AnalizadorSintactico {
 						nextToken();
 						if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR)) {
 							nextToken();
-							//System.out.println("libreria con angulos");
-							//libreria();
 							//ExpresionTipo LIBRERIA_tipo_s=libreria();
 							//if(LIBRERIA_tipo_s.getTipoBasico() != TipoBasico.error_tipo)
 							//	return ExpresionTipo.getVacio();
@@ -346,23 +325,18 @@ public class AnalizadorSintactico {
 							return LIBRERIA_tipo_s;
 						} else {
 							gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \">\"");
-							//ruptura=parse.size();
 						}
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna,"Falta extension de libreria");
-						//ruptura=parse.size();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \".\"");
-					//ruptura=parse.size();
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta la libreria");
-				//ruptura=parse.size();
 			}	
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \"<\" o \"___\"");
-			//ruptura=parse.size();
 		}
 		return null;
 		
@@ -831,10 +805,8 @@ public class AnalizadorSintactico {
 			System.out.println("7");
 			if(tipo_s!=null && token.getAtributo()!=null && (token.getAtributo() instanceof EntradaTS)){
 				if(tipo_s.esTipoBasico())
-//					System.out.println("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());
 					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());
 				else
-//					System.out.println("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoNoBasico().toString());
 					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoNoBasico().toString());
 				return tipo_s;
 			}else if(token.getAtributo() instanceof EntradaTS)
@@ -908,9 +880,11 @@ public class AnalizadorSintactico {
 						}
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la variable");
+						return null;
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta tipo de la variable");
+					return null;
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 69 /* void */)){
 				parse.add(10);
@@ -926,33 +900,34 @@ public class AnalizadorSintactico {
 						LISTA_PARAM_tipo_s = lista_param();
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 							nextToken();
-							//ExpresionTipo funcion = new Funcion((Producto) LISTA_PARAM_tipo_s, id_tipo);
-							//entradaTS.setTipo(funcion);
 							COSAS3_tipo_s = cosas3(LISTA_PARAM_tipo_s,id_tipo);
 							COSAS1_tipo_s = cosas();
 							if(LISTA_PARAM_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS3_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 								return ExpresionTipo.getVacio();
 							else
-								gestorErr.insertaErrorSemantico(linea, columna, "Problema en el tipo de la funcion");
+								gestorErr.insertaErrorSemantico(linea, columna, "Error en el tipo de la funcion");
 								return ExpresionTipo.getError();
 						} else {
 							if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)||token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 								gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \")\"");
+								return null;
 							}
 							else{
 								gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");
+								return null;
 							}
 						}
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"(\"");
+						return null;
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre de la funcion");
+					return null;
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 23 /* enum */)){
 				parse.add(11);
 				nextToken();
-				System.out.println("11");
 				ExpresionTipo LISTANOMBRES_tipo_s,COSAS1_tipo_s;
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
 					String IDlexema = (String)token.getAtributo();
@@ -961,37 +936,38 @@ public class AnalizadorSintactico {
 						lexico.setModoNoMeto(true);
 						nextToken();
 						LISTANOMBRES_tipo_s=listaNombres();
+						if(LISTANOMBRES_tipo_s.getTipoBasico() != TipoBasico.error_tipo)
+							gestorTS.buscaIdBloqueActual(IDlexema).setTipo(LISTANOMBRES_tipo_s);
+							//gestorTS.buscaIdBloqueActual(IDlexema).setTipo((Producto)LISTANOMBRES_tipo_s);
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
+							lexico.setModoNoMeto(false);////
 							lexico.setModoDeclaracion(true);
 							nextToken();
 							if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 								gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \";\"");
 							} else {
 								nextToken();
-								if(LISTANOMBRES_tipo_s.getTipoBasico() != TipoBasico.error_tipo)
-									gestorTS.buscaIdBloqueActual(IDlexema).setTipo(LISTANOMBRES_tipo_s);
-								
 								COSAS1_tipo_s=cosas();
 								if(LISTANOMBRES_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 									return ExpresionTipo.getVacio();
 								else
+									gestorErr.insertaErrorSemantico(linea, columna, "Error al definir las componentes del enumerado");
 									return ExpresionTipo.getError();
 							}
 						} else{
 							gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"}\"");
-							return ExpresionTipo.getError();
+							return null;
 						}
 					} else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"{\"");
-						return ExpresionTipo.getError();
+						return null;
 					}
 				} else{
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre de lista");	
-					return ExpresionTipo.getError();
+					return null;
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /* struct */)){
-				parse.add(12);
-				System.out.println("12");
+				parse.add(12);				
 				ExpresionTipo RESTO_ST_tipo_s,COSAS1_tipo_s;
 				nextToken();
 				RESTO_ST_tipo_s=resto_st();
@@ -999,34 +975,33 @@ public class AnalizadorSintactico {
 				if(RESTO_ST_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 					return ExpresionTipo.getVacio();
 				else
+					gestorErr.insertaErrorSemantico(linea, columna, "Error al definir el struct");
 					return ExpresionTipo.getError();
 			} else if (!(aux=tipo()).equals(TipoBasico.vacio)){
 				parse.add(9);
-				System.out.println("9");
+				lexico.setModoDeclaracion(true);
 				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 					id();
-					ExpresionTipo COSAS2_tipo_h,COSAS1_tipo_s;
-					//cosas2();	
-					//cosas();	
-					ExpresionTipo id_tipo=entradaTS.getTipo();//(entradaTS = (EntradaTS)token.getAtributo()).getTipo();
+					entradaTS.setTipo(aux);
+					ExpresionTipo COSAS2_tipo_h,COSAS1_tipo_s;	
+					ExpresionTipo id_tipo=entradaTS.getTipo();
 					COSAS2_tipo_h=aux;
 					cosas2(COSAS2_tipo_h,id_tipo);
 					COSAS1_tipo_s=cosas();
-					if((!aux.equals(TipoBasico.error_tipo))&&(!COSAS2_tipo_h.equals(TipoBasico.error_tipo))&&(!COSAS1_tipo_s.equals(TipoBasico.error_tipo))){
+					if((aux.getTipoBasico()!=TipoBasico.error_tipo)&&(COSAS2_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)&&(COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)){
 						return ExpresionTipo.getVacio();
 					}
 					else{
+						gestorErr.insertaErrorSemantico(linea, columna, "Error en la definicion de la funcion");
 						return ExpresionTipo.getError();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la variable");
-					return ExpresionTipo.getError();
-					//ruptura=parse.size();
+					return null;
 				}
 			} else {
 				parse.add(13);
 				return ExpresionTipo.getVacio();
-				//gestorErr.insertaErrorSintactico(linea, columna, "");
 			}
 		} 
 		System.out.println("cosas");

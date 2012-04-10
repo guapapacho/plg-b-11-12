@@ -43,8 +43,8 @@ public class AnalizadorSintactico {
 	 */
 	private Vector<Token> ventana;
 	
-	private Tipo tipo;
-	private EntradaTS entradaTS;
+//	private Tipo tipo;
+//	private EntradaTS entradaTS;
 	
 	private int numDefaults;
 	
@@ -74,8 +74,8 @@ public class AnalizadorSintactico {
 		ventana = new Vector<Token>();
 		gestorTS = GestorTablasSimbolos.getGestorTS();
 		gestorErr = GestorErrores.getGestorErrores();
-		tipo = null;
-		entradaTS = null;
+//		tipo = null;
+//		entradaTS = null;
 		nombreClase = null;
 		estamosEnBucle = false;
 		estamosEnSwitch = false;
@@ -102,7 +102,7 @@ public class AnalizadorSintactico {
 	}
 	
 	private ExpresionTipo idConst(ExpresionTipo tipo) throws Exception {
-		entradaTS = (EntradaTS)token.getAtributo();
+		EntradaTS entradaTS = (EntradaTS)token.getAtributo();
 		entradaTS.setTipo(tipo);
 		entradaTS.setConstante(true);
 		nextToken();
@@ -127,9 +127,9 @@ public class AnalizadorSintactico {
 	}
 
 
-	private void id() throws Exception {
-		entradaTS = (EntradaTS)token.getAtributo();
-//		entradaTS.setTipo(tipo); TODO usando ExpresionTipo
+	private void id(ExpresionTipo tipo) throws Exception {
+		EntradaTS entradaTS = (EntradaTS)token.getAtributo();
+		entradaTS.setTipo(tipo);
 		entradaTS.setConstante(false);
 		nextToken();
 	}
@@ -792,6 +792,30 @@ public class AnalizadorSintactico {
 	 */
 	private ExpresionTipo tipo() throws Exception { // TODO terminar este método
 		ExpresionTipo tipo_s =ExpresionTipo.getVacio();
+		lexico.setModoDeclaracion(true);
+		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+			parse.add(6);
+			tipo_s = ((EntradaTS)token.getAtributo()).getTipo();
+			nextToken();
+			return tipo_s;
+		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
+			parse.add(7);
+			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
+			nextToken();
+			if(tipo_s!=null && token.getAtributo()!=null && (token.getAtributo() instanceof EntradaTS)){
+				if(tipo_s.esTipoBasico())
+					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());
+				else
+					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoNoBasico().toString());
+				return tipo_s;
+			}else if(token.getAtributo() instanceof EntradaTS)
+				return ExpresionTipo.getError();
+		}
+		return tipo_s;
+	}
+	
+	private ExpresionTipo tipo2() throws Exception { // TODO terminar este método
+		ExpresionTipo tipo_s =ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(6);
 			tipo_s = ((EntradaTS)token.getAtributo()).getTipo();
@@ -852,7 +876,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo cosas() throws Exception {
-		ExpresionTipo aux;
+		ExpresionTipo aux = null;
 		if(!token.esIgual(TipoToken.EOF)) {
 			if(token.esIgual(TipoToken.PAL_RESERVADA, 9 /*const*/)){
 				parse.add(8);
@@ -884,6 +908,7 @@ public class AnalizadorSintactico {
 					return null;
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 69 /* void */)){
+				EntradaTS entradaTS;
 				parse.add(10);
 				nextToken();
 				ExpresionTipo LISTA_PARAM_tipo_s,COSAS3_tipo_s,COSAS1_tipo_s;
@@ -928,11 +953,11 @@ public class AnalizadorSintactico {
 				ExpresionTipo LISTANOMBRES_tipo_s,COSAS1_tipo_s;
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
 					String IDlexema = (String)token.getAtributo();
-					id();
+					id(aux);
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 						lexico.setModoNoMeto(true);
 						nextToken();
-						LISTANOMBRES_tipo_s=listaNombres();
+						LISTANOMBRES_tipo_s=listaNombres(aux);
 						if(LISTANOMBRES_tipo_s.getTipoBasico() != TipoBasico.error_tipo)
 							gestorTS.buscaIdBloqueActual(IDlexema).setTipo(LISTANOMBRES_tipo_s);
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
@@ -975,15 +1000,16 @@ public class AnalizadorSintactico {
 					return ExpresionTipo.getError();
 			} else if (!(aux=tipo()).equals(TipoBasico.vacio)){
 				parse.add(9);
-				lexico.setModoDeclaracion(true);
+//				lexico.setModoDeclaracion(true);
 				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-					String lexema_id=(String)token.getAtributo();
-					id();
-					gestorTS.buscaIdBloqueActual(lexema_id).setTipo(aux);
+					EntradaTS entradaTSlaura = (EntradaTS)token.getAtributo();
+//					String lexema_id=(String)token.getAtributo();
+					id(aux);
+//					gestorTS.buscaIdBloqueActual(lexema_id).setTipo(aux);
 					ExpresionTipo COSAS2_tipo_h,COSAS1_tipo_s;	
-					ExpresionTipo id_tipo=entradaTS.getTipo();
+					ExpresionTipo id_tipo=entradaTSlaura.getTipo();
 					COSAS2_tipo_h=aux;
-					cosas2(COSAS2_tipo_h,id_tipo);
+					cosas2(COSAS2_tipo_h,id_tipo,entradaTSlaura);
 					COSAS1_tipo_s=cosas();
 					if((aux.getTipoBasico()!=TipoBasico.error_tipo)&&(COSAS2_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)&&(COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)){
 						return ExpresionTipo.getVacio();
@@ -1016,11 +1042,11 @@ public class AnalizadorSintactico {
 	 *						{ LISTANOMBRES.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo listaNombres() throws Exception {
+	private ExpresionTipo listaNombres(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(14);
-			id();
-			ExpresionTipo tipo_h = new Enumerado(entradaTS.getLexema());
+			id(tipo_h);
+//			ExpresionTipo tipo_h = new Enumerado(entradaTS.getLexema());
 			ExpresionTipo resto_ln = resto_ln(tipo_h);
 			if(resto_ln.getTipoBasico() == TipoBasico.error_tipo)
 				gestorErr.insertaErrorSemantico(linea, columna, "Identificador repetido dentro del enumerado");
@@ -1049,6 +1075,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	*/
 	private ExpresionTipo resto_ln(ExpresionTipo tipo_h) throws Exception {
+		EntradaTS entradaTS;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)) {
 			parse.add(102);
 			nextToken();
@@ -1096,7 +1123,7 @@ public class AnalizadorSintactico {
 	 * @param cosas2_tipo_h 
 	 * @throws Exception 
 	 */
-	private ExpresionTipo cosas2(ExpresionTipo COSAS2_tipo_h,ExpresionTipo tipo_id) throws Exception {
+	private ExpresionTipo cosas2(ExpresionTipo COSAS2_tipo_h,ExpresionTipo tipo_id, EntradaTS entrada) throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
 			ExpresionTipo LISTA_PARAM_tipo_s,COSAS3_tipo_s;
 			parse.add(16);
@@ -1129,12 +1156,13 @@ public class AnalizadorSintactico {
 		else {
 			ExpresionTipo INICIALIZACION_tipo_h,DECLARACIONES_tipo_h;
 			parse.add(17);
-			INICIALIZACION_tipo_h=inicializacion(COSAS2_tipo_h); //TODO
+			INICIALIZACION_tipo_h=inicializacion(COSAS2_tipo_h,entrada); //TODO
 			DECLARACIONES_tipo_h=declaraciones(COSAS2_tipo_h); //TODO
 			if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado. Falta separador \";\"");
 				return null;
 			}else{
+				nextToken();
 				if(INICIALIZACION_tipo_h.getTipoBasico()!=TipoBasico.error_tipo && DECLARACIONES_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)
 					return ExpresionTipo.getVacio();
 				else{
@@ -1194,7 +1222,7 @@ public class AnalizadorSintactico {
 	 * 					{ LISTA_PARAM.tipo := vacio }
 	 * @throws Exception 
 	 */	private ExpresionTipo lista_param() throws Exception {
-		
+		EntradaTS entradaTS;
 		 if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {///////////////////////////////////////
 				parse.add(21);
 				//return new Producto();
@@ -1354,8 +1382,9 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
 			parse.add(26);
 			nextToken();
-			ExpresionTipo INIC_DIM_tipo_s=inicDim2();
-			if(ExpresionTipo.sonEquivComp(INIC_DIM_tipo_s, tipo, OpComparacion.IGUALDAD)!=null){
+			ExpresionTipo INIC_DIM_tipo_s=inicDim2(tipo);
+//			if(ExpresionTipo.sonEquivComp(INIC_DIM_tipo_s, tipo, OpComparacion.IGUALDAD)!=null){
+			if(!INIC_DIM_tipo_s.equals(TipoBasico.error_tipo)){
 				return INIC_DIM_tipo_s;
 			}
 			else{
@@ -1374,7 +1403,7 @@ public class AnalizadorSintactico {
 	 * 					{ INIC_DIM2.tipo_s := INIC_DIM3.tipo_s }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo inicDim2() throws Exception {
+	private ExpresionTipo inicDim2(ExpresionTipo tipo_h) throws Exception {
 		if(!token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_LLAVE)){
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"{\"");
 			return null;
@@ -1382,7 +1411,7 @@ public class AnalizadorSintactico {
 		else{
 			parse.add(28);
 			nextToken();
-			ExpresionTipo INIC_DIM2_tipo_s=inicDim3();
+			ExpresionTipo INIC_DIM2_tipo_s=inicDim3(tipo_h);
 			if(!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)){
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"}\"");
 				return null;
@@ -1405,24 +1434,30 @@ public class AnalizadorSintactico {
      *					   else INIC_DIM3.tipo_s := error_tipo  } 
 	 * @throws Exception 
 	 */
-	private ExpresionTipo inicDim3() throws Exception {
+	private ExpresionTipo inicDim3(ExpresionTipo tipo_h) throws Exception {
 		if(!token.esIgual(TipoToken.EOF)){
 			ExpresionTipo LITERAL_TIPOSIMPLE=literal();
 			if(LITERAL_TIPOSIMPLE != null){
 				parse.add(29);
-				ExpresionTipo INIC_DIM4_tipo_s=inicDim4();
-				if(LITERAL_TIPOSIMPLE.getTipoBasico()!=TipoBasico.error_tipo && INIC_DIM4_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
-					return ExpresionTipo.getVacio();
-				else{
-					gestorErr.insertaErrorSemantico(linea, columna, "Error en la inicialización");
+				ExpresionTipo INIC_DIM4_tipo_s=inicDim4(tipo_h);
+				if(ExpresionTipo.sonEquivComp(LITERAL_TIPOSIMPLE, tipo_h, OpComparacion.IGUALDAD)!=null){
+					if(INIC_DIM4_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+						return ExpresionTipo.getVacio();
+					else{
+//						gestorErr.insertaErrorSemantico(linea, columna, "Error en la inicialización");
+						return ExpresionTipo.getError();
+					}
+				}
+				else {
+					gestorErr.insertaErrorSemantico(linea, columna, "ERROR Tipo de inicializacion no compatible");
 					return ExpresionTipo.getError();
 				}
 			}
 			else{
 				parse.add(30);
 				ExpresionTipo INIC_DIM2_tipo_s,INIC_DIM5_tipo_s;
-				INIC_DIM2_tipo_s=inicDim2();
-				INIC_DIM5_tipo_s=inicDim5();
+				INIC_DIM2_tipo_s=inicDim2(tipo_h);
+				INIC_DIM5_tipo_s=inicDim5(tipo_h);
 				if(INIC_DIM2_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && INIC_DIM5_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 					return ExpresionTipo.getVacio();
 				else{
@@ -1445,7 +1480,7 @@ public class AnalizadorSintactico {
 	 *					{ INIC_DIM4.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo inicDim4() throws Exception {
+	private ExpresionTipo inicDim4(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 			parse.add(31);
 			nextToken();
@@ -1455,12 +1490,17 @@ public class AnalizadorSintactico {
 				return null;
 			}
 			else{
-				ExpresionTipo INIC_DIM4_tipo_s=inicDim4();
-				if(LITERAL_TIPOSIMPLE.getTipoBasico()!=TipoBasico.error_tipo && INIC_DIM4_tipo_s.getTipoBasico()!=TipoBasico.error_tipo){
-					return ExpresionTipo.getVacio();
-				}
-				else{
-					gestorErr.insertaErrorSemantico(linea, columna, "Error en la inicialización");
+				ExpresionTipo INIC_DIM4_tipo_s=inicDim4(tipo_h);
+				if(ExpresionTipo.sonEquivComp(LITERAL_TIPOSIMPLE, tipo_h, OpComparacion.IGUALDAD)!=null){
+					if(INIC_DIM4_tipo_s.getTipoBasico()!=TipoBasico.error_tipo){
+						return ExpresionTipo.getVacio();
+					}
+					else{
+//						gestorErr.insertaErrorSemantico(linea, columna, "Error en la inicialización");
+						return ExpresionTipo.getError();
+					}
+				} else {
+					gestorErr.insertaErrorSemantico(linea, columna, "ERROR Tipo de inicializacion no compatible");
 					return ExpresionTipo.getError();
 				}
 			}
@@ -1480,13 +1520,13 @@ public class AnalizadorSintactico {
 	 *					{ INIC_DIM5.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo inicDim5() throws Exception {
+	private ExpresionTipo inicDim5(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 			parse.add(33);
 			nextToken();
 			ExpresionTipo INIC_DIM2_tipo_s,INIC_DIM5_tipo_s;
-			INIC_DIM2_tipo_s=inicDim2();
-			INIC_DIM5_tipo_s=inicDim5();
+			INIC_DIM2_tipo_s=inicDim2(tipo_h);
+			INIC_DIM5_tipo_s=inicDim5(tipo_h);
 			if(INIC_DIM2_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && INIC_DIM5_tipo_s.getTipoBasico()!=TipoBasico.error_tipo){
 				return ExpresionTipo.getVacio();
 			}
@@ -1550,9 +1590,9 @@ public class AnalizadorSintactico {
 			parse.add(37);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-				id();
-				entradaTS.setTipo(tipo_h);
-				ExpresionTipo INICIALIZACION_tipo_h=inicializacion(tipo_h);
+				id(tipo_h);
+				((EntradaTS) token.getAtributo()).setTipo(tipo_h);
+				ExpresionTipo INICIALIZACION_tipo_h=inicializacion(tipo_h,(EntradaTS) token.getAtributo());
 				ExpresionTipo DECLARACIONES_tipo_h=declaraciones(tipo_h);
 				if((INICIALIZACION_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)&&(DECLARACIONES_tipo_h.getTipoBasico()!=TipoBasico.error_tipo))
 					return ExpresionTipo.getVacio();
@@ -1582,7 +1622,7 @@ public class AnalizadorSintactico {
 	 * 						{ INICIALIZACION.tipo := vacio }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo inicializacion(ExpresionTipo tipo_h) throws Exception {
+	private ExpresionTipo inicializacion(ExpresionTipo tipo_h,EntradaTS entrada) throws Exception {
 		if(token.esIgual(TipoToken.OP_ASIGNACION)) {
 			parse.add(39);
 			nextToken();
@@ -1601,6 +1641,9 @@ public class AnalizadorSintactico {
 				Token token_aux=token;
 				nextToken();
 				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)){
+					//Aqui debemos cambiar el tipo asociado a la variable ya insertada en la TS
+					compilador.analizadorSemantico.Vector v = new compilador.analizadorSemantico.Vector((Integer)(token_aux.getAtributo()), tipo_h); //TODO cambiar longitud
+					entrada.setTipo(v);
 					nextToken();
 					ExpresionTipo DIMENSION_tipo=dimension();
 					ExpresionTipo INIC_DIM_tipo_s=inicDim(tipo_h);
@@ -1760,15 +1803,15 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo ins_dec() throws Exception {
-		ExpresionTipo TIPO_tipo;
+		ExpresionTipo TIPO_tipo = null;
 		TIPO_tipo= tipo();
 		if(TIPO_tipo!=null){
 			parse.add(51);
 			if(punt()) nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				EntradaTS entrada=gestorTS.buscaIdBloqueActual((String)token.getAtributo());
-				entrada.setTipo(TIPO_tipo);
-				id();
+//				entrada.setTipo(TIPO_tipo);
+				id(TIPO_tipo);
 				if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)) {
 					nextToken();
 					if(literal()!=null){
@@ -1793,7 +1836,7 @@ public class AnalizadorSintactico {
 				return null;
 			}
 		}
-		return null;
+		return TIPO_tipo;
 		
 	}
 	
@@ -1835,7 +1878,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			//System.out.println("Si es identificador (repetimos)...");
 			parse.add(52);
-			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema());
+//			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema()); //TODO mirar...
 			//TODO: completar la TS con aux2 / tipo_h segun sea 
 			
 			/*if(aux2!=null)
@@ -1851,7 +1894,7 @@ public class AnalizadorSintactico {
 			else
 				return ExpresionTipo.getError();*/
 			
-			return mas_cosas(tipo_h);
+			return mas_cosas(tipo_h,(EntradaTS) token.getAtributo());
 		} else {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador");
@@ -1870,10 +1913,10 @@ public class AnalizadorSintactico {
 	 * ............ANTERIOR:........ 53. MAS_COSAS --> = EXPRESSION ;
 	 * @throws Exception 
 	 */
-	private ExpresionTipo mas_cosas(ExpresionTipo tipo_h) throws Exception {
+	private ExpresionTipo mas_cosas(ExpresionTipo tipo_h, EntradaTS entrada) throws Exception {
 		ExpresionTipo aux1,aux2;
 		parse.add(53);
-		aux1 = inicializacion(tipo_h);
+		aux1 = inicializacion(tipo_h,entrada);
 		aux2 = declaraciones(tipo_h);
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
 			nextToken();
@@ -2765,10 +2808,10 @@ public class AnalizadorSintactico {
 			EntradaTS entrada = (EntradaTS) token.getAtributo();
 			if(entrada == null) {
 				gestorErr.insertaErrorSemantico(linea, columna, "La variable no está declarada");
-				inicializacion(null); // la llamamos para que no de error sintáctico
+				inicializacion(null,entrada); // la llamamos para que no de error sintáctico
 				tipo = ExpresionTipo.getError();
 			} else {
-				tipo = inicializacion(entrada.getTipo());
+				tipo = inicializacion(entrada.getTipo(),entrada);
 			}
 		} else {
 			ExpresionTipo aux = tipo();
@@ -2777,12 +2820,12 @@ public class AnalizadorSintactico {
 				lexico.setModoDeclaracion(true);
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
 					nextToken();
-					EntradaTS entrada = (EntradaTS) token.getAtributo();
-					if(entrada != null) {
-						entrada.setTipo(aux);
-						tipo = inicializacion(aux);
+					EntradaTS entrada1 = (EntradaTS) token.getAtributo();
+					if(entrada1 != null) {
+						entrada1.setTipo(aux);
+						tipo = inicializacion(aux,entrada1);
 					} else {
-						inicializacion(aux);
+						inicializacion(aux,entrada1);
 						gestorErr.insertaErrorSemantico(linea, columna, "La variable ya estába declarada");
 						tipo = ExpresionTipo.getError();
 					}

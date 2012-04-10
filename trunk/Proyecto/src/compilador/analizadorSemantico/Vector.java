@@ -1,16 +1,16 @@
 package compilador.analizadorSemantico;
-import java.util.*;
 
 public class Vector extends ExpresionTipo {
 	private int longitud;
-	private ExpresionTipo tipo; 
+//	private ExpresionTipo tipo;
+	private ExpresionTipo tipoElementos; 
 	/** vector donde guardar los elementos que contiene el tipo Vector*/
 	private java.util.Vector<String> elementos;
 	
-	public Vector(int longitud, ExpresionTipo tipo) {
+	public Vector(int longitud, ExpresionTipo tipoElementos) {
 		super(TipoNoBasico.vector);
 		this.longitud = longitud;
-		this.tipo = tipo;
+		this.tipoElementos = tipoElementos;
 	}
 	
 	
@@ -26,9 +26,10 @@ public class Vector extends ExpresionTipo {
 	public int getLongitud() {
 		return longitud;
 	}
+
 	
-	public ExpresionTipo getTipo() {
-		return tipo;
+	public ExpresionTipo getTipoElementos() {
+		return tipoElementos;
 	}
 
 }

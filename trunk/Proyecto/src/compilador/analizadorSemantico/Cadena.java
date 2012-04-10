@@ -3,6 +3,7 @@ package compilador.analizadorSemantico;
 public class Cadena extends ExpresionTipo {
 	private int longitud;
 	private ExpresionTipo tipo; 
+	private ExpresionTipo tipoElementos;
 	
 	public Cadena() {
 		this(0);
@@ -10,7 +11,7 @@ public class Cadena extends ExpresionTipo {
 	public Cadena(int longitud) {
 		super(TipoNoBasico.cadena);
 		this.longitud = longitud;
-		this.tipo = new ExpresionTipo(TipoBasico.caracter);
+		this.tipoElementos = new ExpresionTipo(TipoBasico.caracter);
 	}
 	
 	public int getLongitud() {
@@ -19,6 +20,10 @@ public class Cadena extends ExpresionTipo {
 	
 	public ExpresionTipo getTipo() {
 		return tipo;
+	}
+	
+	public ExpresionTipo getTipoElementos() {
+		return tipoElementos;
 	}
 
 }

@@ -17,11 +17,11 @@ public class Cadena extends ExpresionTipo {
 	public int getLongitud() {
 		return longitud;
 	}
-	
+	/*
 	public ExpresionTipo getTipo() {
 		return tipo;
 	}
-	
+	*/
 	public ExpresionTipo getTipoElementos() {
 		return tipoElementos;
 	}

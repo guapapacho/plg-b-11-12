@@ -1,7 +1,11 @@
 package compilador.gestionTablasSimbolos;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.TreeSet;
 import java.util.Vector;
+
 
 /**
  * Clase que contiene (al menos) un registro
@@ -62,6 +66,18 @@ public class TablaSimbolos {
 		EntradaTS entrada = new EntradaTS(lexema);
 		entradasTS.put(lexema, entrada);
 		return entrada;
+	}
+	
+	public void verContenido(){
+		ArrayList<EntradaTS> al = (ArrayList<EntradaTS>) entradasTS.values();
+		EntradaTS entrada;
+		System.out.println("-----------------------------------");
+		System.out.println("       TABLAS DE SIMBOLOS: ");
+		System.out.println("-----------------------------------");
+		for(Iterator<EntradaTS> i = al.iterator();i.hasNext();){
+			entrada = i.next();
+			System.out.println("Variable "+entrada.getLexema()+" declarada con tipo \'"+entrada.getTipo().getTipo().toString()+"\'");
+		}
 	}
 	
 }

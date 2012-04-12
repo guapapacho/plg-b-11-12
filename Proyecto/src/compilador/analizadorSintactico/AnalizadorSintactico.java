@@ -82,6 +82,7 @@ public class AnalizadorSintactico {
 		estamosEnFuncion = false;
 		try {
 			nextToken();
+			//expression();
 			programa();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -104,6 +105,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo idConst(ExpresionTipo tipo) throws Exception {
 		EntradaTS entradaTS = (EntradaTS)token.getAtributo();
 		entradaTS.setTipo(tipo);
+		declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: \'"+tipo.getTipo().toString()+"\'");
 		entradaTS.setConstante(true);
 		nextToken();
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
@@ -130,6 +132,7 @@ public class AnalizadorSintactico {
 	private void id(ExpresionTipo tipo) throws Exception {
 		EntradaTS entradaTS = (EntradaTS)token.getAtributo();
 		entradaTS.setTipo(tipo);
+		//declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo.getTipo().toString());
 		entradaTS.setConstante(false);
 		nextToken();
 	}
@@ -145,7 +148,7 @@ public class AnalizadorSintactico {
 //			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
 //			System.out.println("LITERAL CADENA: " + valor);
 			nextToken();
-			return new Cadena(((String) token.getAtributo()).length());
+			return new Cadena(((String) tokenAnterior.getAtributo()).length());
 		}
 		else if(token.esIgual(TipoToken.LIT_CARACTER)){
 //			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
@@ -803,10 +806,11 @@ public class AnalizadorSintactico {
 			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			nextToken();
 			if(tipo_s!=null && token.getAtributo()!=null && (token.getAtributo() instanceof EntradaTS)){
-				if(tipo_s.esTipoBasico())
+				declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: \'"+tipo_s.getTipo().toString()+"\'");
+				/*if(tipo_s.esTipoBasico())
 					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());
 				else
-					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoNoBasico().toString());
+					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoNoBasico().toString());*/
 				return tipo_s;
 			}else if(token.getAtributo() instanceof EntradaTS)
 				return ExpresionTipo.getError();
@@ -826,10 +830,11 @@ public class AnalizadorSintactico {
 			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			nextToken();
 			if(tipo_s!=null && token.getAtributo()!=null && (token.getAtributo() instanceof EntradaTS)){
-				if(tipo_s.esTipoBasico())
+				declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipo().toString());
+				/*if(tipo_s.esTipoBasico())
 					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());
 				else
-					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoNoBasico().toString());
+					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoNoBasico().toString());*/
 				return tipo_s;
 			}else if(token.getAtributo() instanceof EntradaTS)
 				return ExpresionTipo.getError();
@@ -1591,8 +1596,9 @@ public class AnalizadorSintactico {
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 				id(tipo_h);
-				((EntradaTS) token.getAtributo()).setTipo(tipo_h);
-				ExpresionTipo INICIALIZACION_tipo_h=inicializacion(tipo_h,(EntradaTS) token.getAtributo());
+				//((EntradaTS) token.getAtributo()).setTipo(tipo_h);
+				//ExpresionTipo INICIALIZACION_tipo_h=inicializacion(tipo_h,(EntradaTS) token.getAtributo());
+				ExpresionTipo INICIALIZACION_tipo_h=inicializacion(tipo_h,(EntradaTS) tokenAnterior.getAtributo());
 				ExpresionTipo DECLARACIONES_tipo_h=declaraciones(tipo_h);
 				if((INICIALIZACION_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)&&(DECLARACIONES_tipo_h.getTipoBasico()!=TipoBasico.error_tipo))
 					return ExpresionTipo.getVacio();
@@ -1644,6 +1650,7 @@ public class AnalizadorSintactico {
 					//Aqui debemos cambiar el tipo asociado a la variable ya insertada en la TS
 					compilador.analizadorSemantico.Vector v = new compilador.analizadorSemantico.Vector((Integer)(token_aux.getAtributo()), tipo_h); //TODO cambiar longitud
 					entrada.setTipo(v);
+					declaraciones.add("Declaramos "+ entrada.getLexema()+ " con tipo semantico: \'"+v.getTipo().toString()+"\'");
 					nextToken();
 					ExpresionTipo DIMENSION_tipo=dimension();
 					ExpresionTipo INIC_DIM_tipo_s=inicDim(tipo_h);
@@ -1894,7 +1901,7 @@ public class AnalizadorSintactico {
 			else
 				return ExpresionTipo.getError();*/
 			
-			return mas_cosas(tipo_h,(EntradaTS) token.getAtributo());
+			return mas_cosas(tipo_h,(EntradaTS) tokenAnterior.getAtributo());
 		} else {
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador");
@@ -4179,6 +4186,7 @@ public class AnalizadorSintactico {
 			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
 		}
+		//return literal();
 		
 	}
 
@@ -4255,15 +4263,15 @@ public class AnalizadorSintactico {
 			return aux2;
 	}
 
-	/**	213. RESTO-RELATIONAL → < RESTO2-RELATIONAL
+	/**	213. RESTO-RELATIONAL → < SHIFT_EXPRESSION
 	 * 							  { if (RESTO_RELATIONAL.tipo_h == SHIFT_EXPRESSION.tipo_s)
 	 * 								then   RESTO_RELATIONAL.tipo_s := logico
 	 * 								else    RESTO_RELATIONAL.tipo_s := error_tipo } 
-	 * 214. RESTO-RELATIONAL → > RESTO2-RELATIONAL
+	 * 214. RESTO-RELATIONAL → > SHIFT_EXPRESSION
 	 * 							  { BIS }
-	 * 216. RESTO-RELATIONAL → >= RESTO2-RELATIONAL //TODO cambiar las reglas en la memoria
+	 * 216. RESTO-RELATIONAL → >= SHIFT_EXPRESSION //TODO cambiar las reglas en la memoria
 	 * 							  { BIS }
-	 * 217. RESTO-RELATIONAL → <= RESTO2-RELATIONAL //TODO cambiar las reglas en la memoria
+	 * 217. RESTO-RELATIONAL → <= SHIFT_EXPRESSION //TODO cambiar las reglas en la memoria
 	 * 							  { BIS }
 	 * 215. RESTO-RELATIONAL → lambda
 	 * 							  { RESTO_RELATIONAL.tipo_s := vacio }
@@ -4278,7 +4286,7 @@ public class AnalizadorSintactico {
 			if(aux2!=null)
 				return aux2;
 			else{
-				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica");
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica: \'"+tipo_h.getTipo().toString()+"\' < \'"+aux1.getTipo().toString()+"\'");
 				return ExpresionTipo.getError();
 			}
 		}
@@ -4290,7 +4298,7 @@ public class AnalizadorSintactico {
 			if(aux2!=null)
 				return aux2;
 			else{
-				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica");
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica: \'"+tipo_h.getTipo().toString()+"\' > \'"+aux1.getTipo().toString()+"\'");
 				return ExpresionTipo.getError();
 			}
 		}
@@ -4302,7 +4310,7 @@ public class AnalizadorSintactico {
 			if(aux2!=null)
 				return aux2;
 			else{
-				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica");
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica: \'"+tipo_h.getTipo().toString()+"\' >= \'"+aux1.getTipo().toString()+"\'");
 				return ExpresionTipo.getError();
 			}
 		}
@@ -4314,7 +4322,7 @@ public class AnalizadorSintactico {
 			if(aux2!=null)
 				return aux2;
 			else{
-				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica");
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica: \'"+tipo_h.getTipo().toString()+"\' <= \'"+aux1.getTipo().toString()+"\'");
 				return ExpresionTipo.getError();
 			}
 		}
@@ -4390,7 +4398,7 @@ public class AnalizadorSintactico {
 			if(aux2!=null)
 				return aux2;
 			else{
-				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica");
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica: \'"+tipo_h.getTipo().toString()+"\' == \'"+aux1.getTipo().toString()+"\'");
 				return ExpresionTipo.getError();
 			}
 		}
@@ -4402,7 +4410,7 @@ public class AnalizadorSintactico {
 			if(aux2!=null)
 				return aux2;
 			else{
-				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica");
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para comparacion logica: \'"+tipo_h.getTipo().toString()+"\' != \'"+aux1.getTipo().toString()+"\'");
 				return ExpresionTipo.getError();
 			}
 		}
@@ -4455,7 +4463,7 @@ public class AnalizadorSintactico {
 			if(aux2!=null)
 				return aux2;
 			else{
-				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para operacion logica binaria");
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para operacion logica binaria: \'"+tipo_h.getTipo().toString()+"\' & \'"+aux1.getTipo().toString()+"\'");
 				return ExpresionTipo.getError();
 			}
 		}
@@ -4502,7 +4510,7 @@ public class AnalizadorSintactico {
 			if(aux2!=null)
 				return aux2;
 			else{
-				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para operacion logica binaria");
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para operacion logica binaria: \'"+tipo_h.getTipo().toString()+"\' ^ \'"+aux1.getTipo().toString()+"\'");
 				return ExpresionTipo.getError();
 			}
 		}
@@ -4547,8 +4555,10 @@ public class AnalizadorSintactico {
 			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.BIT_OR);
 			if(aux2!=null)
 				return aux2;
-			else
-				return ExpresionTipo.getError();// TODO insertar error: "tipos no compatibles para operacion logica binaria"
+			else{
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para operacion logica binaria: \'"+tipo_h.getTipo().toString()+"\' | \'"+aux1.getTipo().toString()+"\'");
+				return ExpresionTipo.getError();
+			}
 		}
 		else{
 			parse.add(229);
@@ -4591,7 +4601,7 @@ public class AnalizadorSintactico {
 			if(aux2!=null)
 				return aux2;
 			else{
-				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para operacion logica");
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para operacion logica: \'"+tipo_h.getTipo().toString()+"\' && \'"+aux1.getTipo().toString()+"\'");
 				return ExpresionTipo.getError();
 			}
 		}
@@ -4637,7 +4647,7 @@ public class AnalizadorSintactico {
 			if(aux2!=null)
 				return aux2;
 			else{
-				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para operacion logica");
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para operacion logica: \'"+tipo_h.getTipo().toString()+"\' || \'"+aux1.getTipo().toString()+"\'");
 				return ExpresionTipo.getError();
 			}
 		}
@@ -4682,12 +4692,12 @@ public class AnalizadorSintactico {
 					if(aux3!=null)
 						return aux3; 
 					else{
-						gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para asignacion");
+						gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para asignacion: \'"+tipo_h.getTipo().toString()+"\' y \'"+aux1.getTipo().toString()+"\'");
 						return ExpresionTipo.getError();
 					}
 				}
 				else{
-					gestorErr.insertaErrorSemantico(linea, columna,"Tipo no compatibles con booleano");
+					gestorErr.insertaErrorSemantico(linea, columna,"Tipo no compatible para expresion condicional: \'"+tipo_h.getTipo().toString()+"\'");
 					return ExpresionTipo.getError();
 				}
 			}
@@ -4743,7 +4753,7 @@ public class AnalizadorSintactico {
 			if(aux2!=null)
 				return aux2;
 			else{
-				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para asignacion");
+				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para asignacion: \'"+tipo_h.getTipo().toString()+"\' = \'"+aux1.getTipo().toString()+"\'");
 				return ExpresionTipo.getError();
 			}
 				

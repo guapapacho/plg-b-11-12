@@ -460,6 +460,6 @@ public class Compilador extends JFrame {
 		c.setEnabled(true);
 		c.setVisible(true);
 		
-		Compilador.comprobarExpresiones();
+		//Compilador.comprobarExpresiones();
 	}
 }

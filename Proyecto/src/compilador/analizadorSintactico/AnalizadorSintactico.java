@@ -793,7 +793,7 @@ public class AnalizadorSintactico {
 	 * 			{ TIPO.tipo := TIPO_SIMPLE.tipo }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo tipo() throws Exception { // TODO terminar este método
+	private ExpresionTipo tipo() throws Exception { 
 		ExpresionTipo tipo_s =ExpresionTipo.getVacio();
 		lexico.setModoDeclaracion(true);
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
@@ -807,10 +807,6 @@ public class AnalizadorSintactico {
 			nextToken();
 			if(tipo_s!=null && token.getAtributo()!=null && (token.getAtributo() instanceof EntradaTS)){
 				declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: \'"+tipo_s.getTipo().toString()+"\'");
-				/*if(tipo_s.esTipoBasico())
-					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());
-				else
-					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoNoBasico().toString());*/
 				return tipo_s;
 			}else if(token.getAtributo() instanceof EntradaTS)
 				return ExpresionTipo.getError();

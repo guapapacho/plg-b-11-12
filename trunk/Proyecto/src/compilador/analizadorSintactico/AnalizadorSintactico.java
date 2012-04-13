@@ -105,7 +105,6 @@ public class AnalizadorSintactico {
 	private ExpresionTipo idConst(ExpresionTipo tipo) throws Exception {
 		EntradaTS entradaTS = (EntradaTS)token.getAtributo();
 		entradaTS.setTipo(tipo);
-		declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: \'"+tipo.getTipo().toString()+"\'");
 		entradaTS.setConstante(true);
 		nextToken();
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
@@ -113,6 +112,7 @@ public class AnalizadorSintactico {
 			ExpresionTipo LITERAL_tipo=literal();
 			if(literal() != null) {
 				if(ExpresionTipo.sonEquivAsig(entradaTS.getTipo(), LITERAL_tipo, OpAsignacion.ASIGNACION)!=null){
+					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: \'"+tipo.getTipo().toString()+"\'");
 					return tipo;
 				} else {
 					//gestorErr.insertaErrorSintactico(linea, columna, "Constante mal inicializada");

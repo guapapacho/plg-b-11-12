@@ -2,7 +2,6 @@ package compilador.analizadorSemantico;
 
 public class Cadena extends ExpresionTipo {
 	private int longitud;
-	private ExpresionTipo tipo; 
 	private ExpresionTipo tipoElementos;
 	
 	public Cadena() {

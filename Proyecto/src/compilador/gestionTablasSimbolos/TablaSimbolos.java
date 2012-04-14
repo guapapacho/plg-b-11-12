@@ -1,9 +1,9 @@
 package compilador.gestionTablasSimbolos;
 
-import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Vector;
+
+import compilador.analizadorSemantico.ExpresionTipo.TipoNoBasico;
 
 
 /**
@@ -67,16 +67,25 @@ public class TablaSimbolos {
 		return entrada;
 	}
 	
-	public void verContenido(){
-		ArrayList<EntradaTS> al = (ArrayList<EntradaTS>) entradasTS.values();
-		EntradaTS entrada;
-		System.out.println("-----------------------------------");
-		System.out.println("       TABLAS DE SIMBOLOS: ");
-		System.out.println("-----------------------------------");
-		for(Iterator<EntradaTS> i = al.iterator();i.hasNext();){
-			entrada = i.next();
-			System.out.println("Variable "+entrada.getLexema()+" declarada con tipo \'"+entrada.getTipo().getTipo().toString()+"\'");
+	public String toString() {
+		String s = "";
+		
+		s += "--- Entradas ---\n";
+		for(EntradaTS entrada: entradasTS.values()){
+			if (entrada.getTipo().equals(TipoNoBasico.funcion) || entrada.getTipo().equals(TipoNoBasico.cabecera)) {
+				s += "  " + entrada.getLexema()+" \'"+entrada.getTipo().toString()+"\'\n";
+			} else {
+				s += entrada.isConstante() ? "  Constante ": "  Variable ";
+				s += entrada.getLexema()+" declarada con tipo \'"+entrada.getTipo().toString()+"\'\n";
+			}
 		}
+		
+		s += "--- Tablas ---\n";
+		for(TablaSimbolos contenido: contenidos) {
+			s += contenido + "\n";
+		}
+		
+		return s + "\n";
 	}
 	
 }

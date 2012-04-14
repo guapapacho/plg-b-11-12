@@ -45,9 +45,6 @@ public class AnalizadorSintactico {
 	 */
 	private Vector<Token> ventana;
 	
-//	private Tipo tipo;
-//	private EntradaTS entradaTS;
-	
 	private int numDefaults;
 	
 	/** Marca si estamos en el cuerpo de un bucle */
@@ -1249,6 +1246,7 @@ public class AnalizadorSintactico {
 	 * 						else LISTA_PARAM.tipo := error_tipo  } 
 	 * 21. LISTA_PARAM → lambda
 	 * 					{ LISTA_PARAM.tipo := vacio }
+	 * @param RESTO_LISTA_tipo_h 
 	 * @throws Exception 
 	 */	private ExpresionTipo lista_param() throws Exception {
 		EntradaTS entradaTS;
@@ -1267,21 +1265,20 @@ public class AnalizadorSintactico {
 					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 						entradaTS = (EntradaTS)token.getAtributo();
 						entradaTS.setConstante(constante);
-									
-						if(PASO_tipo_s.getTipoNoBasico() == TipoNoBasico.puntero)
+						
+						if(PASO_tipo_s == null) {
+							TIPO_tipo_s.setPasoReferencia(true);
+							entradaTS.setTipo(TIPO_tipo_s);
+						} else if(PASO_tipo_s.getTipoNoBasico() == TipoNoBasico.puntero)
 							entradaTS.setTipo(new Puntero(TIPO_tipo_s));
 						else if(PASO_tipo_s.getTipoBasico() == TipoBasico.vacio) 
 							entradaTS.setTipo(TIPO_tipo_s);
-						else {
-							TIPO_tipo_s.setPasoReferencia(true);
-							entradaTS.setTipo(TIPO_tipo_s);
-						}	
-						
+//						RESTO_LISTA_tipo_h.ponProducto(token.atrString(), entradaTS.getTipo());
 						String IDlexema = token.atrString();
 						nextToken();					
 						RESTO_LISTA_tipo_s = restoLista();
 						if(RESTO_LISTA_tipo_s.getTipoBasico()!=TipoBasico.error_tipo){
-							((Producto)RESTO_LISTA_tipo_s).ponProducto(IDlexema, RESTO_LISTA_tipo_s);
+							((Producto)RESTO_LISTA_tipo_s).ponProducto(IDlexema, entradaTS.getTipo());
 							return RESTO_LISTA_tipo_s;}
 						else
 							return ExpresionTipo.getError();
@@ -1349,6 +1346,7 @@ public class AnalizadorSintactico {
 	 * 					{ RESTO_LISTA.tipo := LISTA_PARAM.tipo } 
 	 * 23. RESTO_LISTA → lambda
 	 * 					{ RESTO_LISTA.tipo := vacio }
+	 * @param RESTO_LISTA_tipo_h 
 	 * @throws Exception 
 	 */
 	private ExpresionTipo restoLista() throws Exception {
@@ -1360,7 +1358,7 @@ public class AnalizadorSintactico {
 		else{
 			parse.add(23);
 			return new Producto();
-			//return ExpresionTipo.getVacio();
+//			return ExpresionTipo.getVacio();
 		}
 	}
 
@@ -2582,10 +2580,10 @@ public class AnalizadorSintactico {
 			parse.add(131);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
-				nextToken();
 				if(token.getAtributo() instanceof String) {
 					etiquetasConGoto.add((String) token.getAtributo());
 				}
+				nextToken();
 				lexico.setModoNoMeto(false);
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 					lexico.setModoDeclaracion(false);

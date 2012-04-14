@@ -31,5 +31,9 @@ public class Vector extends ExpresionTipo {
 	public ExpresionTipo getTipoElementos() {
 		return tipoElementos;
 	}
+	
+	public String toString() {
+		return "Vector de " + tipoElementos + ".";
+	}
 
 }

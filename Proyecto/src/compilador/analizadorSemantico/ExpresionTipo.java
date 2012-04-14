@@ -328,4 +328,16 @@ public class ExpresionTipo {
 		this.pasoReferencia = pasoReferencia;
 	}
 	
+	public String toString() {
+		switch (tipoBasico){
+		case logico: return "Logico";
+		case caracter: return "Caracter";
+		case entero: return "Entero";
+		case real: return "Real";
+		case error_tipo: return "Error"; 
+		case vacio: return "Vacio";
+		default: return "ninguno?";
+		}
+	}
+	
 }

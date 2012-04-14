@@ -11,5 +11,9 @@ public class Union extends ExpresionTipo {
 	public Producto getCampos() {
 		return campos;
 	}
+	
+	public String toString() {
+		return "Union con los siguientes campos:\n" + campos;
+	}
 
 }

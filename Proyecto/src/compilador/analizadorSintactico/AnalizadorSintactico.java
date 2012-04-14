@@ -11,7 +11,6 @@ import compilador.analizadorSemantico.ExpresionTipo.TipoBasico;
 import compilador.analizadorSemantico.ExpresionTipo.TipoNoBasico;
 import compilador.gestionErrores.GestorErrores;
 import compilador.gestionTablasSimbolos.*;
-import compilador.gestionTablasSimbolos.Tipo.EnumTipo;
 
 public class AnalizadorSintactico {
 
@@ -3489,16 +3488,16 @@ public class AnalizadorSintactico {
 	 * 					{POSTFIX4.tipo_s := vacio}
 	 * @throws Exception 
 	 */
-	private ExpresionTipo postfix4() throws Exception {
-		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
-			parse.add(171);
-			nextToken();
-			return ExpresionTipo.getVacio();
-		} else {
-			parse.add(172);
-			return ExpresionTipo.getVacio();
-		}
-	}
+//	private ExpresionTipo postfix4() throws Exception {
+//		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+//			parse.add(171);
+//			nextToken();
+//			return ExpresionTipo.getVacio();
+//		} else {
+//			parse.add(172);
+//			return ExpresionTipo.getVacio();
+//		}
+//	}
 	
 	
 	/**

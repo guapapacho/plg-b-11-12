@@ -3,7 +3,6 @@ package compilador.gestionTablasSimbolos;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.TreeSet;
 import java.util.Vector;
 
 

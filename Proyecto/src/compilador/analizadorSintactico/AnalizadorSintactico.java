@@ -19,6 +19,9 @@ public class AnalizadorSintactico {
 	
 	private Token tokenAnterior;
 	
+	/** Tabla hash con los tipos definidos */
+	private Hashtable<String,ExpresionTipo> tiposDefinidos;
+	
 	/** Lista de tokens obtenidos del Analizador lexico */
 	private Vector<Token> tokens;
 	/** Analizador lexico */
@@ -79,6 +82,7 @@ public class AnalizadorSintactico {
 		estamosEnBucle = false;
 		estamosEnSwitch = false;
 		estamosEnFuncion = false;
+		tiposDefinidos = new Hashtable<String,ExpresionTipo>();
 		try {
 			nextToken();
 			//expression();
@@ -818,23 +822,22 @@ public class AnalizadorSintactico {
 		return tipo_s;
 	}
 	
-	private ExpresionTipo tipo2() throws Exception { // TODO terminar este método
+	//Metodo exactamente igual que tipo() pero no se encuentra en modo declaracion.
+	//(util para registros y enumerados)
+	private ExpresionTipo tipo2() throws Exception { 
 		ExpresionTipo tipo_s =ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(6);
-			tipo_s = ((EntradaTS)token.getAtributo()).getTipo();
+			//tipo_s = ((EntradaTS)token.getAtributo()).getTipo();
 			nextToken();
-			return tipo_s;
+			//return tipo_s;
+			return new Objeto(((EntradaTS)tokenAnterior.getAtributo()).getLexema());
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
 			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			nextToken();
 			if(tipo_s!=null && token.getAtributo()!=null && (token.getAtributo() instanceof EntradaTS)){
 				declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipo().toString());
-				/*if(tipo_s.esTipoBasico())
-					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoBasico().toString());
-				else
-					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipoNoBasico().toString());*/
 				return tipo_s;
 			}else if(token.getAtributo() instanceof EntradaTS)
 				return ExpresionTipo.getError();
@@ -957,22 +960,31 @@ public class AnalizadorSintactico {
 				nextToken();
 				ExpresionTipo LISTANOMBRES_tipo_s,COSAS1_tipo_s;
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
-					String IDlexema = (String)token.getAtributo();
-					id(aux);
+					String IDlexema = (String)token.atrString();
+					aux = new Enumerado();
+					nextToken();
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
-						lexico.setModoNoMeto(true);
+						//se pone a modo declaracion porque interesa insertar los id de los 
+						//enumerados en la TS como constantes enteras.
+						lexico.setModoDeclaracion(true);
 						nextToken();
 						LISTANOMBRES_tipo_s=listaNombres(aux);
 						if(LISTANOMBRES_tipo_s.getTipoBasico() != TipoBasico.error_tipo)
 							gestorTS.buscaIdBloqueActual(IDlexema).setTipo(LISTANOMBRES_tipo_s);
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
-							lexico.setModoNoMeto(false);////
-							lexico.setModoDeclaracion(true);
 							nextToken();
 							if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 								gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \";\"");
 							} else {
 								nextToken();
+								if(LISTANOMBRES_tipo_s.getTipoBasico()!=TipoBasico.error_tipo) {
+									((Enumerado)LISTANOMBRES_tipo_s).setNombreEnumerado(IDlexema);
+									//metemos el id del enumerado con su tipo en la tabla hash de tipos definidos
+									tiposDefinidos.put(IDlexema, LISTANOMBRES_tipo_s);
+									EntradaTS entradaTS = gestorTS.buscaIdBloqueActual(IDlexema);
+									entradaTS.setConstante(false);
+									entradaTS.setTipo(LISTANOMBRES_tipo_s);
+								}
 								COSAS1_tipo_s=cosas();
 								if(LISTANOMBRES_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 									return ExpresionTipo.getVacio();
@@ -1050,16 +1062,25 @@ public class AnalizadorSintactico {
 	private ExpresionTipo listaNombres(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(14);
-			id(tipo_h);
-//			ExpresionTipo tipo_h = new Enumerado(entradaTS.getLexema());
+			EntradaTS entradaTS = (EntradaTS)token.getAtributo();
+			entradaTS.setConstante(true);
+			entradaTS.setTipo(new ExpresionTipo(TipoBasico.entero));
+			String IDlexema = token.atrString();
+			nextToken();
 			ExpresionTipo resto_ln = resto_ln(tipo_h);
-			if(resto_ln.getTipoBasico() == TipoBasico.error_tipo)
+			if(resto_ln.esTipoBasico() && resto_ln.getTipoBasico() == TipoBasico.error_tipo)
 				gestorErr.insertaErrorSemantico(linea, columna, "Identificador repetido dentro del enumerado");
-			return resto_ln; 
+			if(!((Enumerado)resto_ln).ponElemento(IDlexema)) {
+				gestorErr.insertaErrorSemantico(linea, columna, "Identificador "+IDlexema+" repetido dentro del enumerado");
+				return ExpresionTipo.getError();
+			}	
+			else {
+				return resto_ln;
+			}
 		}
 		else{
 			parse.add(15);
-			return ExpresionTipo.getVacio();
+			return tipo_h;
 		}
 	}
 	
@@ -1984,8 +2005,6 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){ 
 			String IDlexema = token.atrString();
 			parse.add(60);
-			//TIPO DEFINIDO No se puede usar
-			gestorTS.buscaIdBloqueActual(IDlexema).setTipo(new ExpresionTipo(TipoNoBasico.registro));
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
 				lexico.setModoNoMeto(true);
@@ -1994,7 +2013,7 @@ public class AnalizadorSintactico {
 				if(CUERPO_ST_tipo.getTipoNoBasico() == TipoNoBasico.producto)
 					NOMBRES_tipo_h = new Registro((Producto)CUERPO_ST_tipo);
 				else if (CUERPO_ST_tipo.getTipoBasico() == TipoBasico.vacio)
-					NOMBRES_tipo_h = new Registro(null);
+					NOMBRES_tipo_h = new Registro(new Producto());
 				else return ExpresionTipo.getError();
 				
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
@@ -2004,9 +2023,15 @@ public class AnalizadorSintactico {
 						String IDlexema1 = token.atrString();
 						gestorTS.buscaIdBloqueActual(IDlexema1).setTipo(NOMBRES_tipo_h);
 						nextToken();
+						((Registro)NOMBRES_tipo_h).setNombreRegistro(IDlexema);
+						//IDlexema es TIPO DEFINIDO No se puede usar
+						tiposDefinidos.put(IDlexema, NOMBRES_tipo_h);
+						gestorTS.buscaIdBloqueActual(IDlexema).setTipo((Registro)NOMBRES_tipo_h);
 						NOMBRES_tipo = nombres(NOMBRES_tipo_h);
 						if(NOMBRES_tipo.getTipoBasico() != TipoBasico.error_tipo)
 				        { 
+							//metemos el id del enumerado con su tipo en la tabla hash de tipos definidos
+							tiposDefinidos.put(IDlexema, NOMBRES_tipo_h );
 				           	return ExpresionTipo.getVacio(); 
 				        }
 				        else {
@@ -2031,7 +2056,7 @@ public class AnalizadorSintactico {
 			if(CUERPO_ST_tipo.getTipoNoBasico() == TipoNoBasico.producto)
 				NOMBRES_tipo_h = new Registro((Producto)CUERPO_ST_tipo);
 			else if (CUERPO_ST_tipo.getTipoBasico() == TipoBasico.vacio)
-				NOMBRES_tipo_h = new Registro(null);
+				NOMBRES_tipo_h = new Registro(new Producto());
 			else { 
 				return ExpresionTipo.getError();	
 			}
@@ -2075,7 +2100,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo cuerpo_st() throws Exception {
-		ExpresionTipo TIPO_tipo = tipo(); 
+		ExpresionTipo TIPO_tipo = tipo2(); 
 		ExpresionTipo RESTO_VAR_tipo;
 		ExpresionTipo CUERPO_ST_tipo;
 		String IDlexema;
@@ -2208,8 +2233,10 @@ public class AnalizadorSintactico {
 				gestorTS.buscaIdBloqueActual(IDlexema).setTipo(nombres_tipo_h);
 				nextToken();
 				NOMBRES1_tipo = nombres(NOMBRES1_tipo_h);
-				if(NOMBRES1_tipo.getTipoBasico() != TipoBasico.error_tipo)
+				if(NOMBRES1_tipo.getTipoBasico() != TipoBasico.error_tipo) {
+					
 					return ExpresionTipo.getVacio();
+				}	
 				else
 					return ExpresionTipo.getError();
 			} else {

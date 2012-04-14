@@ -11,5 +11,9 @@ public class Registro extends ExpresionTipo {
 	public Producto getCampos() {
 		return campos;
 	}
+	
+	public String toString() {
+		return "Registro con los siguientes campos:\n" + campos;
+	}
 
 }

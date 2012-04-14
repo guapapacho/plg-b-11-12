@@ -11,5 +11,9 @@ public class Puntero extends ExpresionTipo {
 	public ExpresionTipo getTipo() {
 		return tipo;
 	}
+	
+	public String toString() {
+		return "Puntero a " + tipo;
+	}
 
 }

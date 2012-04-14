@@ -17,4 +17,9 @@ public class Funcion extends ExpresionTipo {
 	public ExpresionTipo getImagen() {
 		return imagen;
 	}
+	
+	public String toString () {
+		return "Funcion que recibe los parametros: " + dominio + "\n" 
+					+ " y devuelve: " + imagen;
+	}
 }

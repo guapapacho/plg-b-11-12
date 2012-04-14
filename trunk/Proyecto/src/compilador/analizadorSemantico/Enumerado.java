@@ -29,5 +29,10 @@ public class Enumerado extends ExpresionTipo {
 	public ExpresionTipo getTipo() {
 		return tipo;
 	}
+	
+	public String toString() {
+		return "Enumerado de tipo " + tipo + "con los siguientes elementos:\n"
+						+ elementos;
+	}
 
 }

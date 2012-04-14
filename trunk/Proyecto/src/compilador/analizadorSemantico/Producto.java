@@ -62,5 +62,9 @@ public class Producto extends ExpresionTipo {
 	public ExpresionTipo getTipo2() {
 		return tipo2;
 	}
+	
+	public String toString () {
+		return "Producto de: " + tipo1 + " y : " + tipo2;
+	}
 
 }

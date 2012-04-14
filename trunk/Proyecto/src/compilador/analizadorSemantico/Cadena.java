@@ -24,5 +24,9 @@ public class Cadena extends ExpresionTipo {
 	public ExpresionTipo getTipoElementos() {
 		return tipoElementos;
 	}
+	
+	public String toString() {
+		return "Cadena de " + tipoElementos + ".";
+	}
 
 }

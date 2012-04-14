@@ -3422,7 +3422,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo resto_postfix_exp2() throws Exception {
-		ExpresionTipo aux = null;
+		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 			parse.add(162);
 			nextToken();
@@ -3434,7 +3434,6 @@ public class AnalizadorSintactico {
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
-				//ruptura=parse.size();
 			}
 		}
 		return aux;
@@ -3449,7 +3448,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo resto_postfix_exp3() throws Exception {
-		ExpresionTipo aux = null;
+		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {	
 			parse.add(166);
 			nextToken();
@@ -3462,20 +3461,16 @@ public class AnalizadorSintactico {
 						nextToken();
 					} else {
 						gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
-						//ruptura=parse.size();
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
-					//ruptura=parse.size();
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta la palabra \"decltype\"");
-				//ruptura=parse.size();
 			}
 		} else {
-			unqualified_id();
-			aux = ExpresionTipo.getVacio();
-			//aux = unqualified_id(); TODO cambiar por este
+			parse.add(167);
+			aux = unqualified_id();
 		}
 		return aux;
 	}
@@ -3506,7 +3501,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 0 
 	 */
 	private ExpresionTipo postfix2(ExpresionTipo tipo_h) throws Exception {
-		ExpresionTipo aux = null;
+		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(173);
 			nextToken();
@@ -3528,7 +3523,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo postfix3() throws Exception {
-		ExpresionTipo aux = null;
+		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 			parse.add(174);
 			nextToken();
@@ -3540,7 +3535,6 @@ public class AnalizadorSintactico {
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
-				//ruptura=parse.size();
 			}
 		}
 		return aux;
@@ -3561,13 +3555,13 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo initializer_list() throws Exception{
-		ExpresionTipo aux1,aux2,aux3 = null;
+		ExpresionTipo aux1,aux2,aux3 = ExpresionTipo.getVacio();
 		parse.add(176);
 		aux1 = assignment_expression();
 		if ( !aux1.getTipoBasico().equals("error_tipo")) {
 			aux3 = aux1;
 			aux2 = resto_init(aux3);
-			if (aux2.getTipoBasico().equals("vacio")) { //TODO devolver Producto
+			if (aux2.getTipoBasico().equals(TipoBasico.vacio)) { //TODO devolver Producto
 				return new ExpresionTipo(aux1.getTipoBasico());
 			} else {
 				return new ExpresionTipo(aux2.getTipoBasico());
@@ -3620,7 +3614,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo unary_expression() throws Exception{
-		ExpresionTipo aux = null;
+		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.INCREMENTO)){
 			parse.add(179);
 			nextToken();
@@ -3681,7 +3675,7 @@ public class AnalizadorSintactico {
 		}else if(token.esIgual(TipoToken.PAL_RESERVADA)	&& (Integer)token.getAtributo()==18 /*delete*/ ){
 			parse.add(143);
 			nextToken();
-			resto_delete();
+			resto_delete(); //TODO
 		}else{
 			parse.add(185);
 			aux = postfix_expression();
@@ -3697,7 +3691,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo resto_unary() throws Exception{
-		ExpresionTipo aux = null;
+		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
 			nextToken();
 			//if(tipo()){
@@ -3709,12 +3703,10 @@ public class AnalizadorSintactico {
 				}else{
 					// error
 					gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");
-					//ruptura=parse.size();
 				}
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador o tipo pre-definido ");
-				//ruptura=parse.size();
 			}
 		}else{
 			aux = unary_expression();
@@ -3857,7 +3849,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo noexcept_expression() throws Exception{
-		ExpresionTipo aux = null;
+		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			nextToken();
 			aux = expression();
@@ -3867,12 +3859,10 @@ public class AnalizadorSintactico {
 			}else{
 				// error
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `)` ");
-				//ruptura=parse.size();
 			}
 		}else{
 			// error
 			gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `(` ");
-			//ruptura=parse.size();
 		}
 		return aux;
 	}
@@ -3887,7 +3877,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo cast_expression() throws Exception{
-		ExpresionTipo aux = null;
+		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(195);
 			nextToken();
@@ -3944,13 +3934,13 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo pm_expression() throws Exception{
-		ExpresionTipo aux = null;
+		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO)){
 			nextToken();
 			if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 				nextToken();
 				parse.add(197);
-				//Esto es mas complicado
+				//Esto es mas complicado TODO por hacer
 				aux = cast_expression();
 			}else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `*` ");
@@ -3960,7 +3950,7 @@ public class AnalizadorSintactico {
 			if (token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 				parse.add(198);
 				nextToken();
-				//Esto es mas complicado
+				//Esto es mas complicado TODO por hacer
 				aux = cast_expression();
 			}else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `*` ");
@@ -3969,7 +3959,11 @@ public class AnalizadorSintactico {
 			parse.add(196);
 			aux = cast_expression();
 		}
-		return aux;
+		if (aux != null) {
+			return aux;
+		} else {
+			return ExpresionTipo.getError();
+		}
 	}
 	
 	
@@ -3986,13 +3980,13 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo multiplicative_expression() throws Exception{
-		ExpresionTipo aux1,aux2,aux3=null;
+		ExpresionTipo aux1,aux2,aux3=ExpresionTipo.getVacio();
 		parse.add(199);
 		aux1 = pm_expression();
-		if ( !aux1.getTipoBasico().equals("error_tipo")) {
+		if ( !aux1.getTipoBasico().equals(TipoBasico.error_tipo)) {
 			aux3 = aux1;
 			aux2 = resto_mult(aux3);
-			if (aux2.getTipoBasico().equals("vacio")) {
+			if (aux2.getTipoBasico().equals(TipoBasico.vacio)) {
 				return new ExpresionTipo(aux1.getTipoBasico());
 			} else {
 				return new ExpresionTipo(aux2.getTipoBasico());
@@ -4045,7 +4039,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo resto_mult(ExpresionTipo tipo_h/*RESTO-MULT.tipo_h*/) throws Exception{
-		ExpresionTipo aux1,aux2 = null; //MULTIPLICATIVE-EXPRESSION.tipo_s
+		ExpresionTipo aux1,aux2 = ExpresionTipo.getVacio(); //MULTIPLICATIVE-EXPRESSION.tipo_s
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 			nextToken();
 			parse.add(200);
@@ -4066,24 +4060,12 @@ public class AnalizadorSintactico {
 			//lambda
 			return ExpresionTipo.getVacio();
 		}
-		/*
-		// { if (RESTO_MULT.tipo_h == PM-EXPRESSION.tipo_s) then
-		if (tipo_h.getTipoBasico().equals("tengo que coger el valor de PM expression")) { //Supuestamente me viene en la misma variable ¿?¿?¿?¿?
-			if (aux.getTipoBasico().equals("entero") && tipo_h.getTipoBasico().equals("entero")) {
-				return new ExpresionTipo(TipoBasico.entero);
-			} else if ((aux.getTipoBasico().equals("real") && tipo_h.getTipoBasico().equals("entero")) ||
-						(aux.getTipoBasico().equals("entero") && tipo_h.getTipoBasico().equals("real")) ||
-							((aux.getTipoBasico().equals("real") && tipo_h.getTipoBasico().equals("real")))) {
-				return new ExpresionTipo(TipoBasico.real);
-			} else {
-				gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
-				return ExpresionTipo.getError();
-			}	
-		}else {
-			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
+
+		if (aux2 != null) {
+			return aux2;
+		} else {
 			return ExpresionTipo.getError();
-		}*/
-		return aux2;
+		}
 	}
 	
 	/**
@@ -4097,7 +4079,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo additive_expression() throws Exception{
-		ExpresionTipo aux1,aux2,aux3=null;
+		ExpresionTipo aux1,aux2,aux3=ExpresionTipo.getVacio();
 		parse.add(204);
 		aux1 = multiplicative_expression();
 		if (!aux1.getTipoBasico().equals(TipoBasico.error_tipo)) {
@@ -4147,7 +4129,7 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo resto_add(ExpresionTipo tipo_h) throws Exception{
-		ExpresionTipo aux1,aux2 = null;
+		ExpresionTipo aux1,aux2 = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.SUMA)){
 			parse.add(205);
 			nextToken();
@@ -4164,24 +4146,7 @@ public class AnalizadorSintactico {
 			// lambda
 			return ExpresionTipo.getVacio();
 		}
-		/*
-		//if (RESTO_ADD.tipo_h == ADDITIVE_EXPRESSION.tipo_s) then
-		if (tipo_h.getTipoBasico().equals("tengo que coger el valor de ADDITIVE expression")) { //Supuestamente me viene en la misma variable ¿?¿?¿?¿?
-			if (aux.getTipoBasico().equals("entero") && tipo_h.getTipoBasico().equals("entero")) {
-				return new ExpresionTipo(TipoBasico.entero);
-			} else if ((aux.getTipoBasico().equals("real") && tipo_h.getTipoBasico().equals("entero")) ||
-						(aux.getTipoBasico().equals("entero") && tipo_h.getTipoBasico().equals("real")) ||
-							((aux.getTipoBasico().equals("real") && tipo_h.getTipoBasico().equals("real")))) {
-				return new ExpresionTipo(TipoBasico.real);
-			} else {
-				gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
-				return ExpresionTipo.getError();
-			}	
-		}else {
-			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
-			return ExpresionTipo.getError();
-		}
-		*/
+
 		if (aux2 != null) {
 			return aux2;
 		} else {
@@ -4205,13 +4170,13 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 * */
 	private ExpresionTipo shift_expression() throws Exception{
-		ExpresionTipo aux1,aux2,aux3=null;
+		ExpresionTipo aux1,aux2,aux3=ExpresionTipo.getVacio();
 		parse.add(208);
 		aux1 = additive_expression();
-		if (!aux1.getTipoBasico().equals("error_tipo")) {
+		if (!aux1.getTipoBasico().equals(TipoBasico.error_tipo)) {
 			aux3 = aux1;
 			aux2 = resto_shift(aux3);
-			if (aux2.equals("vacio")) {
+			if (aux2.equals(TipoBasico.vacio)) {
 				return new ExpresionTipo(aux1.getTipoBasico());
 			} else {
 				return new ExpresionTipo(aux2.getTipoBasico());
@@ -4247,7 +4212,7 @@ public class AnalizadorSintactico {
 	 * */
 	
 	private ExpresionTipo resto_shift(ExpresionTipo tipo_h) throws Exception {
-		ExpresionTipo aux1,aux2 = null;
+		ExpresionTipo aux1,aux2 = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.DOS_MENORES)){
 			parse.add(209);
 			nextToken();
@@ -4264,16 +4229,12 @@ public class AnalizadorSintactico {
 			parse.add(211);
 			return ExpresionTipo.getVacio();
 		}
-		/*
-		if (aux.getTipoBasico().equals(tipo_h)) {
-			//¿Cual es el tipo que tengo que devolver??
-			return null;
+
+		if (aux2 != null) {
+			return aux2;
 		} else {
-			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
 		}
-		*/
-		return aux2;
 			
 	}
 	

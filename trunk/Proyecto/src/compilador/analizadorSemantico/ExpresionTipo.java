@@ -15,7 +15,7 @@ public class ExpresionTipo {
 	private static ExpresionTipo instanceError;
 	
 	public enum TipoBasico{logico, caracter, entero, real, error_tipo, vacio}; 
-	public enum TipoNoBasico{enumerado, vector, producto, registro, union, puntero, funcion, objeto, cadena}
+	public enum TipoNoBasico{enumerado, vector, producto, registro, union, puntero, cabecera, funcion, objeto, cadena}
 
 	/*
 	switch(e1.getTipoBasico()){
@@ -267,6 +267,7 @@ public class ExpresionTipo {
 	
 	public static ExpresionTipo expresionTipoDeString(String s){
 	
+		System.out.println("El tipo es: "+ s);
 		if (s.equals("bool")) return new ExpresionTipo(TipoBasico.logico);
 		if (s.equals("char")) return new ExpresionTipo(TipoBasico.caracter);
 		if (s.equals("char_16t")) return new ExpresionTipo(TipoBasico.caracter);
@@ -277,6 +278,7 @@ public class ExpresionTipo {
 		if (s.equals("double")) return new ExpresionTipo(TipoBasico.real);
 		if (s.equals("float")) return new ExpresionTipo(TipoBasico.real);
 		if (s.equals("String")) return new Cadena(); //longitud 0??
+		
 		return null;
 		
 	}
@@ -311,7 +313,7 @@ public class ExpresionTipo {
 	 * @return boolean
 	 */
 	public boolean paramsEquivalentes(Producto dominio) {
-		if(this.equals(TipoNoBasico.producto))
+		if(!this.equals(TipoNoBasico.producto))
 			return false;
 		//TODO terminar este método. habría que ver si los parametros tienen el mismo tipo y si en c se permite pasar menos params
 		return true;

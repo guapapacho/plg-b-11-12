@@ -20,10 +20,10 @@ public class Funcion extends ExpresionTipo {
 	
 	public String toString () {
 		String aux="";
-		if (dominio.equals(TipoBasico.vacio)) {
-			aux += "Funcion que no recibe parametros\n";
+		if (dominio.esVacio()) {
+			aux += "Funcion que no recibe parametros";
 		} else {
-			aux += "Funcion que recibe los parametros: " + dominio + "\n";
+			aux += "Funcion que recibe los parametros: " + dominio;
 		}
 		if (imagen.equals(TipoBasico.vacio)) {
 			aux += "y no devuelve nada.";

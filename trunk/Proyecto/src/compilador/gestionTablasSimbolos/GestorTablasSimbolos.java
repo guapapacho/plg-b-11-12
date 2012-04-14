@@ -134,6 +134,16 @@ public class GestorTablasSimbolos {
 	public boolean esTipoSimple(Integer integer){
 		return tipos.containsKey(integer);
 	}
+	
+	public String toString() {
+		String s = "";
+		s += "-----------------------------------\n";
+		s += "       TABLAS DE SIMBOLOS: \n";
+		s += "-----------------------------------\n";
+		if(bloque_actual != null)
+			s = s + bloque_actual.toString();
+		return s;
+	}
 
 	/**
 	 * Inicializa la tabla de tipos

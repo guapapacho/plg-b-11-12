@@ -372,7 +372,8 @@ public class Compilador extends JFrame {
 						ta2.append(anSin.getStringParse());
 						ta2.append("Total:\n"+anSin.getParse().size()+" reglas aplicadas.\n");
 						ta2.append("\nSemantico:\n");
-						ta2.append(anSin.muestraDeclaraciones());
+//						ta2.append(anSin.muestraDeclaraciones());
+						ta2.append(GestorTablasSimbolos.getGestorTS().toString());
 						ta2.append("\nErrores:");
 						ta2.append(gestor.muestraListaErrores());
 						rellenarTP0();

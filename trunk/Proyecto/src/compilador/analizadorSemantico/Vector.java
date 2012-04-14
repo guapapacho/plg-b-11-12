@@ -2,7 +2,6 @@ package compilador.analizadorSemantico;
 
 public class Vector extends ExpresionTipo {
 	private int longitud;
-//	private ExpresionTipo tipo;
 	private ExpresionTipo tipoElementos; 
 	/** vector donde guardar los elementos que contiene el tipo Vector*/
 	private java.util.Vector<String> elementos;
@@ -33,7 +32,7 @@ public class Vector extends ExpresionTipo {
 	}
 	
 	public String toString() {
-		return "Vector de " + tipoElementos + ".";
+		return "Vector de " + tipoElementos + "s.";
 	}
 
 }

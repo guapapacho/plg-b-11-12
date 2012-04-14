@@ -7,7 +7,7 @@ import compilador.analizadorLexico.Token.OpLogico;
 
 public class ExpresionTipo {
 	/** Solo para parametros de funciones: indica si se pasa por referencia, por defecto, falso **/
-	protected boolean pasoReferencia = false;
+	private boolean pasoReferencia = false;
 	private boolean basico;
 	private TipoBasico tipoBasico;
 	private TipoNoBasico tipoNoBasico;

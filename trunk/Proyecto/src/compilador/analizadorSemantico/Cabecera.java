@@ -19,7 +19,17 @@ public class Cabecera extends ExpresionTipo {
 	}
 	
 	public String toString () {
-		return "Cabecera de funcion que recibe los parametros: " + dominio + "\n" 
-					+ " y devuelve: " + imagen;
+		String aux="";
+		if (dominio.esVacio()) {
+			aux += "Cabecera que no recibe parametros";
+		} else {
+			aux += "Cabecera que recibe los parametros: " + dominio;
+		}
+		if (imagen.equals(TipoBasico.vacio)) {
+			aux += "y no devuelve nada.";
+		} else {
+			aux += " y devuelve: " + imagen;
+		}
+		return aux;
 	}
 }

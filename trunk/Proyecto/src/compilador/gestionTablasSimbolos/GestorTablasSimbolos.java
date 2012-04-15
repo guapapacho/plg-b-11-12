@@ -141,7 +141,7 @@ public class GestorTablasSimbolos {
 		s += "       TABLAS DE SIMBOLOS: \n";
 		s += "-----------------------------------\n";
 		if(bloque_actual != null)
-			s = s + bloque_actual.toString();
+			s = s + bloque_actual.toString("");
 		return s;
 	}
 

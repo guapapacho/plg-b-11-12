@@ -923,6 +923,7 @@ public class AnalizadorSintactico {
 					ExpresionTipo id_tipo=null;
 					nextToken();
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
+						gestorTS.abreBloque();
 						nextToken();
 						LISTA_PARAM_tipo_s = lista_param();
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
@@ -1787,7 +1788,7 @@ public class AnalizadorSintactico {
 			System.out.println("tipo "+TIPO_tipo);
 			if(!TIPO_tipo.getTipo().equals(TipoBasico.vacio)) {
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
-					parse.add(47); 
+					parse.add(47);
 					ExpresionTipo INS_DEC2_tipo = ins_dec2(TIPO_tipo);
 					if(TIPO_tipo.getTipoBasico() != TipoBasico.error_tipo && INS_DEC2_tipo.getTipoBasico() != TipoBasico.error_tipo)
 						return ExpresionTipo.getVacio();
@@ -1817,7 +1818,8 @@ public class AnalizadorSintactico {
 				lexico.setModoNoMeto(false);
 				nextToken();
 				return ExpresionTipo.getVacio();
-			} else{
+			} 
+			else{
 				parse.add(133);
 				ExpresionTipo aux1 = expressionOpt();
 				if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
@@ -1826,6 +1828,7 @@ public class AnalizadorSintactico {
 					nextToken();
 					return aux1;
 				}else{
+					gestorErr.insertaErrorSintactico(linea, columna, "Falta ;");
 					return ExpresionTipo.getError();
 				}
 			}
@@ -1846,7 +1849,7 @@ public class AnalizadorSintactico {
 			if(punt()) nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				EntradaTS entrada=gestorTS.buscaIdBloqueActual((String)token.getAtributo());
-//				entrada.setTipo(TIPO_tipo);
+				entrada.setTipo(TIPO_tipo);
 				id(TIPO_tipo);
 				if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)) {
 					nextToken();
@@ -1905,24 +1908,14 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo ins_dec2(ExpresionTipo tipo_h) throws Exception {
-		ExpresionTipo aux1,aux2,aux3;
-		aux1 = aux2 = aux3 = null;
+		ExpresionTipo aux2 = tipo_h;
 		if(punt()){
-		//aux1 = punt();
-		//if(aux1!=null){
 			nextToken();
 			aux2 = new Puntero(tipo_h);
-		}
+		} 
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
-			//System.out.println("Si es identificador (repetimos)...");
 			parse.add(52);
-//			tipo = new Tipo(EnumTipo.DEFINIDO, ((EntradaTS)token.getAtributo()).getLexema()); //TODO mirar...
-			//TODO: completar la TS con aux2 / tipo_h segun sea 
-			
-			/*if(aux2!=null)
-				System.out.println("En linea 1412 completaremos con tipo: "+aux2.getTipoNoBasico().toString());
-			else
-				System.out.println("En linea 1412 completaremos con tipo: "+tipo_h.getTipoBasico().toString());*/
+			((EntradaTS)token.getAtributo()).setTipo(aux2);
 			
 			nextToken();
 			
@@ -1934,10 +1927,8 @@ public class AnalizadorSintactico {
 			
 			return mas_cosas(tipo_h,(EntradaTS) tokenAnterior.getAtributo());
 		} else {
-			// error
 			gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba un identificador");
 			return null;
-			//ruptura=parse.size();
 		}
 	}
 	
@@ -2507,10 +2498,12 @@ public class AnalizadorSintactico {
 //			nextToken();
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(104);
+			gestorTS.abreBloque();
 			nextToken();
 			ExpresionTipo CUERPO1_tipo = cuerpo();
 //			cuerpo();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
+				gestorTS.cierraBloque();
 				nextToken();
 				ExpresionTipo CUERPO2_tipo = cuerpo();
 				if(CUERPO1_tipo.getTipoBasico() != TipoBasico.error_tipo &&
@@ -2697,8 +2690,8 @@ public class AnalizadorSintactico {
 			if (!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)) {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta }");
 			}
+			nextToken();
 			return CUERPO_tipo;
-			//nextToken();
 		}
 		else {
 			parse.add(93);
@@ -2813,6 +2806,7 @@ public class AnalizadorSintactico {
 		ExpresionTipo EXPRESSIONOPT1_tipo;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(96);
+			gestorTS.abreBloque();
 			nextToken();
 			 FOR_INIT_tipo = for_init();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
@@ -2827,11 +2821,18 @@ public class AnalizadorSintactico {
 							&& FOR_INIT_tipo.getTipoBasico() != TipoBasico.error_tipo) {
 							estamosEnBucle = true;
 							ExpresionTipo aux = cuerpo2();
+							gestorTS.cierraBloque();
 							estamosEnBucle = false;
 							return aux;
 						} 
-						else
+						else{
+							estamosEnBucle = true;
+							cuerpo2();
+							gestorTS.cierraBloque();
+							estamosEnBucle = false;
+							gestorErr.insertaErrorSemantico(linea, columna, "Error en inicializacion del for");
 							return ExpresionTipo.getError();
+						}
 					} else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
 					}
@@ -2880,7 +2881,7 @@ public class AnalizadorSintactico {
 				lexico.setModoDeclaracion(true);
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
 					nextToken();
-					EntradaTS entrada1 = (EntradaTS) token.getAtributo();
+					EntradaTS entrada1 = (EntradaTS) tokenAnterior.getAtributo();
 					if(entrada1 != null) {
 						entrada1.setTipo(aux);
 						tipo = inicializacion(aux,entrada1);
@@ -3279,8 +3280,12 @@ public class AnalizadorSintactico {
 			
 			if(tipo.equals(TipoBasico.error_tipo) || params.equals(TipoBasico.error_tipo) || aux.equals(TipoBasico.error_tipo))
 				tipo = ExpresionTipo.getError();
-			else
-				tipo = aux;
+			else{
+				if(aux.equals(TipoBasico.vacio))
+					tipo = tipoSem;
+				else
+					tipo = aux;
+			}
 		} else if  (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {
 			parse.add(170);
 			nextToken();
@@ -3293,8 +3298,8 @@ public class AnalizadorSintactico {
 			parse.add(154);
 			ExpresionTipo aux = primary_expression();
 //			if(tokenAnterior.esIgual(TipoToken.IDENTIFICADOR)) //TODO (Alina) no se por que se comprueba esto, asi, haria falta una regla que deriva en lambda
-				tipo = resto_postfix_exp(aux);
-			if(aux.equals(TipoBasico.error_tipo))
+			tipo = resto_postfix_exp(aux); // TODO: comprobar semánticamente que lo de antes es un ID
+			if(aux.equals(TipoBasico.error_tipo) || tipo.equals(TipoBasico.vacio))
 				tipo = aux;
 		}
 		
@@ -3372,11 +3377,17 @@ public class AnalizadorSintactico {
 			if(!exp.equals(TipoNoBasico.vector) || !exp.equals(TipoNoBasico.cadena)) {
 				tipo = ExpresionTipo.getError();
 				gestorErr.insertaErrorSemantico(linea, columna, "Aqui no vale lo de los [ ]"); //TODO cambiar el mensaje
+			}else{
+				if(exp.equals(TipoNoBasico.cadena))
+					tipo = ((compilador.analizadorSemantico.Cadena)exp).getTipoElementos();
+				else
+					tipo = ((compilador.analizadorSemantico.Vector)exp).getTipoElementos();
 			}
 			if(!aux.equals(TipoBasico.entero)) {
 				tipo = ExpresionTipo.getError();
 				gestorErr.insertaErrorSemantico(linea, columna, "El indice tiene que ser un entero");
 			}
+			
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)) {
 				nextToken();
 			} else {

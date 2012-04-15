@@ -67,22 +67,23 @@ public class TablaSimbolos {
 		return entrada;
 	}
 	
-	public String toString() {
+	public String toString(String tab) {
 		String s = "";
 		
-		s += "--- Entradas ---\n";
+		s += tab+"--- Entradas ---\n";
 		for(EntradaTS entrada: entradasTS.values()){
 			if (entrada.getTipo().equals(TipoNoBasico.funcion) || entrada.getTipo().equals(TipoNoBasico.cabecera)) {
-				s += "  " + entrada.getLexema()+" \'"+entrada.getTipo().toString()+"\'\n";
+				s += tab + entrada.getLexema()+" \'"+entrada.getTipo().toString()+"\'\n";
 			} else {
-				s += entrada.isConstante() ? "  Constante ": "  Variable ";
+				s += entrada.isConstante() ? tab+"Constante ": tab+"Variable ";
 				s += entrada.getLexema()+" declarada con tipo \'"+entrada.getTipo().toString()+"\'\n";
 			}
 		}
 		
-		s += "--- Tablas ---\n";
+		if(contenidos.size() > 0)
+			s += tab+"--- Tablas ---\n";
 		for(TablaSimbolos contenido: contenidos) {
-			s += contenido + "\n";
+			s += contenido.toString(tab+"    ") + "\n";
 		}
 		
 		return s + "\n";

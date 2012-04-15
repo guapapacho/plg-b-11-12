@@ -19,15 +19,13 @@ public class Funcion extends ExpresionTipo {
 	}
 	
 	public String toString () {
-		String aux="";
+		String aux= (imagen == null) ? "Procedimiento " : "Función ";
 		if (dominio.esVacio()) {
-			aux += "Funcion que no recibe parametros";
+			aux += "que no recibe parametros";
 		} else {
-			aux += "Funcion que recibe los parametros: " + dominio;
+			aux += "que recibe los parametros: " + dominio;
 		}
-		if (imagen.equals(TipoBasico.vacio)) {
-			aux += "y no devuelve nada.";
-		} else {
+		if (imagen != null) {
 			aux += " y devuelve: " + imagen;
 		}
 		return aux;

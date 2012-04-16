@@ -1658,9 +1658,13 @@ public class AnalizadorSintactico {
 	private ExpresionTipo inicializacion(ExpresionTipo tipo_h,EntradaTS entrada) throws Exception {
 		if(token.esIgual(TipoToken.OP_ASIGNACION)) {
 			parse.add(39);
+			//Se pone en modo no declaracion
+			lexico.setModoDeclaracion(false);lexico.setModoNoMeto(false);
 			nextToken();
+			//comprueba que los tipos son equivalentes
 			ExpresionTipo ASSIGNMENT_EXPRESSION_tipo_s=assignment_expression();
-			if(ASSIGNMENT_EXPRESSION_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+			ExpresionTipo equiv = ExpresionTipo.sonEquivAsig(ASSIGNMENT_EXPRESSION_tipo_s, tipo_h, OpAsignacion.ASIGNACION);
+			if(equiv != null && ASSIGNMENT_EXPRESSION_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 				return ExpresionTipo.getVacio();
 			else{
 				gestorErr.insertaErrorSemantico(linea, columna, "Tipo asignado no compatible");

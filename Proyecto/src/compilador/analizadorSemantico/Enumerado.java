@@ -2,8 +2,7 @@
 package compilador.analizadorSemantico;
 
 public class Enumerado extends ExpresionTipo {
-
-	private ExpresionTipo tipo; 
+ 
 	/** vector donde guardar los elementos que contiene el tipo Vector*/
 	private java.util.Vector<String> elementos;
 
@@ -39,13 +38,8 @@ public class Enumerado extends ExpresionTipo {
 		}
 	}
 	
-	
-	public ExpresionTipo getTipo() {
-		return tipo;
-	}
-	
 	public String toString() {
-		return "Enumerado de tipo " + tipo + "con los siguientes elementos:\n"
+		return "Enumerado' con los siguientes elementos:\n"
 						+ elementos;
 	}
 

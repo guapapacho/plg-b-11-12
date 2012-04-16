@@ -793,7 +793,7 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 6. TIPO → id		
-	 * 			{ TIPO.tipo := ?? }								
+	 * 			{ TIPO.tipo := { TIPO.tipo_s := id.entrada.lexema} 								
 	 * 7. TIPO → TIPO_SIMPLE
 	 * 			{ TIPO.tipo := TIPO_SIMPLE.tipo }
 	 * @throws Exception 
@@ -856,7 +856,7 @@ public class AnalizadorSintactico {
 	/**	
 	 *  8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
 	 *  			{ INIC_CONST.tipo_h := TIPO.tipo_s;
-   	 *  			  if ((Tipo.tipo_s!=error_tipo) &&(INIC_CONST!=error_tipo) &&(Cosas'.tipo_s!=error_tipo))
+   	 *  			  if ((Tipo.tipo_s==LITERAL.tipo_s)&&(Tipo.tipo_s!=error_tipo) &&(INIC_CONST!=error_tipo) &&(Cosas'.tipo_s!=error_tipo))
    	 *				  then COSAS.tipo_s := vacio
    	 *				  else .COSAS.tipo := error_tipo }
 	 *  9. COSAS → TIPO ID COSAS2 COSAS
@@ -1017,14 +1017,14 @@ public class AnalizadorSintactico {
 				parse.add(9);
 //				lexico.setModoDeclaracion(true);
 				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-					EntradaTS entradaTSlaura = (EntradaTS)token.getAtributo();
+					EntradaTS entradaTS = (EntradaTS)token.getAtributo();
 //					String lexema_id=(String)token.getAtributo();
 					id(aux);
 //					gestorTS.buscaIdBloqueActual(lexema_id).setTipo(aux);
 					ExpresionTipo COSAS2_tipo_h,COSAS1_tipo_s;	
-					ExpresionTipo id_tipo=entradaTSlaura.getTipo();
+					ExpresionTipo id_tipo=entradaTS.getTipo();
 					COSAS2_tipo_h=aux;
-					cosas2(COSAS2_tipo_h,id_tipo,entradaTSlaura);
+					cosas2(COSAS2_tipo_h,id_tipo,entradaTS);
 					COSAS1_tipo_s=cosas();
 					if((aux.getTipoBasico()!=TipoBasico.error_tipo)&&(COSAS2_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)&&(COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)){
 						return ExpresionTipo.getVacio();
@@ -1177,7 +1177,7 @@ public class AnalizadorSintactico {
 				}
 			}
 		} 
-		else {
+		else {			
 			ExpresionTipo INICIALIZACION_tipo_h,DECLARACIONES_tipo_h;
 			parse.add(17);
 			INICIALIZACION_tipo_h=inicializacion(COSAS2_tipo_h,entrada); //TODO
@@ -1658,13 +1658,9 @@ public class AnalizadorSintactico {
 	private ExpresionTipo inicializacion(ExpresionTipo tipo_h,EntradaTS entrada) throws Exception {
 		if(token.esIgual(TipoToken.OP_ASIGNACION)) {
 			parse.add(39);
-			//Se pone en modo no declaracion
-			lexico.setModoDeclaracion(false);lexico.setModoNoMeto(false);
 			nextToken();
-			//comprueba que los tipos son equivalentes
 			ExpresionTipo ASSIGNMENT_EXPRESSION_tipo_s=assignment_expression();
-			ExpresionTipo equiv = ExpresionTipo.sonEquivAsig(ASSIGNMENT_EXPRESSION_tipo_s, tipo_h, OpAsignacion.ASIGNACION);
-			if(equiv != null && ASSIGNMENT_EXPRESSION_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+			if(ASSIGNMENT_EXPRESSION_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 				return ExpresionTipo.getVacio();
 			else{
 				gestorErr.insertaErrorSemantico(linea, columna, "Tipo asignado no compatible");

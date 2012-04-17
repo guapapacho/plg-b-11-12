@@ -74,6 +74,13 @@ public class GestorTablasSimbolos {
 	}
 	
 	/**
+	 * Devuelve la tabla de simbolos actual
+	 */
+	public TablaSimbolos dameBloqueActual(){
+		return bloque_actual;
+	}
+	
+	/**
 	 * Busca a ver si esta el identificador en el ambito actual, si no esta lo inserta y devuelve 
 	 * el puntero a la entrada de la tabla de simbolos correspondiente. 
 	 * Si ya esta o es una palabra reservada no lo inserta y devuelve null

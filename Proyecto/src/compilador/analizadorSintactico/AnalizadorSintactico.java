@@ -852,12 +852,52 @@ public class AnalizadorSintactico {
 		return tipo;
 	}
 
+	private boolean esTipo(Token t) {
+		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+			try {
+				nextToken();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+				token=tokenAnterior;
+				return true;
+			}else{
+				token=tokenAnterior;
+				return false;
+			}
+		}else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
+			try {
+				nextToken();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+				token=tokenAnterior;
+				return true;
+			}else{
+				token=tokenAnterior;
+				return false;
+			}
+		} 
+		
+		return false;
+	}
 
 	/**	
 	 *  8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
 	 *  			{ INIC_CONST.tipo_h := TIPO.tipo_s;
    	 *  			  if ((Tipo.tipo_s==LITERAL.tipo_s)&&(Tipo.tipo_s!=error_tipo) &&(INIC_CONST!=error_tipo) &&(Cosas'.tipo_s!=error_tipo))
-   	 *				  then COSAS.tipo_s := vacio
+   	 *				  then COSAS.tipo_s := else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
+			parse.add(7);
+			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
+			nextToken();
+			if(tipo_s!=null && token.getAtributo()!=null && (token.getAtributo() instanceof EntradaTS)){
+				declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: \'"+tipo_s.getTipo().toString()+"\'");
+				return tipo_s;
+			}else if(token.getAtributo() instanceof EntradaTS)
+				return ExpresionTipo.getError();
+		}
    	 *				  else .COSAS.tipo := error_tipo }
 	 *  9. COSAS → TIPO ID COSAS2 COSAS
 	 *  			{ COSAS2.tipo_h := TIPO.tipo_s
@@ -886,27 +926,29 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.PAL_RESERVADA, 9 /*const*/)){
 				parse.add(8);
 				nextToken();
-				ExpresionTipo TIPO_tipo_s=tipo();
-				if(TIPO_tipo_s!=null){
-					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-						idConst(TIPO_tipo_s); // ID = LITERAL
-						ExpresionTipo INIC_CONST_tipo_h=inic_const(TIPO_tipo_s);
-						if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
-							gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \";\"");
+				if(esTipo(token)){
+					ExpresionTipo TIPO_tipo_s=tipo();
+					if(TIPO_tipo_s!=null){
+						if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+							idConst(TIPO_tipo_s); // ID = LITERAL
+							ExpresionTipo INIC_CONST_tipo_h=inic_const(TIPO_tipo_s);
+							if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
+								gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \";\"");
+							} else {
+								nextToken();
+								ExpresionTipo COSAS1_tipo_s=cosas();
+								if((!TIPO_tipo_s.equals(TipoBasico.error_tipo))&&(!INIC_CONST_tipo_h.equals(TipoBasico.error_tipo))&&(!COSAS1_tipo_s.equals(TipoBasico.error_tipo))){
+									return ExpresionTipo.getVacio();
+								}
+								else{
+									gestorErr.insertaErrorSemantico(linea, columna, "Error en la definicion de la variable");
+									return ExpresionTipo.getError();
+								}
+							}
 						} else {
-							nextToken();
-							ExpresionTipo COSAS1_tipo_s=cosas();
-							if((!TIPO_tipo_s.equals(TipoBasico.error_tipo))&&(!INIC_CONST_tipo_h.equals(TipoBasico.error_tipo))&&(!COSAS1_tipo_s.equals(TipoBasico.error_tipo))){
-								return ExpresionTipo.getVacio();
-							}
-							else{
-								gestorErr.insertaErrorSemantico(linea, columna, "Error en la definicion de la variable");
-								return ExpresionTipo.getError();
-							}
+							gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la variable");
+							return null;
 						}
-					} else {
-						gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la variable");
-						return null;
 					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta tipo de la variable");

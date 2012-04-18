@@ -167,7 +167,7 @@ public class GestorTablasSimbolos {
 		tipos.put(35, "long");
 		tipos.put(48, "short");
 		tipos.put(71, "wchar_t");
-//		tipos.put(73, "String"); string no es un tipo simple
+		tipos.put(73, "string"); //string no es un tipo simple
 	}	
 	
 	public String getTipoSimple(Integer atributo) {

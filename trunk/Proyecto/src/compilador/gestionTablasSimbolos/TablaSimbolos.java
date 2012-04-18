@@ -72,12 +72,13 @@ public class TablaSimbolos {
 		
 		s += tab+"--- Entradas ---\n";
 		for(EntradaTS entrada: entradasTS.values()){
-			if (entrada.getTipo().equals(TipoNoBasico.funcion) || entrada.getTipo().equals(TipoNoBasico.cabecera)) {
-				s += tab + entrada.getLexema()+" \'"+entrada.getTipo().toString()+"\'\n";
-			} else {
-				s += entrada.isConstante() ? tab+"Constante ": tab+"Variable ";
-				s += entrada.getLexema()+" declarada con tipo \'"+entrada.getTipo().toString()+"\'\n";
-			}
+			if(entrada.getTipo()!= null)
+				if (entrada.getTipo().equals(TipoNoBasico.funcion) || entrada.getTipo().equals(TipoNoBasico.cabecera)) {
+					s += tab + entrada.getLexema()+" \'"+entrada.getTipo().toString()+"\'\n";
+				} else {
+					s += entrada.isConstante() ? tab+"Constante ": tab+"Variable ";
+					s += entrada.getLexema()+" declarada con tipo \'"+entrada.getTipo().toString()+"\'\n";
+				}
 		}
 		
 		if(contenidos.size() > 0)

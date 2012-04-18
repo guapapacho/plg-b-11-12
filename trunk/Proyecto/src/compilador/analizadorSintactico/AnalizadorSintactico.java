@@ -854,34 +854,12 @@ public class AnalizadorSintactico {
 
 	private boolean esTipo(Token t) {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-			try {
-				nextToken();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-				token=tokenAnterior;
-				return true;
-			}else{
-				token=tokenAnterior;
-				return false;
-			}
+			return true;
 		}else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
-//			try {
-//				nextToken();
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-//				token=tokenAnterior;
-				return true;
-			}else{
-//				token=tokenAnterior;
-				return false;
-			}
-//		} 
-//		
-//		return false;
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	/**	
@@ -1699,10 +1677,16 @@ public class AnalizadorSintactico {
 	 */
 	private ExpresionTipo inicializacion(ExpresionTipo tipo_h,EntradaTS entrada) throws Exception {
 		if(token.esIgual(TipoToken.OP_ASIGNACION)) {
+			boolean tempDeclaracion = lexico.getModoDeclaracion();
+			boolean tempNoMeto = lexico.getModoNoMeto();
+			lexico.setModoDeclaracion(false); lexico.setModoNoMeto(false);
 			parse.add(39);
 			nextToken();
+			//comprueba que los tipos son equivalentes
 			ExpresionTipo ASSIGNMENT_EXPRESSION_tipo_s=assignment_expression();
-			if(ASSIGNMENT_EXPRESSION_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+			lexico.setModoDeclaracion(tempDeclaracion); lexico.setModoNoMeto(tempNoMeto);
+			ExpresionTipo equiv = ExpresionTipo.sonEquivAsig(ASSIGNMENT_EXPRESSION_tipo_s, tipo_h, OpAsignacion.ASIGNACION);
+			if(equiv != null && ASSIGNMENT_EXPRESSION_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 				return ExpresionTipo.getVacio();
 			else{
 				gestorErr.insertaErrorSemantico(linea, columna, "Tipo asignado no compatible");
@@ -3665,9 +3649,9 @@ public class AnalizadorSintactico {
 			aux3 = aux1;
 			aux2 = resto_init(aux3);
 			if (aux2.getTipoBasico().equals(TipoBasico.vacio)) { //TODO devolver Producto
-				return new ExpresionTipo(aux1.getTipoBasico());
+				return aux1;
 			} else {
-				return new ExpresionTipo(aux2.getTipoBasico());
+				return aux2;
 			}
 		} else {
 			gestorErr.insertaErrorSemantico(linea, columna, "LALALALALALAALALA"); // TODO cambiar el mensaje
@@ -4845,12 +4829,21 @@ public class AnalizadorSintactico {
 	 */
 	private ExpresionTipo resto_assig(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_ASIGNACION)){
+			lexico.setModoDeclaracion(false); lexico.setModoNoMeto(false);
+			ExpresionTipo res = ExpresionTipo.getVacio();
+			if(!tokenAnterior.esIgual(TipoToken.IDENTIFICADOR)) {
+				gestorErr.insertaErrorSemantico(linea, columna, "Debe haber una variable a la izquierda de la asignacion");
+				res = ExpresionTipo.getError();
+			}
 			parse.add(243);
 			nextToken();
 			ExpresionTipo aux1 = assignment_expression();
 			ExpresionTipo aux2 = ExpresionTipo.sonEquivAsig(aux1, tipo_h, OpAsignacion.ASIGNACION);
-			if(aux2!=null)
+			if(aux2!=null){
+				if(res.equals(TipoBasico.error_tipo))
+					return res;
 				return aux2;
+			}
 			else{
 				gestorErr.insertaErrorSemantico(linea, columna,"Tipos no compatibles para asignacion: \'"+tipo_h.getTipo().toString()+"\' = \'"+aux1.getTipo().toString()+"\'");
 				return ExpresionTipo.getError();

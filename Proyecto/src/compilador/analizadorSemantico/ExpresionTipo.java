@@ -329,6 +329,7 @@ public class ExpresionTipo {
 	}
 	
 	public String toString() {
+		if(tipoBasico != null)
 		switch (tipoBasico){
 		case logico: return "Logico";
 		case caracter: return "Caracter";
@@ -338,6 +339,8 @@ public class ExpresionTipo {
 		case vacio: return "Vacio";
 		default: return "ninguno?";
 		}
+		else 
+			return "ninguno?2";
 	}
 	
 }

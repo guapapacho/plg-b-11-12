@@ -100,6 +100,14 @@ public class AnalizadorLexico {
 		this.modoNoMeto = false;
 	}
 	
+	public boolean getModoNoMeto(){
+		return modoNoMeto;
+	}
+	
+	public boolean getModoDeclaracion(){
+		return modoDeclaracion;
+	}
+	
 	public String getLexemaAnterior(){
 		return lexemaAnterior;
 	}

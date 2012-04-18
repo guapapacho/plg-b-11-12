@@ -11,5 +11,9 @@ public class Objeto extends ExpresionTipo {
 	public String getNombreClase() {
 		return nombreClase;
 	}
+	
+	public String toString() {
+		return "Objeto de la clase " + nombreClase;
+	}
 
 }

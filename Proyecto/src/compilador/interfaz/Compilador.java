@@ -373,7 +373,8 @@ public class Compilador extends JFrame {
 						ta2.append("Total:\n"+anSin.getParse().size()+" reglas aplicadas.\n");
 						ta2.append("\nSemantico:\n");
 //						ta2.append(anSin.muestraDeclaraciones());
-						if(GestorTablasSimbolos.getGestorTS().dameBloqueActual().getContinente()!=null)	ta2.append(GestorTablasSimbolos.getGestorTS().toString());
+						//if(GestorTablasSimbolos.getGestorTS().dameBloqueActual().getContinente()!=null)
+							ta2.append(GestorTablasSimbolos.getGestorTS().toString());
 						ta2.append("\nErrores:");
 						ta2.append(gestor.muestraListaErrores());
 						rellenarTP0();

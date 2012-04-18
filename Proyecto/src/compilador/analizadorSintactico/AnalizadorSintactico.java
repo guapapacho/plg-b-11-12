@@ -867,21 +867,21 @@ public class AnalizadorSintactico {
 				return false;
 			}
 		}else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
-			try {
-				nextToken();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-				token=tokenAnterior;
+//			try {
+//				nextToken();
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+//				token=tokenAnterior;
 				return true;
 			}else{
-				token=tokenAnterior;
+//				token=tokenAnterior;
 				return false;
 			}
-		} 
-		
-		return false;
+//		} 
+//		
+//		return false;
 	}
 
 	/**	

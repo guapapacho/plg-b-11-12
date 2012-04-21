@@ -1042,7 +1042,8 @@ public class AnalizadorLexico {
 	}
 	
 	public void activaModo(modo m) {
-		modos.add(m);
+		if(!modos.contains(m)) //para evitar que se añadan repetidos
+			modos.add(m);
 	}
 	
 	public void desactivaModo(modo m) {

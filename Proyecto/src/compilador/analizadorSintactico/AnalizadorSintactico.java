@@ -17,7 +17,7 @@ public class AnalizadorSintactico {
 
 	/** Token actual obtenido mediante el Analizador lexico */
 	private Token token;
-	
+	/** Token anterior */
 	private Token tokenAnterior;
 	
 	/** Tabla hash con los tipos definidos */
@@ -32,18 +32,14 @@ public class AnalizadorSintactico {
 	/** Gestor errores */
 	private GestorErrores gestorErr;
 	/**
-	 * Vector para guardar la secuencia ordenadas de los numeros de reglas aplicadas
+	 * Vector para guardar la secuencia ordenada de los numeros de reglas aplicadas
 	 * para construir el arbol de derivacion de la cadena de tokens de entrada..
 	 */
 	private Vector<Integer> parse;
 	
-	/**
-	 * Vector para guardar la secuencia ordenadas de las declaraciones que vayamos haciendo
-	 */
+	/** Vector para guardar la secuencia ordenadas de las declaraciones que vayamos haciendo */
 	private Vector<String> declaraciones;
-	/**
-	 * Vector para usado en los casos en los que haga falta ampliar la ventana de tokens
-	 */
+	/** Vector usado en los casos en los que haga falta ampliar la ventana de tokens */
 	private Vector<Token> ventana;
 	
 	private int numDefaults;
@@ -74,8 +70,6 @@ public class AnalizadorSintactico {
 		ventana = new Vector<Token>();
 		gestorTS = GestorTablasSimbolos.getGestorTS();
 		gestorErr = GestorErrores.getGestorErrores();
-//		tipo = null;
-//		entradaTS = null;
 		nombreClase = null;
 		estamosEnBucle = false;
 		estamosEnSwitch = false;
@@ -83,7 +77,6 @@ public class AnalizadorSintactico {
 		tiposDefinidos = new Hashtable<String,ExpresionTipo>();
 		try {
 			nextToken();
-			//expression();
 			programa();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -95,8 +88,7 @@ public class AnalizadorSintactico {
 		linea = lexico.getLinea();
 		columna = lexico.getColumna();
 		if(ventana.size() > 0) {
-			// recupera el primer elemento y lo borra de la cola.
-			token = ventana.remove(0);
+			token = ventana.remove(0); // recupera el primer elemento y lo borra de la cola.
 		} else {
 			token = lexico.scan();
 			tokens.add(token);
@@ -133,7 +125,6 @@ public class AnalizadorSintactico {
 	private void id(ExpresionTipo tipo) throws Exception {
 		EntradaTS entradaTS = (EntradaTS)token.getAtributo();
 		entradaTS.setTipo(tipo);
-		//declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo.getTipo().toString());
 		entradaTS.setConstante(false);
 		nextToken();
 	}
@@ -236,6 +227,18 @@ public class AnalizadorSintactico {
 			}
 		}
 		return error ? ExpresionTipo.getError() : ExpresionTipo.getVacio();
+	}
+	
+	private ExpresionTipo compuebaFuncionesImplementadas() {
+		Vector<String> cabeceras = gestorTS.cabecerasRestantes();
+		if(cabeceras.size() > 0) {
+			for(String cabecera: cabeceras) {
+				gestorErr.insertaErrorSemantico(linea, columna, cabecera);
+			}
+			return ExpresionTipo.getError();
+		}
+		else
+			return ExpresionTipo.getVacio();
 	}
 	
 	/**
@@ -407,12 +410,16 @@ public class AnalizadorSintactico {
 		} else {
 			parse.add(106);
 			System.out.println("106");
-			return cosas();
+			ExpresionTipo aux1, aux2;
+			aux1 = cosas();
+			aux2 = compuebaFuncionesImplementadas();
+			if(aux1.equals(TipoBasico.error_tipo) || aux2.equals(TipoBasico.error_tipo))
+				return ExpresionTipo.getError();
+			return ExpresionTipo.getVacio();
 			
 		}
 	}
-	
-	
+
 	/**
 	 * 107.CUERPO_CLASE → friend RESTO_FRIEND CUERPO CLASE
 	 *  		{ 

@@ -3,6 +3,7 @@ package compilador.gestionTablasSimbolos;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import compilador.analizadorSemantico.Cabecera;
 import compilador.analizadorSemantico.ExpresionTipo.TipoNoBasico;
 
 
@@ -79,6 +80,8 @@ public class TablaSimbolos {
 					s += entrada.isConstante() ? tab+"Constante ": tab+"Variable ";
 					s += entrada.getLexema()+" declarada con tipo \'"+entrada.getTipo().toString()+"\'\n";
 				}
+			else 
+				s += "Jolines, hay algo que tiene tipo null";
 		}
 		
 		if(contenidos.size() > 0)
@@ -88,6 +91,20 @@ public class TablaSimbolos {
 		}
 		
 		return s + "\n";
+	}
+
+	public Vector<String> cabecerasRestantes() {
+		Vector<String> cabeceras = new Vector<String>();
+		for(EntradaTS entrada: entradasTS.values()){
+			if(entrada.getTipo()!= null && entrada.getTipo().equals(TipoNoBasico.cabecera)){
+				if(((Cabecera) entrada.getTipo()).getImagen() != null) {
+					cabeceras.add("La funcion '" + entrada.getLexema() + "' no está implementada.");
+				} else {
+					cabeceras.add("El procedimiento '" + entrada.getLexema() + "' no está implementado.");
+				}
+			}
+		}
+		return cabeceras;
 	}
 	
 }

@@ -141,7 +141,9 @@ public class GestorErrores {
 	    	return salida;
     	}
     	else {
-    		salida = salida + errors.get(0);
+    		for(TError error: errors) {
+    			salida += error + "\n";
+    		}
     		return salida;
     	}
     }

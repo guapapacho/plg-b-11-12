@@ -81,7 +81,7 @@ public class TablaSimbolos {
 					s += entrada.getLexema()+" declarada con tipo \'"+entrada.getTipo().toString()+"\'\n";
 				}
 			else 
-				s += "Jolines, hay algo que tiene tipo null";
+				s += "Jolines, " + entrada.getLexema() + " tiene tipo null\n";
 		}
 		
 		if(contenidos.size() > 0)

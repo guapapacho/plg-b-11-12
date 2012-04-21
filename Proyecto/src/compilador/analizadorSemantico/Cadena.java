@@ -7,6 +7,7 @@ public class Cadena extends ExpresionTipo {
 	public Cadena() {
 		this(0);
 	}
+	
 	public Cadena(int longitud) {
 		super(TipoNoBasico.cadena);
 		this.longitud = longitud;
@@ -16,17 +17,13 @@ public class Cadena extends ExpresionTipo {
 	public int getLongitud() {
 		return longitud;
 	}
-	/*
-	public ExpresionTipo getTipo() {
-		return tipo;
-	}
-	*/
+
 	public ExpresionTipo getTipoElementos() {
 		return tipoElementos;
 	}
 	
 	public String toString() {
-		return "Cadena de " + tipoElementos + ".";
+		return "Cadena de caracteres.";
 	}
 
 }

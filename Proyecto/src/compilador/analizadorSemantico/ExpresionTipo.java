@@ -12,8 +12,8 @@ public class ExpresionTipo {
 	private TipoBasico tipoBasico;
 	private TipoNoBasico tipoNoBasico;
 	private boolean hayRetorno = false;
-	private static ExpresionTipo instanceVacio;
-	private static ExpresionTipo instanceError;
+//	private static ExpresionTipo instanceVacio;
+//	private static ExpresionTipo instanceError;
 	
 	public enum TipoBasico{logico, caracter, entero, real, error_tipo, vacio}; 
 	public enum TipoNoBasico{enumerado, vector, producto, registro, union, puntero, cabecera, funcion, objeto, cadena}
@@ -280,7 +280,7 @@ public class ExpresionTipo {
 		if (s.equals("int")) return new ExpresionTipo(TipoBasico.entero);
 		if (s.equals("double")) return new ExpresionTipo(TipoBasico.real);
 		if (s.equals("float")) return new ExpresionTipo(TipoBasico.real);
-		if (s.equals("String")) return new Cadena(); //longitud 0??
+		if (s.equals("string")) return new Cadena(); //longitud 0??
 		
 		return null;
 		

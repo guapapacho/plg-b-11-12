@@ -89,6 +89,8 @@ public class Compilador extends JFrame {
 	public Compilador(){
 		super();
 		crearInterfaz();
+		setEnabled(true);
+		setVisible(true);
 	}
 	
 	/**
@@ -356,7 +358,8 @@ public class Compilador extends JFrame {
 					String contenido=null;
 					contenido=new String(ta1.getText());
 					if(contenido.equals("")){
-						JOptionPane.showMessageDialog(null,"Debe abrir un archivo o escribir un programa en c++ \n antes de proceder al analisis de tokens");
+						JOptionPane.showMessageDialog(null,"Debe abrir un archivo o escribir un programa en c++ \n " +
+								"antes de proceder al analisis de tokens");
 					}
 					else{
 						in=new StringBufferInputStream(contenido);
@@ -372,9 +375,7 @@ public class Compilador extends JFrame {
 						ta2.append(anSin.getStringParse());
 						ta2.append("Total:\n"+anSin.getParse().size()+" reglas aplicadas.\n");
 						ta2.append("\nSemantico:\n");
-//						ta2.append(anSin.muestraDeclaraciones());
-						//if(GestorTablasSimbolos.getGestorTS().dameBloqueActual().getContinente()!=null)
-							ta2.append(GestorTablasSimbolos.getGestorTS().toString());
+						ta2.append(GestorTablasSimbolos.getGestorTS().toString());
 						ta2.append("\nErrores:");
 						ta2.append(gestor.muestraListaErrores());
 						rellenarTP0();
@@ -383,6 +384,8 @@ public class Compilador extends JFrame {
 			});
 		return botonTokens;
 	}
+	
+	
 
 	public static void comprobarExpresiones(){
 		ExpresionTipo e1,e2;
@@ -453,15 +456,6 @@ public class Compilador extends JFrame {
 			}	
 		}
 		System.out.println("-----------------------------");
-		
-		
 	}
 	
-	public static void main(String[] args) {
-		Compilador c = new Compilador();
-		c.setEnabled(true);
-		c.setVisible(true);
-		
-		//Compilador.comprobarExpresiones();
-	}
 }

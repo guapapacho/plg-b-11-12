@@ -807,11 +807,10 @@ public class AnalizadorSintactico {
 		ExpresionTipo tipo_s =ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(6);
-//			tipo_s = ((EntradaTS)token.getAtributo()).getTipo();
 			lexico.activaModo(modo.Declaracion);
 			lexico.desactivaModo(modo.NoMeto);
 			nextToken();
-			return new Objeto(((EntradaTS)tokenAnterior.getAtributo()).getLexema());
+			return new Objeto(((String)tokenAnterior.getAtributo()));
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
 			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
@@ -833,9 +832,7 @@ public class AnalizadorSintactico {
 		ExpresionTipo tipo_s =ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(6);
-			//tipo_s = ((EntradaTS)token.getAtributo()).getTipo();
 			nextToken();
-			//return tipo_s;
 			return new Objeto(((EntradaTS)tokenAnterior.getAtributo()).getLexema());
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
@@ -943,7 +940,7 @@ public class AnalizadorSintactico {
 				EntradaTS entradaTS;
 				parse.add(10);
 				lexico.activaModo(modo.Declaracion);
-//				lexico.desactivaModo(modo.NoMeto);
+				lexico.desactivaModo(modo.NoMeto);
 				tipoRetorno = null;
 				nextToken();
 				ExpresionTipo LISTA_PARAM_tipo_s,COSAS3_tipo_s,COSAS1_tipo_s;
@@ -1222,7 +1219,6 @@ public class AnalizadorSintactico {
 				if(INICIALIZACION_tipo_h.getTipoBasico()!=TipoBasico.error_tipo && DECLARACIONES_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)
 					return ExpresionTipo.getVacio();
 				else{
-					gestorErr.insertaErrorSemantico(linea, columna, "Inicialización o declaración de variable errónea");
 					return ExpresionTipo.getError();
 				}
 			}
@@ -1247,7 +1243,7 @@ public class AnalizadorSintactico {
 			return ExpresionTipo.getVacio();
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			entradaTS.setTipo(new Funcion((Producto) params, tipo_id));
-			lexico.desactivaModo(modo.NoMeto);
+			lexico.activaModo(modo.NoMeto);
 			lexico.desactivaModo(modo.Declaracion);
 			parse.add(19);
 			inicializaMarcadoresGoto();
@@ -1837,7 +1833,6 @@ public class AnalizadorSintactico {
 					if(TIPO_tipo.getTipoBasico() != TipoBasico.error_tipo && INS_DEC2_tipo.getTipoBasico() != TipoBasico.error_tipo)
 						return ExpresionTipo.getVacio();
 					else{
-						gestorErr.insertaErrorSemantico(linea, columna, "Instruccion simple definida");
 						return ExpresionTipo.getError();
 					}
 				} else {
@@ -2558,7 +2553,6 @@ public class AnalizadorSintactico {
 			gestorTS.abreBloque();
 			nextToken();
 			ExpresionTipo CUERPO1_tipo = cuerpo();
-//			cuerpo();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 				gestorTS.cierraBloque();
 				nextToken();
@@ -3145,8 +3139,8 @@ public class AnalizadorSintactico {
 				CUERPO2_tipo = cuerpo2();
 				SENT_ELSE_tipo = sent_else();
 				if(CUERPO2_tipo.getTipoBasico() != TipoBasico.error_tipo &&
-					SENT_ELSE_tipo.getTipoBasico() != TipoBasico.error_tipo) {// &&
-//					EXPRESSION_tipo.getTipoBasico() == TipoBasico.logico) { //se supone que vale todo, creo
+					SENT_ELSE_tipo.getTipoBasico() != TipoBasico.error_tipo &&
+					EXPRESSION_tipo.getTipoBasico() != TipoBasico.error_tipo) { //== TipoBasico.logico) { // TODO se supone que vale todo, creo
 						ExpresionTipo tipo = ExpresionTipo.getVacio();
 						tipo.setRetorno(CUERPO2_tipo.hayRetorno() && SENT_ELSE_tipo.hayRetorno());							
 						return tipo;
@@ -3366,7 +3360,12 @@ public class AnalizadorSintactico {
 				tipo = ExpresionTipo.getError();
 			else{
 				if(aux.equals(TipoBasico.vacio))
-					tipo = tipoSem;
+					if(tipoSem.equals(TipoNoBasico.funcion))
+							tipo = ((Funcion)tipoSem).getImagen();
+					else if(tipoSem.equals(TipoNoBasico.cabecera))
+						tipo = ((Cabecera)tipoSem).getImagen();
+					else 
+						tipo = tipoSem;
 				else
 					tipo = aux;
 			}

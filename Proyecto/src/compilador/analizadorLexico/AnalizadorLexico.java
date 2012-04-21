@@ -767,39 +767,47 @@ public class AnalizadorLexico {
 				if (noDigito() || digito()) {
 					lexema = lexema+preanalisis;
 					transita(97);
+				} else if(preanalisis == ':') { // es una etiqueta
+					token = new Token(TipoToken.ETIQUETA,lexema,comentario);
+					return token;
 				} else if(esDelim()) { 
 					 Integer indice = gestorTS.buscaPalRes(lexema);
 					 if(indice == null ) //si es un identificador	
 					 {	 
-						//Dependiendo de si se esta en modo declaracion se insertara el atributo en la TS o se consultara para comprobar su existencia. 
-						 if(esModoActivo(modo.Declaracion) && !esModoActivo(modo.NoMeto)) {
-							 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
-							 if (puntero == null) { //si no esta en la T.S. se inserta.
-								 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
-							 }
-							 else {
-								 //si ya esta habria que mirar si se encuentra en el mismo ambito o no. 
-								 //Si ya hay un id con ese mismo nombre en el mismo ambito deberia lanzar error y devolver el token para seguir con el analisis semantico
-								 if(gestorTS.buscaIdBloqueActual(lexema) == null) {
-									 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
-								 } else {
-									 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.buscaIdGeneral(lexema), comentario);
-									 gestorErrores.insertaErrorSemantico(numlinea, numcolumna,"Multiple declaracion de "+lexema);
-								 }
-							}
-						 }
-						 else if(esModoActivo(modo.NoMeto)) {
+						 if(esModoActivo(modo.GoTo)) { //si está en modo GoTo se devuelve el token con el lexema de la etiqueta
 							 token = new Token(TipoToken.IDENTIFICADOR,lexema,comentario);
 						 }
-						 else { // si no esta en modo declaracion ni en modo noMeto
-							 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
-							 if(puntero == null) {
-								 //error semantico (variable no declarada)
-								 gestorErrores.insertaErrorSemantico(numlinea, numcolumna,"Identificador "+lexema+" no declarado");
-								 throw new Exception("Uso de identificador no declarado");
+						 else {
+							 //Dependiendo de si se esta en modo declaracion se insertara el atributo en la TS o se consultara para comprobar su existencia. 
+							 if(esModoActivo(modo.Declaracion) && !esModoActivo(modo.NoMeto)) {
+								 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
+								 if (puntero == null) { //si no esta en la T.S. se inserta.
+									 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
+								 }
+								 else {
+									 //si ya esta habria que mirar si se encuentra en el mismo ambito o no. 
+									 //Si ya hay un id con ese mismo nombre en el mismo ambito deberia lanzar error y devolver el token para seguir con el analisis semantico
+									 if(gestorTS.buscaIdBloqueActual(lexema) == null) {
+										 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
+									 } else {
+										 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.buscaIdGeneral(lexema), comentario);
+										 gestorErrores.insertaErrorSemantico(numlinea, numcolumna,"Multiple declaracion de "+lexema);
+									 }
+								}
 							 }
-							 else
-								 token = new Token(TipoToken.IDENTIFICADOR, puntero, comentario);
+							 else if(esModoActivo(modo.NoMeto)) {
+								 token = new Token(TipoToken.IDENTIFICADOR,lexema,comentario);
+							 }
+							 else { // si no esta en modo declaracion ni en modo noMeto
+								 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
+								 if(puntero == null) {
+									 //error semantico (variable no declarada)
+									 gestorErrores.insertaErrorSemantico(numlinea, numcolumna,"Identificador "+lexema+" no declarado");
+									 throw new Exception("Uso de identificador no declarado");
+								 }
+								 else
+									 token = new Token(TipoToken.IDENTIFICADOR, puntero, comentario);
+							 }
 						 }
 					 }	
 					 else { // es una palabra reservada

@@ -39,6 +39,7 @@ public class AnalizadorSintactico {
 	
 	/** Vector para guardar la secuencia ordenadas de las declaraciones que vayamos haciendo */
 	private Vector<String> declaraciones;
+	
 	/** Vector usado en los casos en los que haga falta ampliar la ventana de tokens */
 	private Vector<Token> ventana;
 	
@@ -46,14 +47,19 @@ public class AnalizadorSintactico {
 	
 	/** Marca si estamos en el cuerpo de un bucle */
 	private boolean estamosEnBucle;
+	
 	/** Marca si estamos en el cuerpo de un Switch */
 	private boolean estamosEnSwitch;
-	/** Marca si estamos en una funcion */
-	private boolean estamosEnFuncion;
+	
+	/** Guarda el tipo de retorno si estamos en una función o null en otro caso.*/
+	private ExpresionTipo tipoRetorno;
+	
 	/** Marca las etiquetas a las que se salta con goto en la función */
 	private Vector<String> etiquetasConGoto;
+	
 	/** Marca las etiquetas definidas en la función */
 	private Hashtable<String, String> etiquetasSinGoto;
+	
 	/** Nombre de la clase si es una clase o null si no lo es */
 	private String nombreClase;
 	
@@ -73,8 +79,8 @@ public class AnalizadorSintactico {
 		nombreClase = null;
 		estamosEnBucle = false;
 		estamosEnSwitch = false;
-		estamosEnFuncion = false;
 		tiposDefinidos = new Hashtable<String,ExpresionTipo>();
+		tipoRetorno = null;
 		try {
 			nextToken();
 			programa();
@@ -921,7 +927,6 @@ public class AnalizadorSintactico {
 									return ExpresionTipo.getVacio();
 								}
 								else{
-									gestorErr.insertaErrorSemantico(linea, columna, "Error en la definicion de la variable");
 									return ExpresionTipo.getError();
 								}
 							}
@@ -939,6 +944,7 @@ public class AnalizadorSintactico {
 				parse.add(10);
 				lexico.activaModo(modo.Declaracion);
 //				lexico.desactivaModo(modo.NoMeto);
+				tipoRetorno = null;
 				nextToken();
 				ExpresionTipo LISTA_PARAM_tipo_s,COSAS3_tipo_s,COSAS1_tipo_s;
 				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
@@ -957,7 +963,6 @@ public class AnalizadorSintactico {
 							if(LISTA_PARAM_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS3_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 								return ExpresionTipo.getVacio();
 							else
-								gestorErr.insertaErrorSemantico(linea, columna, "Error en el tipo de la funcion");
 								return ExpresionTipo.getError();
 						} else {
 							if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)||token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
@@ -1054,7 +1059,6 @@ public class AnalizadorSintactico {
 						return ExpresionTipo.getVacio();
 					}
 					else{
-						gestorErr.insertaErrorSemantico(linea, columna, "Error en la definicion de la funcion");
 						return ExpresionTipo.getError();
 					}
 				} else {
@@ -1181,13 +1185,17 @@ public class AnalizadorSintactico {
 			LISTA_PARAM_tipo_s=lista_param();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 				nextToken();
-				estamosEnFuncion = true;
+				tipoRetorno = COSAS2_tipo_h;
 				COSAS3_tipo_s=cosas3(LISTA_PARAM_tipo_s,tipo_id,entrada);
-				estamosEnFuncion = false;
+				tipoRetorno = null;
+				if(!COSAS3_tipo_s.hayRetorno() && tokenAnterior.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)) {
+					gestorErr.insertaErrorSemantico(linea, columna, "En la función " + entrada.getLexema() +
+							" falta la instrucción de retorno.");
+					return ExpresionTipo.getError();
+				}
 				if(LISTA_PARAM_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS3_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 					return ExpresionTipo.getVacio();
 				else{
-					gestorErr.insertaErrorSemantico(linea, columna, "Identificadores erróneos en la funcion");
 					return ExpresionTipo.getError();
 				}
 			} else {
@@ -2524,8 +2532,15 @@ public class AnalizadorSintactico {
 			parse.add(84);
 			nextToken();
 			ExpresionTipo RESTO_IF_tipo = resto_if();
-			if(RESTO_IF_tipo.getTipoBasico() != TipoBasico.error_tipo)
-				return cuerpo();
+			ExpresionTipo CUERPO_tipo = cuerpo();
+			if(RESTO_IF_tipo.getTipoBasico() == TipoBasico.error_tipo || (CUERPO_tipo.getTipoBasico() == TipoBasico.error_tipo)) {
+				ExpresionTipo tipo = ExpresionTipo.getError();
+				tipo.setRetorno(RESTO_IF_tipo.hayRetorno() || CUERPO_tipo.hayRetorno());
+				return tipo;
+			} else {
+				CUERPO_tipo.setRetorno(RESTO_IF_tipo.hayRetorno() || CUERPO_tipo.hayRetorno());
+				return CUERPO_tipo;
+			}
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,55 /*switch*/))
 		{
@@ -2597,15 +2612,24 @@ public class AnalizadorSintactico {
 			ExpresionTipo aux = expressionOpt();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				nextToken();
-				ExpresionTipo tipo = null;
-				if(estamosEnFuncion && aux.equals(TipoBasico.vacio)) {
-					gestorErr.insertaErrorSemantico(linea, columna, "Falta instrucción de retorno.");
-					tipo = ExpresionTipo.getError();
-				} else if(!estamosEnFuncion && !aux.equals(TipoBasico.vacio)) {
-					gestorErr.insertaErrorSemantico(linea, columna, "No se puede devolver nada. Solo se puede usar 'return;'.");
+				ExpresionTipo tipo = ExpresionTipo.getVacio();
+				tipo.setRetorno(true);
+				if(tipoRetorno != null) {
+					if(aux.equals(TipoBasico.vacio)) {
+						gestorErr.insertaErrorSemantico(linea, columna, "Falta instrucción de retorno.");
+						tipo = ExpresionTipo.getError();
+						tipo.setRetorno(true);
+					} else if(ExpresionTipo.sonEquivComp(aux, tipoRetorno, OpComparacion.IGUALDAD) == null) {
+						gestorErr.insertaErrorSemantico(linea, columna, "Tipo de retorno incorrecto, se espera "+tipoRetorno+".");
+						tipo = ExpresionTipo.getError();
+						tipo.setRetorno(true);
+					}
+				} else if(!aux.equals(TipoBasico.vacio)) {
+					gestorErr.insertaErrorSemantico(linea, columna, "Es un procedimiento. Solo se puede usar 'return;'.");
 					tipo = ExpresionTipo.getError();
 				}
 				aux = cuerpo();
+				aux.setRetorno(true);
 				return tipo.equals(TipoBasico.error_tipo) ? tipo : aux; 
 			} else { 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
@@ -3121,21 +3145,24 @@ public class AnalizadorSintactico {
 				CUERPO2_tipo = cuerpo2();
 				SENT_ELSE_tipo = sent_else();
 				if(CUERPO2_tipo.getTipoBasico() != TipoBasico.error_tipo &&
-					SENT_ELSE_tipo.getTipoBasico() != TipoBasico.error_tipo &&
-					EXPRESSION_tipo.getTipoBasico() == TipoBasico.logico)
-						return ExpresionTipo.getVacio();
-				else
-					return ExpresionTipo.getError();
-				//return true;
+					SENT_ELSE_tipo.getTipoBasico() != TipoBasico.error_tipo) {// &&
+//					EXPRESSION_tipo.getTipoBasico() == TipoBasico.logico) { //se supone que vale todo, creo
+						ExpresionTipo tipo = ExpresionTipo.getVacio();
+						tipo.setRetorno(CUERPO2_tipo.hayRetorno() && SENT_ELSE_tipo.hayRetorno());							
+						return tipo;
+				}
+				else{
+					// TODO añadir mensaje de error
+					ExpresionTipo tipo = ExpresionTipo.getError();
+					tipo.setRetorno(CUERPO2_tipo.hayRetorno() && SENT_ELSE_tipo.hayRetorno());							
+					return tipo;
+				}
 			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
-				//ruptura=parse.size();
 			}
 		} else{
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
-			//ruptura=parse.size();
 		}
-		//return false;
 		return null;
 	}
 	

@@ -11,6 +11,7 @@ public class ExpresionTipo {
 	private boolean basico;
 	private TipoBasico tipoBasico;
 	private TipoNoBasico tipoNoBasico;
+	private boolean hayRetorno = false;
 	private static ExpresionTipo instanceVacio;
 	private static ExpresionTipo instanceError;
 	
@@ -223,15 +224,17 @@ public class ExpresionTipo {
 	}
 	
 	public static ExpresionTipo getError() {
-		if(instanceError == null)
-			instanceError = new ExpresionTipo(TipoBasico.error_tipo);
-		return instanceError;
+//		if(instanceError == null)
+//			instanceError = new ExpresionTipo(TipoBasico.error_tipo);
+//		return instanceError;
+		return new ExpresionTipo(TipoBasico.error_tipo);
 	}
 	
 	public static ExpresionTipo getVacio() {
-		if(instanceVacio == null)
-			instanceVacio = new ExpresionTipo(TipoBasico.vacio);
-		return instanceVacio;
+//		if(instanceVacio == null)
+//			instanceVacio = new ExpresionTipo(TipoBasico.vacio);
+//		return instanceVacio;
+		return new ExpresionTipo(TipoBasico.vacio);
 	}
 	
 	public TipoBasico getTipoBasico() {
@@ -343,4 +346,11 @@ public class ExpresionTipo {
 			return "ninguno?2";
 	}
 	
+	public void setRetorno(boolean b) {
+		hayRetorno = b;
+	}
+	
+	public boolean hayRetorno() {
+		return hayRetorno;
+	}
 }

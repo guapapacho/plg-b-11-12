@@ -88,9 +88,6 @@ public class Compilador extends JFrame {
 	 */
 	public Compilador(){
 		super();
-		crearInterfaz();
-		setEnabled(true);
-		setVisible(true);
 	}
 	
 	/**
@@ -105,13 +102,15 @@ public class Compilador extends JFrame {
 		this.setTitle("Traductor C++ - Pascal");
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);	
 		this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		this.setEnabled(true);
+		this.setVisible(true);
 	}
 
 	/**
 	 * Metodo que configura la barra de menu de la interfaz de usuario
 	 * @return Objeto de tipo JMenuBar
 	 */
-	public JMenuBar getBarraMenu(){
+	private JMenuBar getBarraMenu(){
 		if (barraMenu==null){
 			barraMenu=new JMenuBar();
 			barraMenu.add(getFicherosMenu());
@@ -123,7 +122,7 @@ public class Compilador extends JFrame {
 	 * Metodo que implementa el submenu "Ficheros"
 	 * @return Objeto de tipo JMenu
 	 */
-	public JMenu getFicherosMenu() {
+	private JMenu getFicherosMenu() {
 		if (ficheroMenu==null){
 			ficheroMenu=new JMenu();
 			ficheroMenu.setText("Ficheros"); 
@@ -346,7 +345,7 @@ public class Compilador extends JFrame {
 	 * Metodo que implementa el boton "Lista Tokens"
 	 * @return Objeto de tipo JButton
 	 */
-	public JButton getBotonTokens() {
+	private JButton getBotonTokens() {
 		botonTokens=new JButton();
 		botonTokens.setBounds(puntox3, puntoy3, puntox1*3, 50);
 		botonTokens.setText("Parse");
@@ -387,7 +386,8 @@ public class Compilador extends JFrame {
 	
 	
 
-	public static void comprobarExpresiones(){
+	@SuppressWarnings("unused")
+	private static void comprobarExpresiones(){
 		ExpresionTipo e1,e2;
 		System.out.println("------------------------------");
 		System.out.println("OPERADORES LOGICOS: ");

@@ -276,7 +276,7 @@ public class GestorTablasSimbolos {
 		palRes.put("volatile",70);
 		palRes.put("wchar_t",71);
 		palRes.put("while", 72);
-		palRes.put("String", 73);//creo que es con minuscula
+		palRes.put("string", 73);
 		palRes.put("cin", 74);
 		palRes.put("cout", 75);
 		palRes.put("endl", 76); // TODO: agregar en otros sitios pertinentes !??

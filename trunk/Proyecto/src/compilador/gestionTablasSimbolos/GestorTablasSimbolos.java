@@ -1,6 +1,7 @@
 package compilador.gestionTablasSimbolos;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * Gestor de las Tablas de Simbolos
@@ -191,7 +192,11 @@ public class GestorTablasSimbolos {
 		}	
 		}
 		return "";
-	}			
+	}
+	
+	public Vector<String> cabecerasRestantes() {
+		return bloque_actual.cabecerasRestantes();
+	}
 	
 	/**
 	 * Inicializa la tabla de palabras reservadas
@@ -278,4 +283,5 @@ public class GestorTablasSimbolos {
 		palRes.put("include", 77);
 
 	}
+
 }

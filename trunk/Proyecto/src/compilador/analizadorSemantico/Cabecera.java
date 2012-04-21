@@ -25,9 +25,7 @@ public class Cabecera extends ExpresionTipo {
 		} else {
 			aux += "Cabecera que recibe los parametros: " + dominio;
 		}
-		if (imagen.equals(TipoBasico.vacio)) {
-			aux += "y no devuelve nada.";
-		} else {
+		if (imagen != null) {
 			aux += " y devuelve: " + imagen;
 		}
 		return aux;

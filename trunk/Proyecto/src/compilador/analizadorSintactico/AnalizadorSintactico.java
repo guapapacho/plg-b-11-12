@@ -144,42 +144,33 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	private ExpresionTipo literal() throws Exception {
-		//TODO hacer algo con los valores, si hace falta...
-		if(token.esIgual(TipoToken.LIT_CADENA)) {
-//			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-//			System.out.println("LITERAL CADENA: " + valor);
+		if(token.esIgual(TipoToken.CARACTER)){
+			nextToken();
+			return new ExpresionTipo(TipoBasico.caracter);
+		} 
+		else if(token.esIgual(TipoToken.LIT_CADENA)) {
 			nextToken();
 			return new Cadena(((String) tokenAnterior.getAtributo()).length());
 		}
 		else if(token.esIgual(TipoToken.LIT_CARACTER)){
-//			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-//			System.out.println("LITERAL CARACTER: " + valor);
 			nextToken();
-			return new ExpresionTipo(TipoBasico.caracter);
+			return new Cadena(((String) tokenAnterior.getAtributo()).length()); //TODO a lo mejor hay que añadir un otro tipo de cadena
 		} 
 		else if (token.esIgual(TipoToken.NUM_ENTERO)){
-//			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-//			System.out.println("NUMERO ENTERO: " + valor);
 			nextToken();
 			return new ExpresionTipo(TipoBasico.entero);
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL)){
-//			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-//			System.out.println("NUMERO REAL: " + valor);
 			nextToken();
 			return new ExpresionTipo(TipoBasico.real);
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL_EXPO)){
-//			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-//			System.out.println("NUMERO REAL EXPO: " + valor);
 			nextToken();
 			return new ExpresionTipo(TipoBasico.real);
 		}
 		else if (token.esIgual(TipoToken.PAL_RESERVADA) &&
 				( (Integer)token.getAtributo() == 27 /*false*/ || 
 				  (Integer)token.getAtributo() == 60 /*true*/)){
-//			Object valor = token.getAtributo(); // TOFIX depende del tipo... a ver que se hace con el...
-//			System.out.println("BOOLEANO: " + valor);
 			nextToken();
 			return ExpresionTipo.expresionTipoDeString("bool");
 		}
@@ -1736,7 +1727,7 @@ public class AnalizadorSintactico {
 	}
 
 	/**
-	 * 42. INSTRUCCION → ETIQUETA :
+	 * 42. INSTRUCCION → ETIQUETA
 	 *  				 {  INSTRUCCION_tipo_s:=vacio }
 	 * 43. INSTRUCCION → struct RESTO_ST
 	 * 					 {	if RESTO_ST_tipo_s!=error_tipo 

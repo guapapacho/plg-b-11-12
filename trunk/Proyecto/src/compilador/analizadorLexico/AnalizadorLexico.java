@@ -221,7 +221,6 @@ public class AnalizadorLexico {
 				} else if (preanalisis == ',') {
 					return new Token(TipoToken.SEPARADOR, Separadores.COMA, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);					
 				}
@@ -241,7 +240,6 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else if(letra()){
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR, null, comentario);
 				} else {
@@ -267,7 +265,6 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else if(letra()){
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {
@@ -296,7 +293,6 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else if(letra()) {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {
@@ -310,7 +306,6 @@ public class AnalizadorLexico {
 					parteEntera = parteEntera*16 + hex;
 					transita(7);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -321,7 +316,6 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(11);
 				} else if(digito() || letra()) {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {
@@ -335,7 +329,6 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'L') {
 					transita(10);					
 				} else if(digito() || letra()) {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {
@@ -355,7 +348,6 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(6);
 				} else if(digito() || letra()) {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {
@@ -369,7 +361,6 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'u' || preanalisis == 'U') {
 					transita(11);	
 				} else if(digito() || letra()) {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {
@@ -381,7 +372,6 @@ public class AnalizadorLexico {
 				if(preanalisis == 'L') {
 					transita(11);	
 				} else if(digito() || letra()) {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {
@@ -391,7 +381,6 @@ public class AnalizadorLexico {
 				break;
 			case 11:
 				if(digito() || letra()) {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {
@@ -402,7 +391,6 @@ public class AnalizadorLexico {
 				if(preanalisis == 'l') {
 					transita(11);	
 				} else if(digito() || letra()) {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {
@@ -414,7 +402,6 @@ public class AnalizadorLexico {
 				if(preanalisis == 'u' || preanalisis == 'U') {
 						transita(11);	
 				} else if(digito() || letra()) {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {
@@ -432,7 +419,6 @@ public class AnalizadorLexico {
 				} else if(preanalisis == 'e' || preanalisis == 'E') {
 					transita(17);
 				} else{
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -447,7 +433,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return token;
 				} else{
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);				
 				}
@@ -465,7 +450,6 @@ public class AnalizadorLexico {
 					asterisco=true;
 					return new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial), comentario);
 				} else{
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}	
@@ -481,7 +465,6 @@ public class AnalizadorLexico {
 					signo = 1;
 					transita(18); 
 				} else{
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}	
@@ -491,7 +474,6 @@ public class AnalizadorLexico {
 					parteExponencial = parteExponencial*10 + digito;
 					transita(19);
 				} else{
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}	
@@ -507,7 +489,6 @@ public class AnalizadorLexico {
 					String s = (signo > 0) ? "+" : "-";
 					return new Token(TipoToken.NUM_REAL_EXPO, parteEntera+parteDecimal+"E"+s+parteExponencial, comentario);  
 				} else{
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}		
@@ -517,7 +498,6 @@ public class AnalizadorLexico {
 					asterisco=true;
 					return new Token(TipoToken.NUM_REAL, (parteEntera + parteDecimal)*Math.pow(10, signo*parteExponencial), comentario); 
 				} else{
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -527,7 +507,6 @@ public class AnalizadorLexico {
 					String s = (signo > 0) ? "+" : "-";
 					return new Token(TipoToken.NUM_REAL_EXPO, parteEntera+parteDecimal+"E"+s+parteExponencial, comentario); 
 				} else{
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -544,7 +523,6 @@ public class AnalizadorLexico {
 					token = new Token(TipoToken.OP_ARITMETICO,OpAritmetico.SUMA, comentario);
 					return token;
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -563,7 +541,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_ARITMETICO,OpAritmetico.RESTA, comentario);		
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -577,7 +554,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return token;
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -594,7 +570,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_ARITMETICO, OpAritmetico.PORCENTAJE, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -606,7 +581,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.SEPARADOR, Separadores.ALMOHADILLA, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -615,7 +589,6 @@ public class AnalizadorLexico {
 				if (preanalisis == ':') {			// %:%: equivalente a ##
 					return new Token(TipoToken.SEPARADOR, Separadores.DOBLE_ALMOHADILLA, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -626,7 +599,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.SEPARADOR, Separadores.ALMOHADILLA, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -638,7 +610,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return token = new Token(TipoToken.OP_LOGICO, OpLogico.NOT, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -651,7 +622,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -666,7 +636,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_COMPARACION,OpComparacion.MAYOR, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -678,7 +647,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_LOGICO, OpLogico.DOS_MAYORES, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -696,7 +664,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_COMPARACION,OpComparacion.MENOR, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -708,7 +675,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -721,7 +687,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -734,7 +699,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_LOGICO,OpLogico.BIT_OR, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -747,7 +711,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_LOGICO,OpLogico.BIT_AND, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -758,7 +721,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_LOGICO,OpLogico.CIRCUNFLEJO, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -816,7 +778,6 @@ public class AnalizadorLexico {
 					 asterisco=true;
 					 return token;
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -825,7 +786,6 @@ public class AnalizadorLexico {
 				if(preanalisis == '"') {
 					return new Token(TipoToken.LIT_CADENA,lexema, comentario);
 				} else	if( !esCajonDesastre() || (preanalisis == '\\') || (preanalisis == '\n'))	{
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {	
@@ -838,7 +798,6 @@ public class AnalizadorLexico {
 					lexema = lexema+preanalisis;
 					transita(116);
 				} else if ( !esCajonDesastre() || (preanalisis == '\n') || (preanalisis == '\'')){
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {
@@ -848,12 +807,13 @@ public class AnalizadorLexico {
 				break;
 			case 103:
 				if(preanalisis == '\''){ // fin de literal caaracter
+					if(lexema.length() == 1)
+						return new Token(TipoToken.CARACTER,lexema, comentario);
 					return new Token(TipoToken.LIT_CARACTER,lexema, comentario);
 				} else if (preanalisis == '\\') { // barra de escape
 					lexema = lexema+preanalisis;
 					transita(116);
 				} else if ( !esCajonDesastre() || (preanalisis == '\n')){
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {
@@ -873,7 +833,6 @@ public class AnalizadorLexico {
 					asterisco = true;
 					return new Token(TipoToken.OP_ARITMETICO,OpAritmetico.DIVISION, comentario);
 				} else {
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -882,7 +841,6 @@ public class AnalizadorLexico {
 				if(preanalisis=='*'){
 					transita(108);
 				} else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				} else {
@@ -900,7 +858,6 @@ public class AnalizadorLexico {
 					scan();
 				}
 				else if (preanalisis == '\0')  { //error ya que termina el fichero y el comentario nunca se cierra
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -922,7 +879,6 @@ public class AnalizadorLexico {
 					lexema = lexema + preanalisis;
 					transita(103);
 				} else { // secuencia de escape simple no valida
-					//insertar en G.E.
 					gestorErrores.insertaErrorLexico(2,numlinea, numcolumna);
 					return new Token(TipoToken.ERROR,null, comentario);
 				}
@@ -942,7 +898,8 @@ public class AnalizadorLexico {
 			preanalisis == '*' || preanalisis == '<' || preanalisis == '>' || preanalisis == '=' || preanalisis == '&' || 
 			preanalisis == '^' || preanalisis == '%' || preanalisis == '!' || preanalisis == '~' || preanalisis == '{' || 
 			preanalisis == '}' || preanalisis == '[' || preanalisis == ']' || preanalisis == '(' || preanalisis == ')' ||
-			preanalisis == '#' || preanalisis == ';' || preanalisis == '.' || preanalisis == ',' || preanalisis == '?')
+			preanalisis == '#' || preanalisis == ';' || preanalisis == '.' || preanalisis == ',' || preanalisis == '?' ||
+			preanalisis == '\'')
 			return true;
 		return false;
 	}  

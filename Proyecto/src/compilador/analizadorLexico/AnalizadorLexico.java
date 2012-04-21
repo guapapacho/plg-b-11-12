@@ -2,6 +2,7 @@ package compilador.analizadorLexico;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Vector;
 
 import compilador.analizadorLexico.Token.*;
 import compilador.gestionErrores.*;
@@ -16,19 +17,6 @@ import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
  *
  */
 public class AnalizadorLexico {
-
-	/**
-	 * Booleano que indica si se encuentra en modo declaracion o no
-	 */
-	private boolean modoDeclaracion;
-
-	/**
-	 * Booleano que indica si se encuentra en modo noMeto
-	 *(modo especial para casos como enumerados y structs en los cuales no hay que 
-	 * meter id's en la TS) 
-	 */
-	private boolean modoNoMeto;
-
 
 	/**
 	 * Gestor de errores
@@ -81,6 +69,15 @@ public class AnalizadorLexico {
 	private boolean hayComentario;
 	private String comentario;
 	
+	/**
+	 * Vector que guarda los modos activos del léxico
+	 */
+	private Vector<modo> modos;
+	
+	public enum modo {
+		Declaracion, NoMeto, GoTo;
+	}
+	
 	
 	/**
 	 * Constructora de la clase
@@ -96,16 +93,8 @@ public class AnalizadorLexico {
 		this.comentario = "";
 		this.gestorErrores = GestorErrores.getGestorErrores();
 		this.gestorTS = GestorTablasSimbolos.getGestorTS();
-		this.modoDeclaracion = true;
-		this.modoNoMeto = false;
-	}
-	
-	public boolean getModoNoMeto(){
-		return modoNoMeto;
-	}
-	
-	public boolean getModoDeclaracion(){
-		return modoDeclaracion;
+		modos = new Vector<modo>();
+		activaModo(modo.Declaracion);
 	}
 	
 	public String getLexemaAnterior(){
@@ -783,7 +772,7 @@ public class AnalizadorLexico {
 					 if(indice == null ) //si es un identificador	
 					 {	 
 						//Dependiendo de si se esta en modo declaracion se insertara el atributo en la TS o se consultara para comprobar su existencia. 
-						 if(modoDeclaracion && !modoNoMeto) {
+						 if(esModoActivo(modo.Declaracion) && !esModoActivo(modo.NoMeto)) {
 							 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
 							 if (puntero == null) { //si no esta en la T.S. se inserta.
 								 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
@@ -799,7 +788,7 @@ public class AnalizadorLexico {
 								 }
 							}
 						 }
-						 else if(modoNoMeto) {
+						 else if(esModoActivo(modo.NoMeto)) {
 							 token = new Token(TipoToken.IDENTIFICADOR,lexema,comentario);
 						 }
 						 else { // si no esta en modo declaracion ni en modo noMeto
@@ -1052,24 +1041,24 @@ public class AnalizadorLexico {
 		return numcolumna;
 	}
 	
-	public boolean isModoDeclaracion() {
-		return modoDeclaracion;
-	}
-
-	public void setModoDeclaracion(boolean modoDeclaracion) {
-		if(modoDeclaracion == true)
-			modoNoMeto=false;
-		this.modoDeclaracion = modoDeclaracion;
+	public void activaModo(modo m) {
+		modos.add(m);
 	}
 	
-	public boolean isModoNoMeto() {
-		return modoNoMeto;
+	public void desactivaModo(modo m) {
+		modos.remove(m);
 	}
-
-	public void setModoNoMeto(boolean modoNoMeto) {
-		if(modoNoMeto == true)
-			modoDeclaracion = false;
-		this.modoNoMeto = modoNoMeto;
+	
+	public boolean esModoActivo(modo m) {
+		return modos.contains(m);
+	}
+	
+	public Vector<modo> getModos() {
+		return modos;
+	}
+	
+	public void setModos(Vector<modo> m) {
+		modos = m;
 	}
     
 }

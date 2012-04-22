@@ -40,6 +40,10 @@ public class Producto extends ExpresionTipo {
 		    	   this.tablaProd.put(d, e.get(d));
 		}	
 	}
+	
+	public ExpresionTipo getTipoCampo(String campo) {
+		return tablaProd.get(campo);
+	}
 		
 	public Hashtable<String, ExpresionTipo> getTablaProd() {
 		return tablaProd;

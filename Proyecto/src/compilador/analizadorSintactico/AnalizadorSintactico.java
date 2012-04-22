@@ -805,12 +805,18 @@ public class AnalizadorSintactico {
 	 */
 	private ExpresionTipo tipo() throws Exception { 
 		ExpresionTipo tipo_s =ExpresionTipo.getVacio();
-		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+		if(token.esIgual(TipoToken.TIPODEFINIDO)){
 			parse.add(6);
 			lexico.activaModo(modo.Declaracion);
 			lexico.desactivaModo(modo.NoMeto);
 			nextToken();
-			return new Objeto(((String)tokenAnterior.getAtributo()));
+			return (ExpresionTipo) tokenAnterior.getAtributo();
+//		} else if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+//			parse.add(6);
+//			lexico.activaModo(modo.Declaracion);
+//			lexico.desactivaModo(modo.NoMeto);
+//			nextToken();
+//			return new Objeto(((String)tokenAnterior.getAtributo()));
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
 			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
@@ -985,10 +991,12 @@ public class AnalizadorSintactico {
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 23 /* enum */)){
 				parse.add(11);
+				lexico.activaModo(modo.NoMeto);
 				nextToken();
+				lexico.desactivaModo(modo.NoMeto);
 				ExpresionTipo LISTANOMBRES_tipo_s,COSAS1_tipo_s;
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
-					String IDlexema = (String)token.atrString();
+					String IDlexema = (String)token.getAtributo();
 					aux = new Enumerado();
 					nextToken();
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
@@ -997,8 +1005,8 @@ public class AnalizadorSintactico {
 						lexico.activaModo(modo.Declaracion);
 						nextToken();
 						LISTANOMBRES_tipo_s=listaNombres(aux);
-						if(LISTANOMBRES_tipo_s.getTipoBasico() != TipoBasico.error_tipo)
-							gestorTS.buscaIdBloqueActual(IDlexema).setTipo(LISTANOMBRES_tipo_s);
+//						if(LISTANOMBRES_tipo_s.getTipoBasico() != TipoBasico.error_tipo)
+//							gestorTS.buscaIdBloqueActual(IDlexema).setTipo(LISTANOMBRES_tipo_s);
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 							nextToken();
 							if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
@@ -1009,9 +1017,9 @@ public class AnalizadorSintactico {
 									((Enumerado)LISTANOMBRES_tipo_s).setNombreEnumerado(IDlexema);
 									//metemos el id del enumerado con su tipo en la tabla hash de tipos definidos
 									gestorTS.setTipoDefinido(IDlexema, LISTANOMBRES_tipo_s);
-									EntradaTS entradaTS = gestorTS.buscaIdBloqueActual(IDlexema);
-									entradaTS.setConstante(false);
-									entradaTS.setTipo(LISTANOMBRES_tipo_s);
+//									EntradaTS entradaTS = gestorTS.buscaIdBloqueActual(IDlexema);
+//									entradaTS.setConstante(false);
+//									entradaTS.setTipo(LISTANOMBRES_tipo_s);
 								}
 								COSAS1_tipo_s=cosas();
 								if(LISTANOMBRES_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
@@ -1035,7 +1043,9 @@ public class AnalizadorSintactico {
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /* struct */)){
 				parse.add(12);				
 				ExpresionTipo RESTO_ST_tipo_s,COSAS1_tipo_s;
+				lexico.activaModo(modo.NoMeto);
 				nextToken();
+				lexico.desactivaModo(modo.NoMeto);
 				RESTO_ST_tipo_s=resto_st();
 				COSAS1_tipo_s=cosas();
 				if(RESTO_ST_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
@@ -1794,7 +1804,9 @@ public class AnalizadorSintactico {
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /*struct*/ )){ //INS_REG
 			parse.add(43);
+			lexico.activaModo(modo.NoMeto);
 			nextToken();
+			lexico.desactivaModo(modo.NoMeto);
 			ExpresionTipo RESTO_ST_tipo_s=resto_st();
 			if(RESTO_ST_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 				return ExpresionTipo.getVacio();
@@ -2053,7 +2065,7 @@ public class AnalizadorSintactico {
 		ExpresionTipo NOMBRES_tipo_h;
 		ExpresionTipo NOMBRES_tipo;
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){ 
-			String IDlexema = token.atrString();
+			String IDlexema = (String) token.getAtributo();
 			parse.add(60);
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
@@ -2068,15 +2080,15 @@ public class AnalizadorSintactico {
 				
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
 					lexico.activaModo(modo.Declaracion);
+					lexico.desactivaModo(modo.NoMeto);
 					nextToken();
 					if(token.esIgual(TipoToken.IDENTIFICADOR)){
-						String IDlexema1 = token.atrString();
-						gestorTS.buscaIdBloqueActual(IDlexema1).setTipo(NOMBRES_tipo_h);
+						EntradaTS IDentrada = (EntradaTS) token.getAtributo();
+//						gestorTS.buscaIdBloqueActual(IDlexema1).setTipo(NOMBRES_tipo_h);
 						nextToken();
 						((Registro)NOMBRES_tipo_h).setNombreRegistro(IDlexema);
-						//IDlexema es TIPO DEFINIDO No se puede usar
 						gestorTS.setTipoDefinido(IDlexema, NOMBRES_tipo_h);
-						gestorTS.buscaIdBloqueActual(IDlexema).setTipo((Registro)NOMBRES_tipo_h);
+						IDentrada.setTipo((Registro)NOMBRES_tipo_h);
 						NOMBRES_tipo = nombres(NOMBRES_tipo_h);
 						if(NOMBRES_tipo.getTipoBasico() != TipoBasico.error_tipo)
 				        { 
@@ -2682,7 +2694,7 @@ public class AnalizadorSintactico {
 						gestorErr.insertaErrorSemantico(linea, columna, "Falta instrucción de retorno.");
 						tipo = ExpresionTipo.getError();
 						tipo.setRetorno(true);
-					} else if(ExpresionTipo.sonEquivComp(aux, tipoRetorno, OpComparacion.IGUALDAD) == null) {
+					} else if(ExpresionTipo.sonEquivAsig(aux, tipoRetorno, OpAsignacion.ASIGNACION) == null) {
 						gestorErr.insertaErrorSemantico(linea, columna, "Tipo de retorno incorrecto, se espera "+tipoRetorno+".");
 						tipo = ExpresionTipo.getError();
 						tipo.setRetorno(true);
@@ -3333,7 +3345,7 @@ public class AnalizadorSintactico {
 				tipo = aux;
 			} else {
 				parse.add(146);
-				tipo = unqualified_id();
+				tipo = unqualified_id(null); //TODO a ver que hay que meter ahi
 			}
 		}
 		return tipo;
@@ -3345,14 +3357,28 @@ public class AnalizadorSintactico {
 	 * 				{ UNQUALIFIED-ID.tipo := objeto(id.lexema) }
 	 * 149. UNQUALIFIED-ID →  ~ RESTO_UNQ
 	 * 				{ UNQUALIFIED-ID.tipo := RESTO_UNQ.tipo }
+	 * @param exp 
 	 * @return 
 	 * @throws Exception 
 	 */
-	private ExpresionTipo unqualified_id() throws Exception {
+	private ExpresionTipo unqualified_id(ExpresionTipo exp) throws Exception {
 		ExpresionTipo tipo = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(148);
-			tipo = new Objeto(((EntradaTS)token.getAtributo()).getLexema());
+			if(exp!=null && !exp.esTipoBasico() && exp.getTipoNoBasico().equals(TipoNoBasico.registro)) {
+				Registro reg = (Registro) exp;
+				String campo = (String) token.getAtributo(); 
+				ExpresionTipo tipoCampo = (reg.getCampos()).getTipoCampo(campo);
+				if(tipoCampo == null) {
+					gestorErr.insertaErrorSemantico(linea, columna, campo + " no es un campo del registro " + reg.getNombreRegistro());
+					tipo = ExpresionTipo.getError();
+				} else {
+					tipo = tipoCampo;
+				}
+			} else {
+				//tipo = new Objeto(((EntradaTS)token.getAtributo()).getLexema());
+				tipo = ExpresionTipo.getError();
+			}
 			nextToken();
 		} else if (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {
 			parse.add(149);
@@ -3598,19 +3624,21 @@ public class AnalizadorSintactico {
 		} else if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.PUNTERO)) {
 			parse.add(156);
 			nextToken();
-			tipo = resto_postfix_exp3();
-			if(!exp.equals(TipoNoBasico.objeto)) {
-				tipo = ExpresionTipo.getError();
-				gestorErr.insertaErrorSemantico(linea, columna, "Aqui no vale el '->' porque no se aplica sobre un objeto"); //TODO cambiar el mensaje
-			}
+			tipo = resto_postfix_exp3(exp);
+//			if(!exp.equals(TipoNoBasico.objeto)) {
+//				tipo = ExpresionTipo.getError();
+//				gestorErr.insertaErrorSemantico(linea, columna, "Aqui no vale el '->' porque no se aplica sobre un objeto"); //TODO cambiar el mensaje
+//			}
 		} else if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO)) {
 			parse.add(157);
+			lexico.activaModo(modo.NoMeto);
 			nextToken();
-			tipo = resto_postfix_exp3();
-			if(!exp.equals(TipoNoBasico.objeto)) {
-				tipo = ExpresionTipo.getError();
-				gestorErr.insertaErrorSemantico(linea, columna, "Aqui no vale el '.'  porque no se aplica sobre un objeto"); //TODO cambiar el mensaje
-			}
+			lexico.desactivaModo(modo.NoMeto);
+			tipo = resto_postfix_exp3(exp);
+//			if(!exp.equals(TipoNoBasico.objeto)) {
+//				tipo = ExpresionTipo.getError();
+//				gestorErr.insertaErrorSemantico(linea, columna, "Aqui no vale el '.'  porque no se aplica sobre un objeto"); //TODO cambiar el mensaje
+//			}
 		} else if (token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.DECREMENTO)) {
 			if(tokenAnterior.esIgual(TipoToken.IDENTIFICADOR)){
 				if(exp.getTipoBasico() != TipoBasico.entero && exp.getTipoBasico() != TipoBasico.real) {
@@ -3683,9 +3711,10 @@ public class AnalizadorSintactico {
 	 * 							{ RESTO_POSTFIX_EXP3.tipo_s := EXPRESSION.tipo_s }
 	 * 167. RESTO_POSTFIX_EXP3 → UNQUALIFIED-ID
 	 * 							{ RESTO_POSTFIX_EXP3.tipo_s := UNQUALIFIED-ID.tipo_s }
+	 * @param exp 
 	 * @throws Exception 
 	 */
-	private ExpresionTipo resto_postfix_exp3() throws Exception {
+	private ExpresionTipo resto_postfix_exp3(ExpresionTipo exp) throws Exception {
 		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {	
 			parse.add(166);
@@ -3708,7 +3737,7 @@ public class AnalizadorSintactico {
 			}
 		} else {
 			parse.add(167);
-			aux = unqualified_id();
+			aux = unqualified_id(exp);
 		}
 		return aux;
 	}
@@ -4231,7 +4260,6 @@ public class AnalizadorSintactico {
 				return aux2;
 			}
 		} else {
-			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
 		}
 	}
@@ -4330,7 +4358,6 @@ public class AnalizadorSintactico {
 				return aux2;
 			}
 		} else {
-			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
 		}
 	}
@@ -4421,7 +4448,6 @@ public class AnalizadorSintactico {
 				return aux2;
 			}
 		} else {
-			gestorErr.insertaErrorSemantico(linea, columna, "ERROR DE TIPOS"); //TODO CAMBIAR MENSAJE
 			return ExpresionTipo.getError();
 		}
 		//return literal();

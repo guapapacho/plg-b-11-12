@@ -1,10 +1,10 @@
 package compilador.analizadorSemantico;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Set;
 
 public class Producto extends ExpresionTipo {
 	/** Para simpliicar codigo se crea una tabla hash que contiene el lexema de cada 
@@ -57,18 +57,27 @@ public class Producto extends ExpresionTipo {
 		return tablaProd.size() == 0;
 	}
 	
-	public String toString () {
+	public String toString (boolean funcion) {
 		String s = "";
-		Collection<ExpresionTipo> colection = tablaProd.values(); 
-		ArrayList<ExpresionTipo> lista = new ArrayList<ExpresionTipo>();
-		for(ExpresionTipo tipo: colection) {
-			lista.add(tipo);
-		}
-		Collections.reverse(lista);
-		for(ExpresionTipo tipo: lista) {
-			s += tipo.toString();
-			s += tipo.isPasoReferencia() ?  " (referencia)" : " (valor)";
-			s += ", ";
+		Set<String> colection = tablaProd.keySet(); 
+		if(funcion) {
+			ArrayList<String> lista = new ArrayList<String>();
+			for(String tipo: colection) {
+				lista.add(tipo);
+			}
+			Collections.reverse(lista);
+			for(String nombre: lista) {
+				ExpresionTipo tipo = tablaProd.get(nombre);
+				s += nombre + " " + tipo.toString();
+				s += tipo.isPasoReferencia() ?  " (referencia)" : " (valor)";
+				s += ", ";
+			}
+		} else {
+			for(String nombre: colection) {
+				ExpresionTipo tipo = tablaProd.get(nombre);
+				s += nombre + " " + tipo.toString();
+				s += ", ";
+			}
 		}
 		return s.substring(0, s.length()-2);
 	}

@@ -84,8 +84,8 @@ public class TablaSimbolos {
 				s += "Jolines, " + entrada.getLexema() + " tiene tipo null\n";
 		}
 		
-		if(contenidos.size() > 0)
-			s += tab+"--- Tablas ---\n";
+//		if(contenidos.size() > 0)
+//			s += tab+"--- Tablas ---\n";
 		for(TablaSimbolos contenido: contenidos) {
 			s += contenido.toString(tab+"    ") + "\n";
 		}

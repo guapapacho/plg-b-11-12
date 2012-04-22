@@ -67,6 +67,8 @@ public class AnalizadorSintactico {
 	private int linea;
 	/** Numero de columna del siguiente al token anterior */
 	private int columna;
+	private boolean hayRetornoEnDefault;
+	private boolean hayBreak;
 		
 	public AnalizadorSintactico(AnalizadorLexico lexico){
 		this.lexico = lexico;
@@ -81,10 +83,13 @@ public class AnalizadorSintactico {
 		estamosEnSwitch = false;
 		tiposDefinidos = new Hashtable<String,ExpresionTipo>();
 		tipoRetorno = null;
+		hayRetornoEnDefault = false;
+		hayBreak = false;
 		try {
 			nextToken();
 			programa();
 		} catch (Exception e) {
+			gestorErr.insertaWarning(linea, columna, "Excepcion: "+e.getMessage()); // TODO qiutar para la presentacion y entrega :P
 			e.printStackTrace();
 		}
 	}
@@ -291,8 +296,6 @@ public class AnalizadorSintactico {
 				return ExpresionTipo.getVacio();
 			}
 		} else {
-			//gestorErr.insertaErrorSintactico(linea, columna,"Fin de fichero inesperado"); 
-			// PORQUÉ HEMOS COMENTADO LO DE ARRIBA??
 			return null;
 		}
 	}
@@ -2499,35 +2502,59 @@ public class AnalizadorSintactico {
 	{
 		if(token.esIgual(TipoToken.PAL_RESERVADA,29 /*for*/))
 		{
-			ExpresionTipo RESTO_FOR_tipo;
+			ExpresionTipo RESTO_FOR_tipo, CUERPO_tipo;
 			parse.add(81);
 			nextToken();
 			RESTO_FOR_tipo = resto_for();
-			if(RESTO_FOR_tipo.getTipoBasico() != TipoBasico.error_tipo)
-				return cuerpo();
+			CUERPO_tipo = cuerpo();
+			if(RESTO_FOR_tipo.getTipoBasico() == TipoBasico.error_tipo || (CUERPO_tipo.getTipoBasico() == TipoBasico.error_tipo)) {
+				ExpresionTipo tipo = ExpresionTipo.getError();
+				tipo.setRetorno(RESTO_FOR_tipo.hayRetorno() || CUERPO_tipo.hayRetorno());
+				return tipo;
+			} else {
+				CUERPO_tipo.setRetorno(RESTO_FOR_tipo.hayRetorno() || CUERPO_tipo.hayRetorno());
+				return CUERPO_tipo;
+			}
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,19 /*do*/))
 		{
+			ExpresionTipo RESTO_DO_tipo, CUERPO_tipo;
 			parse.add(82);
 			nextToken();
-			ExpresionTipo RESTO_DO_tipo = resto_do();
-			if(RESTO_DO_tipo.getTipoBasico() != TipoBasico.error_tipo)
-				return cuerpo();
+			RESTO_DO_tipo = resto_do();
+			CUERPO_tipo = cuerpo();
+			if(RESTO_DO_tipo.getTipoBasico() == TipoBasico.error_tipo || (CUERPO_tipo.getTipoBasico() == TipoBasico.error_tipo)) {
+				ExpresionTipo tipo = ExpresionTipo.getError();
+				tipo.setRetorno(RESTO_DO_tipo.hayRetorno() || CUERPO_tipo.hayRetorno());
+				return tipo;
+			} else {
+				CUERPO_tipo.setRetorno(RESTO_DO_tipo.hayRetorno() || CUERPO_tipo.hayRetorno());
+				return CUERPO_tipo;
+			}
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,72 /*while*/))
 		{
+			ExpresionTipo RESTO_WHILE_tipo, CUERPO_tipo;
 			parse.add(83);
 			nextToken();
-			ExpresionTipo RESTO_WHILE_tipo = resto_while();
-			if(RESTO_WHILE_tipo.getTipoBasico() != TipoBasico.error_tipo)
-				return cuerpo();
+			RESTO_WHILE_tipo = resto_while();
+			CUERPO_tipo = cuerpo();
+			if(RESTO_WHILE_tipo.getTipoBasico() == TipoBasico.error_tipo || (CUERPO_tipo.getTipoBasico() == TipoBasico.error_tipo)) {
+				ExpresionTipo tipo = ExpresionTipo.getError();
+				tipo.setRetorno(RESTO_WHILE_tipo.hayRetorno() || CUERPO_tipo.hayRetorno());
+				return tipo;
+			} else {
+				CUERPO_tipo.setRetorno(RESTO_WHILE_tipo.hayRetorno() || CUERPO_tipo.hayRetorno());
+				return CUERPO_tipo;
+			}
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,32 /*if*/))
 		{
+			ExpresionTipo RESTO_IF_tipo, CUERPO_tipo;
 			parse.add(84);
 			nextToken();
-			ExpresionTipo RESTO_IF_tipo = resto_if();
-			ExpresionTipo CUERPO_tipo = cuerpo();
+			RESTO_IF_tipo = resto_if();
+			CUERPO_tipo = cuerpo();
 			if(RESTO_IF_tipo.getTipoBasico() == TipoBasico.error_tipo || (CUERPO_tipo.getTipoBasico() == TipoBasico.error_tipo)) {
 				ExpresionTipo tipo = ExpresionTipo.getError();
 				tipo.setRetorno(RESTO_IF_tipo.hayRetorno() || CUERPO_tipo.hayRetorno());
@@ -2539,11 +2566,19 @@ public class AnalizadorSintactico {
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,55 /*switch*/))
 		{
+			ExpresionTipo RESTO_CASE_tipo, CUERPO_tipo;
 			parse.add(85);
 			nextToken();
-			ExpresionTipo RESTO_CASE_tipo = resto_case();
-			if(RESTO_CASE_tipo.getTipoBasico() != TipoBasico.error_tipo)
-				return cuerpo();
+			RESTO_CASE_tipo = resto_case();
+			CUERPO_tipo = cuerpo();
+			if(RESTO_CASE_tipo.getTipoBasico() == TipoBasico.error_tipo || (CUERPO_tipo.getTipoBasico() == TipoBasico.error_tipo)) {
+				ExpresionTipo tipo = ExpresionTipo.getError();
+				tipo.setRetorno(RESTO_CASE_tipo.hayRetorno() || CUERPO_tipo.hayRetorno());
+				return tipo;
+			} else {
+				CUERPO_tipo.setRetorno(RESTO_CASE_tipo.hayRetorno() || CUERPO_tipo.hayRetorno());
+				return CUERPO_tipo;
+			}
 //		}
 //		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 //			parse.add(86);
@@ -2558,11 +2593,15 @@ public class AnalizadorSintactico {
 				nextToken();
 				ExpresionTipo CUERPO2_tipo = cuerpo();
 				if(CUERPO1_tipo.getTipoBasico() != TipoBasico.error_tipo &&
-					CUERPO2_tipo.getTipoBasico() != TipoBasico.error_tipo)
-					return ExpresionTipo.getVacio();
-				else
-					return ExpresionTipo.getError();
-				
+					CUERPO2_tipo.getTipoBasico() != TipoBasico.error_tipo) {
+					ExpresionTipo tipo = ExpresionTipo.getVacio();
+					tipo.setRetorno(CUERPO1_tipo.hayRetorno() || CUERPO2_tipo.hayRetorno());
+					return tipo;
+				} else {
+					ExpresionTipo tipo = ExpresionTipo.getError();
+					tipo.setRetorno(CUERPO1_tipo.hayRetorno() || CUERPO2_tipo.hayRetorno());
+					return tipo;
+				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \"}\"");
 			}
@@ -2570,14 +2609,23 @@ public class AnalizadorSintactico {
 			parse.add(128);
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
+				hayBreak = true;
 				lexico.desactivaModo(modo.Declaracion);
 				lexico.desactivaModo(modo.NoMeto);
 				nextToken();
-				if(estamosEnBucle || estamosEnSwitch) 
-					return cuerpo();
-				else {
+				ExpresionTipo aux1, aux2;
+				aux1 = ExpresionTipo.getVacio();
+				if(!estamosEnBucle && !estamosEnSwitch) {
 					gestorErr.insertaErrorSemantico(linea, columna, "No está permitido usar break fuera de un bucle o switch.");
-					return ExpresionTipo.getError();
+					aux1 = ExpresionTipo.getError();
+				}
+				aux2 = cuerpo();
+				if(aux1.getTipoBasico() != TipoBasico.error_tipo && aux2.getTipoBasico() != TipoBasico.error_tipo ) {
+					return aux2;
+				} else {
+					aux1 = ExpresionTipo.getError();
+					aux1.setRetorno(aux2.hayRetorno());
+					return aux1;
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
@@ -2589,11 +2637,19 @@ public class AnalizadorSintactico {
 				lexico.desactivaModo(modo.Declaracion);
 				lexico.desactivaModo(modo.NoMeto);
 				nextToken();
-				if(estamosEnBucle) 
-					return cuerpo();
-				else {
+				ExpresionTipo aux1, aux2;
+				aux1 = ExpresionTipo.getVacio();
+				if(!estamosEnBucle && !estamosEnSwitch) {
 					gestorErr.insertaErrorSemantico(linea, columna, "No está permitido usar continue fuera de un bucle.");
-					return ExpresionTipo.getError();
+					aux1 = ExpresionTipo.getError();
+				}
+				aux2 = cuerpo();
+				if(aux1.getTipoBasico() != TipoBasico.error_tipo && aux2.getTipoBasico() != TipoBasico.error_tipo ) {
+					return aux2;
+				} else {
+					aux1 = ExpresionTipo.getError();
+					aux1.setRetorno(aux2.hayRetorno());
+					return aux1;
 				}
 			} else { 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
@@ -2635,6 +2691,8 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				if(token.getAtributo() instanceof String) {
 					etiquetasConGoto.add((String) token.getAtributo());
+				} else {
+					gestorErr.insertaErrorSemantico(linea, columna, "Etiqueta inválida");
 				}
 				lexico.desactivaModo(modo.GoTo);
 				nextToken();
@@ -2642,7 +2700,7 @@ public class AnalizadorSintactico {
 					lexico.desactivaModo(modo.Declaracion);
 					lexico.desactivaModo(modo.NoMeto);
 					nextToken();
-					cuerpo();
+					return cuerpo();
 				} else { 
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
 				}
@@ -2653,19 +2711,20 @@ public class AnalizadorSintactico {
 			parse.add(132);
 			ExpresionTipo aux1, aux2;
 			aux1 = instruccion();
-			//if(instruccion())
-			if(aux1!=null){
-			
-			//if(aux1.getTipoBasico() != TipoBasico.error_tipo){
-				//System.out.println("Llamada recursiva a cuerpo...");
+			if(aux1 != null){
 				if(!token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE))
 					aux2 = cuerpo();
 				else
 					aux2 = ExpresionTipo.getVacio();
-				if(aux1.getTipoBasico() != TipoBasico.error_tipo && aux2.getTipoBasico() != TipoBasico.error_tipo)
-					return ExpresionTipo.getVacio();
-				else
-					return ExpresionTipo.getError();
+				if(aux1.getTipoBasico() != TipoBasico.error_tipo && aux2.getTipoBasico() != TipoBasico.error_tipo) {
+					ExpresionTipo tipo = ExpresionTipo.getVacio();
+					tipo.setRetorno(aux1.hayRetorno() || aux2.hayRetorno());
+					return tipo;
+				} else {
+					ExpresionTipo tipo = ExpresionTipo.getError();
+					tipo.setRetorno(aux1.hayRetorno() || aux2.hayRetorno());
+					return tipo;
+				}
 			}else{
 				 if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE) 
 						 || token.esIgual(TipoToken.PAL_RESERVADA,6 /*case*/)
@@ -2678,7 +2737,6 @@ public class AnalizadorSintactico {
 					return null;
 				 }
 			}
-			//}
 		}	
 		return ExpresionTipo.getVacio();
 	}
@@ -2802,8 +2860,14 @@ public class AnalizadorSintactico {
 					ExpresionTipo aux = cuerpo2();
 					estamosEnBucle = false;
 					return aux;
-				} else 
-					return ExpresionTipo.getError();
+				} else{
+					estamosEnBucle = true;
+					ExpresionTipo aux = cuerpo2();
+					estamosEnBucle = false;
+					ExpresionTipo tipo = ExpresionTipo.getError();
+					tipo.setRetorno(aux.hayRetorno());
+					return tipo;
+				}
 			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
 			}
@@ -2842,10 +2906,13 @@ public class AnalizadorSintactico {
 						lexico.desactivaModo(modo.Declaracion);
 						lexico.desactivaModo(modo.NoMeto);
 						nextToken();
-						if(EXPRESSION_tipo.getTipoBasico() == TipoBasico.logico)
+						if(EXPRESSION_tipo.getTipoBasico() == TipoBasico.logico) //TODO usar lo de la equivalencia
 							return CUERPO2_tipo;
-						else
-							return ExpresionTipo.getError();
+						else {
+							ExpresionTipo tipo = ExpresionTipo.getError();
+							tipo.setRetorno(CUERPO2_tipo.hayRetorno());
+							return tipo;
+						}
 					}	
 					else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
@@ -2883,7 +2950,7 @@ public class AnalizadorSintactico {
 			parse.add(96);
 			gestorTS.abreBloque();
 			nextToken();
-			 FOR_INIT_tipo = for_init();
+			FOR_INIT_tipo = for_init();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				nextToken();
 				EXPRESSIONOPT_tipo = expressionOpt();
@@ -2902,11 +2969,13 @@ public class AnalizadorSintactico {
 						} 
 						else{
 							estamosEnBucle = true;
-							cuerpo2();
+							ExpresionTipo aux1 = cuerpo2();
 							gestorTS.cierraBloque();
 							estamosEnBucle = false;
 							gestorErr.insertaErrorSemantico(linea, columna, "Error en inicializacion del for");
-							return ExpresionTipo.getError();
+							ExpresionTipo aux2 = ExpresionTipo.getError();
+							aux2.setRetorno(aux1.hayRetorno());
+							return aux2;
 						}
 					} else{
 						gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
@@ -2988,15 +3057,27 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_case() throws Exception {
 		ExpresionTipo EXPRESSION_tipo;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
+			Vector<modo> modos = lexico.getModos();
+			lexico.desactivaTodosLosModos();
 			parse.add(97);
 			nextToken();
-			 EXPRESSION_tipo = expression(); 
+			EXPRESSION_tipo = expression(); 
+			lexico.setModos(modos);
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
+				hayRetornoEnDefault = false;
+				ExpresionTipo RESTO_CASE_tipo = resto_case2(EXPRESSION_tipo);
+				if(hayRetornoEnDefault)
+					RESTO_CASE_tipo.setRetorno(true);
+				else if(tokenAnterior.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS))
+					RESTO_CASE_tipo.setRetorno(false);
 				if(EXPRESSION_tipo.getTipoBasico() != TipoBasico.error_tipo)
-					return resto_case2(EXPRESSION_tipo);
-				else
-					return ExpresionTipo.getError();
+					return RESTO_CASE_tipo;
+				else {
+					ExpresionTipo tipo = ExpresionTipo.getError();
+					tipo.setRetorno(RESTO_CASE_tipo.hayRetorno());
+					return tipo;
+				}
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta ')'");;
@@ -3035,18 +3116,15 @@ public class AnalizadorSintactico {
 			}
 			else {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta '}'");
-				//ruptura=parse.size();
 			}
 		}
 		else{
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta '{'");
-			//ruptura=parse.size();
 		}
 	return null;	
-	//return false;
 	}
 
-	/** TODO deberia funcionar con cuerpo si este no tuviese la regla cuerpo -> }
+	/**
 	 * 98. CUERPO_CASE --> case LITERAL : CUERPO CUERPO_CASE
 	 * {
 	 *  if(LITERAL_tipo es_equivalente CUERPO_CASE_tipo_h) and
@@ -3058,6 +3136,7 @@ public class AnalizadorSintactico {
 	 * 				{ if(CUERPO.tipo_s!=error_tipo && CUERPO_CASE'.tipo_s!=error_tipo)
 	 * 				  then CUERPO_CASE.tipo_s := vacio
 	 * 				  else CUERPO_CASE.tipo_s := error_tipo } 
+	 * aaa. CUERPO_CASE --> lambda //TODO añadir nuemro de regla 
 	 * @throws Exception 
 	 */
 	private ExpresionTipo cuerpo_case(ExpresionTipo EXPRESSION_tipo) throws Exception {
@@ -3072,18 +3151,27 @@ public class AnalizadorSintactico {
 			{
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
 					nextToken();
-					if(ExpresionTipo.sonEquivLog(EXPRESSION_tipo, LITERAL_tipo, OpLogico.AND) == null){	
+					if(ExpresionTipo.sonEquivLog(EXPRESSION_tipo, LITERAL_tipo, OpLogico.AND) == null){	//TODO tiene que ser un tipo enumerado: int, char, bool creo
 						gestorErr.insertaErrorSemantico(linea, columna, "No coincide el identificador del case...");
 						return new ExpresionTipo(TipoBasico.error_tipo);
 					}
+					hayBreak = false;
 					CUERPO_tipo = cuerpo();
+					boolean hayBreakCuerpo = hayBreak;
 					CUERPO_CASE1_tipo = cuerpo_case(EXPRESSION_tipo);
 					if(CUERPO_tipo.getTipoBasico() != TipoBasico.error_tipo &&
-						CUERPO_CASE1_tipo.getTipoBasico() != TipoBasico.error_tipo)
-						return ExpresionTipo.getVacio();
-					else 
-						return ExpresionTipo.getError();
-					
+						CUERPO_CASE1_tipo.getTipoBasico() != TipoBasico.error_tipo) {
+						ExpresionTipo tipo = ExpresionTipo.getVacio();
+						if(hayBreakCuerpo)
+							tipo.setRetorno(CUERPO_tipo.hayRetorno() && CUERPO_CASE1_tipo.hayRetorno());
+						else
+							tipo.setRetorno(CUERPO_CASE1_tipo.hayRetorno());
+						return tipo;
+					} else {
+						ExpresionTipo tipo = ExpresionTipo.getError();
+						tipo.setRetorno(CUERPO_tipo.hayRetorno() && CUERPO_CASE1_tipo.hayRetorno());
+						return tipo;
+					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta ':'");
 				}
@@ -3100,18 +3188,28 @@ public class AnalizadorSintactico {
 					nextToken();
 					ExpresionTipo aux1 = cuerpo();
 					ExpresionTipo aux2 = cuerpo_case(EXPRESSION_tipo);
-					if(aux1.getTipoBasico()!=TipoBasico.error_tipo && aux2.getTipoBasico()!=TipoBasico.error_tipo)
-						return ExpresionTipo.getVacio();
-					else 
-						return ExpresionTipo.getError();
+					hayRetornoEnDefault = aux1.hayRetorno();
+					if(aux1.getTipoBasico()!=TipoBasico.error_tipo && aux2.getTipoBasico()!=TipoBasico.error_tipo) {
+						ExpresionTipo tipo = ExpresionTipo.getVacio();
+						tipo.setRetorno(aux2.hayRetorno());
+						return tipo;
+					} else {
+						ExpresionTipo tipo = ExpresionTipo.getError();
+						tipo.setRetorno(aux2.hayRetorno());
+						return tipo;
+					}
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna, "Falta ':'");
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna, "'default' aparece más de una vez.");
 			}
+		} else {
+			ExpresionTipo tipo = ExpresionTipo.getVacio();
+			tipo.setRetorno(true);
+			return tipo;
 		}
-		return null;
+		return ExpresionTipo.getError();
 	}
 	
 	

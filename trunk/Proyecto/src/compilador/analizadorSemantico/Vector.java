@@ -32,7 +32,7 @@ public class Vector extends ExpresionTipo {
 	}
 	
 	public String toString() {
-		return "Vector de " + tipoElementos + "s.";
+		return "Vector de " + tipoElementos + "s de dimensión " + longitud + ".";
 	}
 
 }

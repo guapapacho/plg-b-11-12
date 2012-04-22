@@ -33,7 +33,7 @@ public class GestorTablasSimbolos {
 	 * Constructora privada de la clase (singleton)
 	 */
 	private GestorTablasSimbolos(){
-		bloque_actual = new TablaSimbolos(null);
+		bloque_actual = new TablaSimbolos(null, "Global");
 		inicializaPalRes();
 		inicializaTiposSimples();
 	}
@@ -46,10 +46,11 @@ public class GestorTablasSimbolos {
 	 * Añade un nuevo ambito a la lista y modifica los parametros que haga falta
 	 * campo lexema es el id del lexema (procedimiento, bucle, if, switch,..) 
 	 * al que se le añade un nuevo ambito
+	 * @param string 
 	 */
-	public void abreBloque(){
+	public void abreBloque(String nombre){
 		//Crea un ambito, actualiza continente y lo añade a la lista de ambitos
-		TablaSimbolos bloque = new TablaSimbolos(bloque_actual);
+		TablaSimbolos bloque = new TablaSimbolos(bloque_actual, nombre);
 		
 		//Actualiza contenido del ambito anterior
 		bloque_actual.addContenido(bloque);
@@ -145,9 +146,9 @@ public class GestorTablasSimbolos {
 	
 	public String toString() {
 		String s = "";
-		s += "-----------------------------------\n";
-		s += "       TABLAS DE SIMBOLOS: \n";
-		s += "-----------------------------------\n";
+//		s += "-----------------------------------\n";
+//		s += "       TABLAS DE SIMBOLOS: \n";
+//		s += "-----------------------------------\n";
 		if(bloque_actual != null)
 			s = s + bloque_actual.toString("");
 		return s;

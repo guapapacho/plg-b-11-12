@@ -198,7 +198,7 @@ public class AnalizadorSintactico {
 				string += parse.get(i) + ", ";
 			string += "\n";
 		}
-		return string+"\n";
+		return string;
 	}
 	
 	public String muestraDeclaraciones() {
@@ -953,7 +953,7 @@ public class AnalizadorSintactico {
 					ExpresionTipo id_tipo=null;
 					nextToken();
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
-						gestorTS.abreBloque();
+						gestorTS.abreBloque("Procedimiento "+entradaTS.getLexema());
 						nextToken();
 						LISTA_PARAM_tipo_s = lista_param();
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
@@ -1180,7 +1180,7 @@ public class AnalizadorSintactico {
 			ExpresionTipo LISTA_PARAM_tipo_s,COSAS3_tipo_s;
 			parse.add(16);
 			//abre nuevo bloque en la TS
-			gestorTS.abreBloque();
+			gestorTS.abreBloque("Función "+entrada.getLexema());
 			nextToken();
 			LISTA_PARAM_tipo_s=lista_param();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
@@ -2585,7 +2585,7 @@ public class AnalizadorSintactico {
 //			nextToken();
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(104);
-			gestorTS.abreBloque();
+			gestorTS.abreBloque("Anónimo");
 			nextToken();
 			ExpresionTipo CUERPO1_tipo = cuerpo();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
@@ -2856,14 +2856,18 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
 				if(EXPRESSION_tipo.getTipoBasico() == TipoBasico.logico) {
+					gestorTS.abreBloque("While");
 					estamosEnBucle = true;
 					ExpresionTipo aux = cuerpo2();
 					estamosEnBucle = false;
+					gestorTS.cierraBloque();
 					return aux;
 				} else{
+					gestorTS.abreBloque("While");
 					estamosEnBucle = true;
 					ExpresionTipo aux = cuerpo2();
 					estamosEnBucle = false;
+					gestorTS.cierraBloque();
 					ExpresionTipo tipo = ExpresionTipo.getError();
 					tipo.setRetorno(aux.hayRetorno());
 					return tipo;
@@ -2890,9 +2894,11 @@ public class AnalizadorSintactico {
 		ExpresionTipo CUERPO2_tipo;
 		parse.add(95);
 
+		gestorTS.abreBloque("Do");
 		estamosEnBucle = true;
 		CUERPO2_tipo = cuerpo2();
 		estamosEnBucle = false;
+		gestorTS.cierraBloque();
 		
 		if(token.esIgual(TipoToken.PAL_RESERVADA,72 /*while*/))	{
 			nextToken();
@@ -2948,7 +2954,7 @@ public class AnalizadorSintactico {
 		ExpresionTipo EXPRESSIONOPT1_tipo;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(96);
-			gestorTS.abreBloque();
+			gestorTS.abreBloque("For");
 			nextToken();
 			FOR_INIT_tipo = for_init();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
@@ -3107,9 +3113,11 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(261);
 			nextToken();
+			gestorTS.abreBloque("Switch");
 			estamosEnSwitch = true;
 			ExpresionTipo aux1 = cuerpo_case(EXPRESSION_tipo);
 			estamosEnSwitch = false;
+			gestorTS.cierraBloque();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
 				nextToken();
 				return aux1;

@@ -23,7 +23,7 @@ public class Funcion extends ExpresionTipo {
 		if (dominio.esVacio()) {
 			aux += "que no recibe parametros";
 		} else {
-			aux += "que recibe los parametros: " + dominio;
+			aux += "que recibe los parametros: " + dominio.toString(true);
 		}
 		if (imagen != null) {
 			aux += " y devuelve: " + imagen;

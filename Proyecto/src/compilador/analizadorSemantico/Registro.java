@@ -22,7 +22,7 @@ public class Registro extends ExpresionTipo {
 	}
 	
 	public String toString() {
-		return "Registro con los siguientes campos: " + campos;
+		return "Registro con los siguientes campos: " + campos.toString(false);
 	}
 
 }

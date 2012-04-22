@@ -1,6 +1,7 @@
 package compilador.gestionTablasSimbolos;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Set;
 import java.util.Vector;
 
 import compilador.analizadorSemantico.ExpresionTipo;
@@ -165,6 +166,12 @@ public class GestorTablasSimbolos {
 //		s += "-----------------------------------\n";
 		if(bloque_actual != null)
 			s = s + bloque_actual.toString("");
+		
+		s += "\nTipos Definidos: \n"; 
+		Set<String> nombres = tiposDefinidos.keySet();
+		for(String nombre: nombres) {
+			s += nombre + " : " + tiposDefinidos.get(nombre) + "\n"; 
+		}
 		return s;
 	}
 

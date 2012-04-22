@@ -3,6 +3,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import compilador.analizadorSemantico.ExpresionTipo;
+
 /**
  * Gestor de las Tablas de Simbolos
  * @author Grupo 1
@@ -18,6 +20,9 @@ public class GestorTablasSimbolos {
 	/** Instancia única de la clase */
 	private static GestorTablasSimbolos instance= null;
 	
+	/** Tabla hash con los tipos definidos */
+	private Hashtable<String,ExpresionTipo> tiposDefinidos;
+		
 	/**
 	 * Método que devuelve el gestor de TS
 	 * @return instancia del gestor de TS
@@ -28,7 +33,7 @@ public class GestorTablasSimbolos {
 		}
 		return instance;			
 	}
-	
+		
 	/**
 	 * Constructora privada de la clase (singleton)
 	 */
@@ -36,8 +41,17 @@ public class GestorTablasSimbolos {
 		bloque_actual = new TablaSimbolos(null, "Global");
 		inicializaPalRes();
 		inicializaTiposSimples();
+		tiposDefinidos = new Hashtable<String,ExpresionTipo>();
 	}
 	
+	public ExpresionTipo getTipoDefinido(String s) {
+		return tiposDefinidos.get(s);
+	}
+
+	public void setTipoDefinido(String s, ExpresionTipo tipo) {
+		tiposDefinidos.put(s, tipo);
+	}
+
 	public static void resetTablasSimbolos() {
 		instance = new GestorTablasSimbolos();
 	}

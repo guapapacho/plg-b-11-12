@@ -20,8 +20,6 @@ public class AnalizadorSintactico {
 	/** Token anterior */
 	private Token tokenAnterior;
 	
-	/** Tabla hash con los tipos definidos */
-	private Hashtable<String,ExpresionTipo> tiposDefinidos;
 	
 	/** Lista de tokens obtenidos del Analizador lexico */
 	private Vector<Token> tokens;
@@ -81,7 +79,6 @@ public class AnalizadorSintactico {
 		nombreClase = null;
 		estamosEnBucle = false;
 		estamosEnSwitch = false;
-		tiposDefinidos = new Hashtable<String,ExpresionTipo>();
 		tipoRetorno = null;
 		hayRetornoEnDefault = false;
 		hayBreak = false;
@@ -1007,7 +1004,7 @@ public class AnalizadorSintactico {
 								if(LISTANOMBRES_tipo_s.getTipoBasico()!=TipoBasico.error_tipo) {
 									((Enumerado)LISTANOMBRES_tipo_s).setNombreEnumerado(IDlexema);
 									//metemos el id del enumerado con su tipo en la tabla hash de tipos definidos
-									tiposDefinidos.put(IDlexema, LISTANOMBRES_tipo_s);
+									gestorTS.setTipoDefinido(IDlexema, LISTANOMBRES_tipo_s);
 									EntradaTS entradaTS = gestorTS.buscaIdBloqueActual(IDlexema);
 									entradaTS.setConstante(false);
 									entradaTS.setTipo(LISTANOMBRES_tipo_s);
@@ -2062,14 +2059,14 @@ public class AnalizadorSintactico {
 						nextToken();
 						((Registro)NOMBRES_tipo_h).setNombreRegistro(IDlexema);
 						//IDlexema es TIPO DEFINIDO No se puede usar
-						tiposDefinidos.put(IDlexema, NOMBRES_tipo_h);
+						gestorTS.setTipoDefinido(IDlexema, NOMBRES_tipo_h);
 						gestorTS.buscaIdBloqueActual(IDlexema).setTipo((Registro)NOMBRES_tipo_h);
 						NOMBRES_tipo = nombres(NOMBRES_tipo_h);
 						if(NOMBRES_tipo.getTipoBasico() != TipoBasico.error_tipo)
 				        { 
 							//metemos el id del enumerado con su tipo en la tabla hash de tipos definidos
-							tiposDefinidos.put(IDlexema, NOMBRES_tipo_h );
-				           	return ExpresionTipo.getVacio(); 
+							gestorTS.setTipoDefinido(IDlexema, NOMBRES_tipo_h);
+							return ExpresionTipo.getVacio(); 
 				        }
 				        else {
 							return ExpresionTipo.getError();	
@@ -5056,6 +5053,99 @@ public class AnalizadorSintactico {
 			
 		
 	}
+	
+	/**
+	 * 54. TYPEDEF -> TIPO_SIMPLE PUNT ID;
+	 * 55. TYPEDEF -> struct RESTO_TYPEDEF;
+	 * 56. TYPEDEF -> enum { LISTANOMBRES } ID ;
+	 */
+	private ExpresionTipo typedef() throws Exception{
+		ExpresionTipo aux1 = tipo_simple();
+		if(!aux1.equals(TipoBasico.vacio)){
+			parse.add(54);
+			nextToken();
+			if(punt()){
+				aux1 = new Puntero(aux1);
+				nextToken();
+			}
+			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				nextToken();
+				//meter en la tabla de definidos
+				if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)){
+					nextToken();
+				}else{
+					//error
+				}
+					
+			}else{
+				//error
+			}
+		}else if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /* struct */)){
+			parse.add(55);
+			nextToken();
+			//aux1 = resto_typedef();
+			if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)){
+				nextToken();
+			}else{
+				//error
+			}
+			return aux1;
+		}else if(token.esIgual(TipoToken.PAL_RESERVADA, 23 /* enum */)){
+			/*parse.add(56);
+			nextToken();
+			ExpresionTipo LISTANOMBRES_tipo_s,COSAS1_tipo_s;
+			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				String IDlexema = (String)token.atrString();
+				aux = new Enumerado();
+				nextToken();
+				if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
+					//se pone a modo declaracion porque interesa insertar los id de los 
+					//enumerados en la TS como constantes enteras.
+					lexico.activaModo(modo.Declaracion);
+					nextToken();
+					LISTANOMBRES_tipo_s=listaNombres(aux);
+					if(LISTANOMBRES_tipo_s.getTipoBasico() != TipoBasico.error_tipo)
+						gestorTS.buscaIdBloqueActual(IDlexema).setTipo(LISTANOMBRES_tipo_s);
+					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
+						nextToken();
+						if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
+							gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \";\"");
+						} else {
+							nextToken();
+							if(LISTANOMBRES_tipo_s.getTipoBasico()!=TipoBasico.error_tipo) {
+								((Enumerado)LISTANOMBRES_tipo_s).setNombreEnumerado(IDlexema);
+								//metemos el id del enumerado con su tipo en la tabla hash de tipos definidos
+								
+								tiposDefinidos.put(IDlexema, LISTANOMBRES_tipo_s);
+								EntradaTS entradaTS = gestorTS.buscaIdBloqueActual(IDlexema);
+								entradaTS.setConstante(false);
+								entradaTS.setTipo(LISTANOMBRES_tipo_s);
+							}
+							COSAS1_tipo_s=cosas();
+							if(LISTANOMBRES_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
+								return ExpresionTipo.getVacio();
+							else
+								gestorErr.insertaErrorSemantico(linea, columna, "Error al definir las componentes del enumerado");
+								return ExpresionTipo.getError();
+						}
+					} else{
+						gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"}\"");
+						return null;
+					}
+				} else{
+					gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"{\"");
+					return null;
+				}
+			} else{
+				gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre de lista");	
+				return null;
+			}*/
+		}
+		
+		
+		return null;
+	}
+	
 	
 	/**
 	 * Metodo que comprueba si el token actual corresponde a un terminal de expression

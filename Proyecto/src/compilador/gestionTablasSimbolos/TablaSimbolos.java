@@ -25,16 +25,20 @@ public class TablaSimbolos {
 	/** Atributo que guarda la informacion de los identificadores de este ambito */
 	private Hashtable<String, EntradaTS> entradasTS;
 	
+	private String nombre;
+	
 	
 	/**
 	 * Constructora de la clase
 	 * @param id - el identificador de la tabla
 	 * @param continente - el continente del ambito o null si es el global
+	 * @param nombre 
 	 */
-	public TablaSimbolos(TablaSimbolos continente) {
+	public TablaSimbolos(TablaSimbolos continente, String nombre) {
 		this.continente = continente;
 		contenidos = new Vector<TablaSimbolos>();
 		entradasTS = new Hashtable<String, EntradaTS>();
+		this.nombre = nombre;
 	}
 
 	public TablaSimbolos getContinente() {
@@ -71,7 +75,7 @@ public class TablaSimbolos {
 	public String toString(String tab) {
 		String s = "";
 		
-		s += tab+"--- Entradas ---\n";
+		s += tab + "--- Entradas Ámbito "+ nombre + "---\n";
 		for(EntradaTS entrada: entradasTS.values()){
 			if(entrada.getTipo()!= null)
 				if (entrada.getTipo().equals(TipoNoBasico.funcion) || entrada.getTipo().equals(TipoNoBasico.cabecera)) {
@@ -84,13 +88,13 @@ public class TablaSimbolos {
 				s += "Jolines, " + entrada.getLexema() + " tiene tipo null\n";
 		}
 		
-//		if(contenidos.size() > 0)
-//			s += tab+"--- Tablas ---\n";
+		if(contenidos.size() > 0)
+			s += "\n"; //s += tab+"--- Tablas ---\n";
 		for(TablaSimbolos contenido: contenidos) {
 			s += contenido.toString(tab+"    ") + "\n";
 		}
 		
-		return s + "\n";
+		return s;
 	}
 
 	public Vector<String> cabecerasRestantes() {
@@ -105,6 +109,14 @@ public class TablaSimbolos {
 			}
 		}
 		return cabeceras;
+	}
+
+	public String getNombre() {
+		return nombre;
+	}
+
+	public void setNombre(String nombre) {
+		this.nombre = nombre;
 	}
 	
 }

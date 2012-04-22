@@ -61,6 +61,12 @@ public class ExpresionTipo {
 	* AND("&&"), ANDEQ(""), BIT_AND("&"), BIT_OR("|"), COMPL("~"), NOT("!"), NOT_EQ(""), OR("||"), OR_EQ(""), XOR("^"), XOR_EQ("");			
 	* -------------------------------------------------------------------------------------------------------------**/	
 	public static ExpresionTipo sonEquivLog(ExpresionTipo e1, ExpresionTipo e2, OpLogico op){
+		if(e1!=null && !e1.esTipoBasico() && e1.getTipoNoBasico().equals(TipoNoBasico.enumerado)){
+			e1 = new ExpresionTipo(TipoBasico.entero);
+		}
+		if(e2!=null && !e2.esTipoBasico() && e2.getTipoNoBasico().equals(TipoNoBasico.enumerado)){
+			e2 = new ExpresionTipo(TipoBasico.entero);
+		}
 		if(e1!=null && e2!=null && e1.esTipoBasico() && e2.esTipoBasico()){
 			switch(op){
 			case CIRCUNFLEJO: case XOR: case DOS_MENORES: case DOS_MAYORES: case BIT_AND: case BIT_OR:
@@ -104,6 +110,12 @@ public class ExpresionTipo {
 	* IGUALDAD("=="), DISTINTO("!="), MENOR("<"), MAYOR(">"), MENOR_IGUAL("<="), MAYOR_IGUAL(">=");
 	* -------------------------------------------------------------------------------------------------------------**/	
 	public static ExpresionTipo sonEquivComp(ExpresionTipo e1, ExpresionTipo e2, OpComparacion op){
+		if(e1!=null && !e1.esTipoBasico() && e1.getTipoNoBasico().equals(TipoNoBasico.enumerado)){
+			e1 = new ExpresionTipo(TipoBasico.entero);
+		}
+		if(e2!=null && !e2.esTipoBasico() && e2.getTipoNoBasico().equals(TipoNoBasico.enumerado)){
+			e2 = new ExpresionTipo(TipoBasico.entero);
+		}
 		if(e1!=null && e2!=null && e1.esTipoBasico() && e2.esTipoBasico()){
 			switch(op){
 			case IGUALDAD: case DISTINTO: case MENOR: case MAYOR: case MENOR_IGUAL: case MAYOR_IGUAL:
@@ -126,6 +138,12 @@ public class ExpresionTipo {
 	* SUMA("+"), RESTA("-"), INCREMENTO("++"), DECREMENTO("--"), MULTIPLICACION("*"), DIVISION("/"), PORCENTAJE("%");
 	* -------------------------------------------------------------------------------------------------------------**/	
 	public static ExpresionTipo sonEquivArit(ExpresionTipo e1, ExpresionTipo e2, OpAritmetico op){
+		if(e1!=null && !e1.esTipoBasico() && e1.getTipoNoBasico().equals(TipoNoBasico.enumerado)){
+			e1 = new ExpresionTipo(TipoBasico.entero);
+		}
+		if(e2!=null && !e2.esTipoBasico() && e2.getTipoNoBasico().equals(TipoNoBasico.enumerado)){
+			e2 = new ExpresionTipo(TipoBasico.entero);
+		}
 		if(e1!=null && e2!=null && e1.esTipoBasico() && e2.esTipoBasico()){
 			switch(op){
 			case SUMA: case RESTA: case MULTIPLICACION: case DIVISION:
@@ -182,11 +200,17 @@ public class ExpresionTipo {
 	* siempre se retorna el tipo correspondiente a la variable asignada
 	**/
 	public static ExpresionTipo sonEquivAsig(ExpresionTipo e1, ExpresionTipo e2, OpAsignacion op){
+		if(e1!=null && !e1.esTipoBasico() && e1.getTipoNoBasico().equals(TipoNoBasico.enumerado)){
+			e1 = new ExpresionTipo(TipoBasico.entero);
+		}
+		if(e2!=null && !e2.esTipoBasico() && e2.getTipoNoBasico().equals(TipoNoBasico.enumerado)){
+			e2 = new ExpresionTipo(TipoBasico.entero);
+		}
 		if(e1!=null && e2!=null && e1.esTipoBasico() && e2.esTipoBasico()){
 			switch(op){
 			case ASIGNACION: case MAS_IGUAL: case MENOS_IGUAL: case POR_IGUAL: case DIV_IGUAL: 
 				switch(e1.getTipoBasico()){
-				case logico: case caracter: case entero: case real:
+				case logico: case caracter: case entero: case real: 
 					switch (e2.getTipoBasico()){
 					case logico: case caracter: case entero: case real: return e1;  
 					default : return null;

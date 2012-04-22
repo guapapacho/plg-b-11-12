@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 import compilador.analizadorLexico.Token.*;
+import compilador.analizadorSemantico.ExpresionTipo;
 import compilador.analizadorSemantico.ExpresionTipo.TipoNoBasico;
 import compilador.gestionErrores.*;
 import compilador.gestionTablasSimbolos.EntradaTS;
@@ -736,6 +737,12 @@ public class AnalizadorLexico {
 					 Integer indice = gestorTS.buscaPalRes(lexema);
 					 if(indice == null ) //si es un identificador	
 					 {	 
+						 ExpresionTipo tipoDef = gestorTS.getTipoDefinido(lexema);
+						 if(tipoDef != null) {
+							 token = new Token(TipoToken.TIPODEFINIDO,tipoDef,comentario);
+							 asterisco=true;
+							 return token;
+						 }
 						 if(esModoActivo(modo.GoTo)) { //si está en modo GoTo se devuelve el token con el lexema de la etiqueta
 							 token = new Token(TipoToken.IDENTIFICADOR,lexema,comentario);
 						 }

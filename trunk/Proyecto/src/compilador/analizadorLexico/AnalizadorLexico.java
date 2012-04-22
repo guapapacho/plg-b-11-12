@@ -6,7 +6,6 @@ import java.util.Vector;
 
 import compilador.analizadorLexico.Token.*;
 import compilador.gestionErrores.*;
-import compilador.gestionErrores.GestorErrores.TError;
 import compilador.gestionTablasSimbolos.EntradaTS;
 import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
 
@@ -729,7 +728,7 @@ public class AnalizadorLexico {
 				if (noDigito() || digito()) {
 					lexema = lexema+preanalisis;
 					transita(97);
-				} else if(preanalisis == ':') { // es una etiqueta
+				} else if(preanalisis == ':' && gestorTS.buscaPalRes(lexema)==null) { // es una etiqueta y no es palabra reservada
 					token = new Token(TipoToken.ETIQUETA,lexema,comentario);
 					return token;
 				} else if(esDelim()) { 
@@ -1013,6 +1012,10 @@ public class AnalizadorLexico {
 	
 	public void desactivaModo(modo m) {
 		modos.remove(m);
+	}
+	
+	public void desactivaTodosLosModos() {
+		modos.removeAllElements();
 	}
 	
 	public boolean esModoActivo(modo m) {

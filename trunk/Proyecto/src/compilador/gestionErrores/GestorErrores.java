@@ -2,6 +2,8 @@ package compilador.gestionErrores;
 
 import java.util.ArrayList;
 
+import compilador.gestionErrores.TError.TipoError;
+
 
 public class GestorErrores {
 	
@@ -13,70 +15,6 @@ public class GestorErrores {
     private ArrayList<TError> errors;
     /** Array que contiene la lista de warnings */
     private ArrayList<TWarning> warnings;
-	
-	public enum TipoError {
-		LEXICO("léxico"), SINTACTICO("sintáctico"), SEMANTICO("semántico");
-		
-		private String description;
-		private TipoError(String desc) { description = desc; };
-		public String toString() { return description; };
-	}
-	
-		/**
-		 * Triplete sencillo con el que insertamos errores
-		 */
-		public class TError {
-			private TipoError tipo;
-			private int linea;
-			private int columna;
-			private String mensaje;
-		
-			public int getLinea() {
-				return linea;
-			}
-		
-			public int getColumna() {
-				return columna;
-			}
-		
-			public String toString() {
-				return "Error "+tipo+" en L: "+linea+" C: "+columna+" - "+mensaje;
-			}
-		
-			public TError(TipoError tipo, String string, int linea, int columna){
-				this.tipo = tipo;
-				this.mensaje = string;
-				this.linea = linea;
-				this.columna = columna;
-			}
-		}
-		
-		/**
-		 * Triplete sencillo con el que insertamos warnings
-		 */
-		public class TWarning {
-			private int linea;
-			private int columna;
-			private String mensaje;
-		
-			public int getLinea() {
-				return linea;
-			}
-		
-			public int getColumna() {
-				return columna;
-			}
-		
-			public String toString() {
-				return "Error en L: "+linea+" C: "+columna+" - "+mensaje;
-			}
-		
-			public TWarning(String string, int linea, int columna){
-				this.mensaje = string;
-				this.linea = linea;
-				this.columna = columna;
-			}
-		}
 
     
     public static GestorErrores getGestorErrores() {
@@ -94,6 +32,7 @@ public class GestorErrores {
     	lista.add("token de entrada invalido");
     	lista.add("pila vacia no esperada");
         errors = new ArrayList<TError>();
+        warnings = new ArrayList<TWarning>();
     }
 
     public void insertaErrorLexico(int er, int l, int n) {
@@ -130,8 +69,13 @@ public class GestorErrores {
     	errors.clear();
     }
     
+    public void resetWarnings(){
+    	warnings.clear();
+    }
+    
     /*
-     * Imprime los errores que han ocurrido y devuelve el numero que hubo
+     * Imprime los errores que han ocurrido y 
+     * devuelve el numero que hubo
      */
     public String muestraListaErrores(){
     	String salida;
@@ -143,6 +87,25 @@ public class GestorErrores {
     	else {
     		for(TError error: errors) {
     			salida += error + "\n";
+    		}
+    		return salida;
+    	}
+    }
+    
+    /*
+     * Imprime los warnings que han ocurrido y 
+     * devuelve el numero que hubo
+     */
+    public String muestraListaWarnings(){
+    	String salida;
+    	salida= "\n";
+    	if (warnings.size()==0){
+	    	salida=salida+"No hubo warnings\n";
+	    	return salida;
+    	}
+    	else {
+    		for(TWarning warning: warnings) {
+    			salida += warning + "\n";
     		}
     		return salida;
     	}

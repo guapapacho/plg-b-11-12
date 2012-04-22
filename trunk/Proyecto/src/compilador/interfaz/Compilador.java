@@ -276,7 +276,8 @@ public class Compilador extends JFrame {
 				"\n\nint a,b[3]={1,2,3},c=7; " +
 				"\nconst bool i=true; \nconst float k=1.2; \n\nint f(int a, int b); " +
 				"\n\nfloat g=3; \n\ndouble h();");
-		ta1.setFont(new java.awt.Font("Verdana", Font.BOLD, 12));
+		ta1.setFont(new java.awt.Font(Font.MONOSPACED, Font.BOLD, 14));
+		ta1.setTabSize(4);
 		sp1.setViewportView(ta1);
 		panelPrincipal_1.add(sp2);
 		
@@ -365,6 +366,7 @@ public class Compilador extends JFrame {
 						GestorTablasSimbolos.resetTablasSimbolos();
 						GestorErrores gestor = GestorErrores.getGestorErrores();
 						gestor.resetErrores();
+						gestor.resetWarnings();
 						AnalizadorLexico anLex = new AnalizadorLexico(in);						
 						AnalizadorSintactico anSin = new AnalizadorSintactico(anLex);
 						ta2.setText("");
@@ -377,6 +379,8 @@ public class Compilador extends JFrame {
 						ta2.append(GestorTablasSimbolos.getGestorTS().toString());
 						ta2.append("\nErrores:");
 						ta2.append(gestor.muestraListaErrores());
+						ta2.append("\nWarnings:");
+						ta2.append(gestor.muestraListaWarnings());
 						rellenarTP0();
 					}
 				}

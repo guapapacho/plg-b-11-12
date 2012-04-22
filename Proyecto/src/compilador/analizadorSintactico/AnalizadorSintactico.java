@@ -1790,8 +1790,6 @@ public class AnalizadorSintactico {
 	 * 					  then INSTRUCCION.tipo := vacio
 	 * 					  else INSTRUCCION.tipo := error_tipo }
 	 * 48. INSTRUCCION → ;
-	 * 
-	 * 130. INSTRUCCION → return EXPRESSIONOPT; 
 	 * 133.INSTRUCCION → EXPRESSION_OPT ;
 	 * 					{ INSTRUCCION.tipo := EXPRESSION_OPT.tipo }
 	 * @throws Exception 
@@ -1882,38 +1880,7 @@ public class AnalizadorSintactico {
 						return null;
 					}
 				}
-			}  else if(token.esIgual(TipoToken.PAL_RESERVADA, 47 /*return*/)) {
-				parse.add(130);
-				lexico.desactivaModo(modo.Declaracion);
-				lexico.desactivaModo(modo.NoMeto);
-				nextToken();
-				ExpresionTipo aux = expressionOpt();
-				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
-					nextToken();
-					ExpresionTipo tipo = ExpresionTipo.getVacio();
-					tipo.setRetorno(true);
-					if(tipoRetorno != null) {
-						if(aux.equals(TipoBasico.vacio)) {
-							gestorErr.insertaErrorSemantico(linea, columna, "Falta instrucción de retorno.");
-							tipo = ExpresionTipo.getError();
-							tipo.setRetorno(true);
-						} else if(ExpresionTipo.sonEquivAsig(aux, tipoRetorno, OpAsignacion.ASIGNACION) == null) {
-							gestorErr.insertaErrorSemantico(linea, columna, "Tipo de retorno incorrecto, se espera "+tipoRetorno+".");
-							tipo = ExpresionTipo.getError();
-							tipo.setRetorno(true);
-						}
-					} else if(!aux.equals(TipoBasico.vacio)) {
-						gestorErr.insertaErrorSemantico(linea, columna, "Es un procedimiento. Solo se puede usar 'return;'.");
-						tipo = ExpresionTipo.getError();
-					}
-					//aux = cuerpo();
-					tipo.setRetorno(true);
-					//return tipo.equals(TipoBasico.error_tipo) ? tipo : aux;
-					return tipo;
-				} else { 
-					gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
-				}
-			}  
+			} 
 			else if (token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) { //INS_VACIA
 				parse.add(48);
 				lexico.desactivaModo(modo.Declaracion);
@@ -2159,10 +2126,11 @@ public class AnalizadorSintactico {
 			}
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
 				lexico.activaModo(modo.Declaracion);
+				lexico.desactivaModo(modo.NoMeto);
 				nextToken();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
-					String IDlexema1 = token.atrString();
-					gestorTS.buscaIdBloqueActual(IDlexema1).setTipo(NOMBRES_tipo_h);
+					EntradaTS IDentrada = (EntradaTS) token.getAtributo();
+					IDentrada.setTipo((Registro)NOMBRES_tipo_h);
 					nextToken();
 					NOMBRES_tipo = nombres(NOMBRES_tipo_h);
 					if (NOMBRES_tipo.getTipoBasico() != TipoBasico.error_tipo)  
@@ -2550,6 +2518,7 @@ public class AnalizadorSintactico {
 	 * 129. CUERPO → continue ; CUERPO
 	 * 			{ if (estamosEnBucle) CUERPO.tipo := CUERPO1.tipo
 	 * 			  else CUERPO.tipo := error_tipo }
+	 * 130. CUERPO → return EXPRESSIONOPT; CUERPO
 	 * 131. CUERPO → goto ID ; CUERPO
 	 * 132. CUERPO → INSTRUCCION CUERPO
 	 * 				{ if (INSTRUCCION.tipo != error.tipo) & (CUERPO'.tipo != error.tipo)
@@ -2713,7 +2682,37 @@ public class AnalizadorSintactico {
 			} else { 
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
 			}
-		}else if(token.esIgual(TipoToken.PAL_RESERVADA, 31 /*goto*/)) {
+		} else if(token.esIgual(TipoToken.PAL_RESERVADA, 47 /*return*/)) {
+			parse.add(130);
+			lexico.desactivaModo(modo.Declaracion);
+			lexico.desactivaModo(modo.NoMeto);
+			nextToken();
+			ExpresionTipo aux = expressionOpt();
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
+				nextToken();
+				ExpresionTipo tipo = ExpresionTipo.getVacio();
+				tipo.setRetorno(true);
+				if(tipoRetorno != null) {
+					if(aux.equals(TipoBasico.vacio)) {
+						gestorErr.insertaErrorSemantico(linea, columna, "Falta instrucción de retorno.");
+						tipo = ExpresionTipo.getError();
+						tipo.setRetorno(true);
+					} else if(ExpresionTipo.sonEquivAsig(aux, tipoRetorno, OpAsignacion.ASIGNACION) == null) {
+						gestorErr.insertaErrorSemantico(linea, columna, "Tipo de retorno incorrecto, se espera "+tipoRetorno+".");
+						tipo = ExpresionTipo.getError();
+						tipo.setRetorno(true);
+					}
+				} else if(!aux.equals(TipoBasico.vacio)) {
+					gestorErr.insertaErrorSemantico(linea, columna, "Es un procedimiento. Solo se puede usar 'return;'.");
+					tipo = ExpresionTipo.getError();
+				}
+				aux = cuerpo();
+				aux.setRetorno(true);
+				return tipo.equals(TipoBasico.error_tipo) ? tipo : aux; 
+			} else { 
+				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
+			}
+		}  else if(token.esIgual(TipoToken.PAL_RESERVADA, 31 /*goto*/)) {
 			lexico.activaModo(modo.GoTo);
 			parse.add(131);
 			nextToken();
@@ -2849,11 +2848,10 @@ public class AnalizadorSintactico {
 			parse.add(93);
 			ExpresionTipo ins = instruccion();
 			if(ins!=null)
-				return ins;
-				/*if(!ins.equals(TipoBasico.error_tipo))
+				if(!ins.equals(TipoBasico.error_tipo))
 					return ExpresionTipo.getVacio();
 				else
-					return ExpresionTipo.getError();*/
+					return ExpresionTipo.getError();
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Palabra o termino "+token.atrString()+" inesperado");
 				return null;
@@ -5107,19 +5105,20 @@ public class AnalizadorSintactico {
 	 * 56. TYPEDEF -> enum ID ID ;
 	 */
 	private ExpresionTipo typedef() throws Exception{
-		Vector<modo> modos = lexico.getModos();
-		lexico.activaModo(modo.NoMeto);
 		ExpresionTipo aux1 = tipo_simple();
+		Vector<modo> modos = lexico.getModos();
 		if(!aux1.equals(TipoBasico.vacio)){
 			parse.add(54);
-			//lexico.activaModo(modo.Declaracion); 
+			lexico.activaModo(modo.Declaracion); 
+			lexico.desactivaModo(modo.NoMeto);
 			//nextToken();
 			if(punt()){
 				aux1 = new Puntero(aux1);
 				nextToken();
 			}
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
-				gestorTS.setTipoDefinido((String)token.getAtributo(), aux1);
+				// crear nuevo tipo semántico "definido" y completar el ID con este en la TS
+				gestorTS.setTipoDefinido(token.atrString(), aux1);
 				nextToken();
 				lexico.setModos(modos);
 				if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)){
@@ -5139,21 +5138,21 @@ public class AnalizadorSintactico {
 			lexico.desactivaModo(modo.Declaracion); 
 			lexico.activaModo(modo.NoMeto);
 			nextToken();/**enum ID ID ;*/
-			if(token.esIgual(TipoToken.TIPODEFINIDO)){
+			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				aux1 = ExpresionTipo.getVacio();
-				//String IDlexema = (String)token.getAtributo();
-				//ExpresionTipo e = gestorTS.buscaIdGeneral(IDlexema).getTipo();
-				ExpresionTipo e = (ExpresionTipo)token.getAtributo();
+				String IDlexema = (String)token.atrString();
+				ExpresionTipo e = gestorTS.buscaIdGeneral(IDlexema).getTipo();
 				if(!e.equals(TipoNoBasico.registro)){
 					gestorErr.insertaErrorSemantico(linea, columna, "El nombre de tipo no se corresponde con un registro");
 					aux1 = ExpresionTipo.getError();
 				} // TODO: queremos que continue compilando?
-				//lexico.activaModo(modo.Declaracion); 
-				lexico.activaModo(modo.NoMeto);
-				//lexico.setModos(modos);
+				lexico.activaModo(modo.Declaracion); 
+				lexico.desactivaModo(modo.NoMeto);
+				lexico.setModos(modos);
 				nextToken();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
-					gestorTS.setTipoDefinido((String)token.getAtributo(), e);
+					// crear nuevo tipo semántico "definido" y completar el ID con este en la TS
+					gestorTS.setTipoDefinido(token.atrString(), e);
 					nextToken();
 					lexico.setModos(modos);
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)){
@@ -5176,21 +5175,21 @@ public class AnalizadorSintactico {
 			lexico.desactivaModo(modo.Declaracion); 
 			//lexico.activaModo(modo.NoMeto);
 			nextToken();/**enum ID ID ;*/
-			if(token.esIgual(TipoToken.TIPODEFINIDO)){
+			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				aux1 = ExpresionTipo.getVacio();
-				//String IDlexema = (String)token.getAtributo();
-				//ExpresionTipo e = gestorTS.buscaIdGeneral(IDlexema).getTipo();
-				ExpresionTipo e = (ExpresionTipo)token.getAtributo();
+				String IDlexema = token.atrString();
+				ExpresionTipo e = gestorTS.buscaIdGeneral(IDlexema).getTipo();
 				if(!e.equals(TipoNoBasico.enumerado)){
 					gestorErr.insertaErrorSemantico(linea, columna, "El nombre de tipo no se corresponde con un enumerado");
 					aux1 = ExpresionTipo.getError();
 				} // TODO: queremos que continue compilando?
-				//lexico.activaModo(modo.Declaracion); 
-				lexico.activaModo(modo.NoMeto);
-				//lexico.setModos(modos);
+				lexico.activaModo(modo.Declaracion); 
+				lexico.desactivaModo(modo.NoMeto);
+				lexico.setModos(modos);
 				nextToken();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
-					gestorTS.setTipoDefinido((String)token.getAtributo(), e);
+					// crear nuevo tipo semántico "definido" y completar el ID con este en la TS
+					gestorTS.setTipoDefinido(token.atrString(), e);
 					nextToken();
 					lexico.setModos(modos);
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)){

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 import compilador.analizadorLexico.Token.*;
+import compilador.analizadorSemantico.ExpresionTipo.TipoNoBasico;
 import compilador.gestionErrores.*;
 import compilador.gestionTablasSimbolos.EntradaTS;
 import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
@@ -750,6 +751,8 @@ public class AnalizadorLexico {
 									 //Si ya hay un id con ese mismo nombre en el mismo ambito deberia lanzar error y devolver el token para seguir con el analisis semantico
 									 if(gestorTS.buscaIdBloqueActual(lexema) == null) {
 										 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
+									 } else if(puntero.getTipo().equals(TipoNoBasico.cabecera)) {
+										 token = new Token(TipoToken.IDENTIFICADOR,puntero,comentario);
 									 } else {
 										 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.buscaIdGeneral(lexema), comentario);
 										 gestorErrores.insertaErrorSemantico(numlinea, numcolumna,"Multiple declaracion de "+lexema);

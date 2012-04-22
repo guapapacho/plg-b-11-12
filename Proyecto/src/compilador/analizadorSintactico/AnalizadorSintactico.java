@@ -899,6 +899,10 @@ public class AnalizadorSintactico {
 	 * 				{  if ((RESTO_ST.tipo_s != error_tipo) &&(COSAS'.tipo_s != error_tipo) )
      * 				   then COSAS.tipo_s := vacio
      *				   else COSAS.tipo_s := error_tipo  } 
+     * 57. COSAS → typedef TYPEDEF COSAS
+     * 				{  if ((TYPEDEF.tipo_s != error_tipo) &&(COSAS'.tipo_s != error_tipo) )
+     * 				   then COSAS.tipo_s := vacio
+     *				   else COSAS.tipo_s := error_tipo  } 
 	 * 13. COSAS → lambda
 	 * 				{COSAS.tipo_s:=vacio}
 	 * @throws Exception 
@@ -1036,9 +1040,21 @@ public class AnalizadorSintactico {
 				COSAS1_tipo_s=cosas();
 				if(RESTO_ST_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 					return ExpresionTipo.getVacio();
-				else
+				else{
 					gestorErr.insertaErrorSemantico(linea, columna, "Error al definir el struct");
 					return ExpresionTipo.getError();
+				}
+			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 62 /* typedef */)){
+				parse.add(57);
+				nextToken();
+				ExpresionTipo aux1 = typedef();
+				ExpresionTipo aux2 = cosas();
+				if(aux1.getTipoBasico()!=TipoBasico.error_tipo && aux2.getTipoBasico()!=TipoBasico.error_tipo)
+					return ExpresionTipo.getVacio();
+				else{
+					//gestorErr.insertaErrorSemantico(linea, columna, "Error al definir el struct");
+					return ExpresionTipo.getError();
+				}
 			} else if (!(aux=tipo()).equals(TipoBasico.vacio)){
 				parse.add(9);
 //				lexico.activaModo(modo.Declaracion);
@@ -5056,90 +5072,112 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 54. TYPEDEF -> TIPO_SIMPLE PUNT ID;
-	 * 55. TYPEDEF -> struct RESTO_TYPEDEF;
-	 * 56. TYPEDEF -> enum { LISTANOMBRES } ID ;
+	 * 55. TYPEDEF -> struct ID ID ;
+	 * 56. TYPEDEF -> enum ID ID ;
 	 */
 	private ExpresionTipo typedef() throws Exception{
 		ExpresionTipo aux1 = tipo_simple();
+		Vector<modo> modos = lexico.getModos();
 		if(!aux1.equals(TipoBasico.vacio)){
 			parse.add(54);
-			nextToken();
+			lexico.activaModo(modo.Declaracion); 
+			lexico.desactivaModo(modo.NoMeto);
+			//nextToken();
 			if(punt()){
 				aux1 = new Puntero(aux1);
 				nextToken();
 			}
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				// crear nuevo tipo semántico "definido" y completar el ID con este en la TS
+				gestorTS.setTipoDefinido(token.atrString(), aux1);
 				nextToken();
-				//meter en la tabla de definidos
+				lexico.setModos(modos);
 				if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)){
 					nextToken();
 				}else{
-					//error
+					gestorErr.insertaErrorSintactico(linea, columna, "Falta \';\'");
+					return null;
 				}
 					
 			}else{
-				//error
+				gestorErr.insertaErrorSintactico(linea, columna, "Falta el nombre para el tipo definido");
+				return null;
 			}
+			return ExpresionTipo.getVacio();
 		}else if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /* struct */)){
 			parse.add(55);
-			nextToken();
-			//aux1 = resto_typedef();
-			if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)){
-				nextToken();
-			}else{
-				//error
-			}
-			return aux1;
-		}else if(token.esIgual(TipoToken.PAL_RESERVADA, 23 /* enum */)){
-			/*parse.add(56);
-			nextToken();
-			ExpresionTipo LISTANOMBRES_tipo_s,COSAS1_tipo_s;
+			lexico.desactivaModo(modo.Declaracion); 
+			lexico.activaModo(modo.NoMeto);
+			nextToken();/**enum ID ID ;*/
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				aux1 = ExpresionTipo.getVacio();
 				String IDlexema = (String)token.atrString();
-				aux = new Enumerado();
+				ExpresionTipo e = gestorTS.buscaIdGeneral(IDlexema).getTipo();
+				if(!e.equals(TipoNoBasico.registro)){
+					gestorErr.insertaErrorSemantico(linea, columna, "El nombre de tipo no se corresponde con un registro");
+					aux1 = ExpresionTipo.getError();
+				} // TODO: queremos que continue compilando?
+				lexico.activaModo(modo.Declaracion); 
+				lexico.desactivaModo(modo.NoMeto);
+				lexico.setModos(modos);
 				nextToken();
-				if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)){
-					//se pone a modo declaracion porque interesa insertar los id de los 
-					//enumerados en la TS como constantes enteras.
-					lexico.activaModo(modo.Declaracion);
+				if(token.esIgual(TipoToken.IDENTIFICADOR)){
+					// crear nuevo tipo semántico "definido" y completar el ID con este en la TS
+					gestorTS.setTipoDefinido(token.atrString(), e);
 					nextToken();
-					LISTANOMBRES_tipo_s=listaNombres(aux);
-					if(LISTANOMBRES_tipo_s.getTipoBasico() != TipoBasico.error_tipo)
-						gestorTS.buscaIdBloqueActual(IDlexema).setTipo(LISTANOMBRES_tipo_s);
-					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)) {
+					lexico.setModos(modos);
+					if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)){
 						nextToken();
-						if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
-							gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \";\"");
-						} else {
-							nextToken();
-							if(LISTANOMBRES_tipo_s.getTipoBasico()!=TipoBasico.error_tipo) {
-								((Enumerado)LISTANOMBRES_tipo_s).setNombreEnumerado(IDlexema);
-								//metemos el id del enumerado con su tipo en la tabla hash de tipos definidos
-								
-								tiposDefinidos.put(IDlexema, LISTANOMBRES_tipo_s);
-								EntradaTS entradaTS = gestorTS.buscaIdBloqueActual(IDlexema);
-								entradaTS.setConstante(false);
-								entradaTS.setTipo(LISTANOMBRES_tipo_s);
-							}
-							COSAS1_tipo_s=cosas();
-							if(LISTANOMBRES_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
-								return ExpresionTipo.getVacio();
-							else
-								gestorErr.insertaErrorSemantico(linea, columna, "Error al definir las componentes del enumerado");
-								return ExpresionTipo.getError();
-						}
-					} else{
-						gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"}\"");
+					}else{
+						gestorErr.insertaErrorSintactico(linea, columna, "Falta \';\'");
 						return null;
 					}
-				} else{
-					gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"{\"");
+					return aux1;
+				}else{ // TODO: NOS GUSTA??
+					gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre del tipo renombrado");	
 					return null;
 				}
 			} else{
-				gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre de lista");	
+				gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre del tipo definido");	
 				return null;
-			}*/
+			}
+		}else if(token.esIgual(TipoToken.PAL_RESERVADA, 23 /* enum */)){
+			parse.add(56);
+			lexico.desactivaModo(modo.Declaracion); 
+			//lexico.activaModo(modo.NoMeto);
+			nextToken();/**enum ID ID ;*/
+			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				aux1 = ExpresionTipo.getVacio();
+				String IDlexema = token.atrString();
+				ExpresionTipo e = gestorTS.buscaIdGeneral(IDlexema).getTipo();
+				if(!e.equals(TipoNoBasico.enumerado)){
+					gestorErr.insertaErrorSemantico(linea, columna, "El nombre de tipo no se corresponde con un enumerado");
+					aux1 = ExpresionTipo.getError();
+				} // TODO: queremos que continue compilando?
+				lexico.activaModo(modo.Declaracion); 
+				lexico.desactivaModo(modo.NoMeto);
+				lexico.setModos(modos);
+				nextToken();
+				if(token.esIgual(TipoToken.IDENTIFICADOR)){
+					// crear nuevo tipo semántico "definido" y completar el ID con este en la TS
+					gestorTS.setTipoDefinido(token.atrString(), e);
+					nextToken();
+					lexico.setModos(modos);
+					if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)){
+						nextToken();
+					}else{
+						gestorErr.insertaErrorSintactico(linea, columna, "Falta \';\'");
+						return null;
+					}
+					return aux1;
+				}else{ // TODO: NOS GUSTA??
+					gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre del tipo renombrado");	
+					return null;
+				}
+			} else{
+				gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre del tipo definido");	
+				return null;
+			}
 		}
 		
 		

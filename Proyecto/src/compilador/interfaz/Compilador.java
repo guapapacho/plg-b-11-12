@@ -33,6 +33,7 @@ import compilador.analizadorLexico.Token.OpComparacion;
 import compilador.analizadorLexico.Token.OpLogico;
 import compilador.analizadorSemantico.ExpresionTipo;
 import compilador.analizadorSemantico.ExpresionTipo.TipoBasico;
+import compilador.analizadorSemantico.Producto;
 import compilador.analizadorSintactico.AnalizadorSintactico;
 import compilador.gestionErrores.GestorErrores;
 import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
@@ -381,6 +382,17 @@ public class Compilador extends JFrame {
 						ta2.append(gestor.muestraListaErrores());
 						ta2.append("\nWarnings:");
 						ta2.append(gestor.muestraListaWarnings());
+						ta2.append("\n\n");
+						Producto p = new Producto();
+						try {
+							p.ponProducto("param1", new ExpresionTipo(TipoBasico.caracter));
+							p.ponProducto("param2", new ExpresionTipo(TipoBasico.entero));
+							p.ponProducto("param3", new ExpresionTipo(TipoBasico.logico));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						ta2.append(p.toString(true));
 						rellenarTP0();
 					}
 				}

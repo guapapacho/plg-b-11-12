@@ -10,6 +10,10 @@ public class Funcion extends ExpresionTipo {
 		this.imagen = imagen;
 	}
 	
+	public boolean concuerda(Cabecera c){
+		return dominio.equals(c.getDominio()) && imagen.equals(c.getImagen());
+	}
+	
 	public Producto getDominio() {
 		return dominio;
 	}

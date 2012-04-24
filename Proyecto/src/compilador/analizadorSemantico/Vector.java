@@ -35,4 +35,7 @@ public class Vector extends ExpresionTipo {
 		return "Vector de " + tipoElementos + "s de dimensión " + longitud + ".";
 	}
 
+	public boolean equals(Vector v){
+		return this.longitud==v.getLongitud() && this.tipoElementos.equals(v.getTipoElementos());
+	}
 }

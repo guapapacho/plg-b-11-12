@@ -8,6 +8,10 @@ public class Puntero extends ExpresionTipo {
 		this.tipo = tipo;
 	}
 
+	public boolean equals(Puntero p){
+		return this.tipo.equals(p.getTipo());
+	}
+	
 	public ExpresionTipo getTipo() {
 		return tipo;
 	}

@@ -8,6 +8,10 @@ public class Union extends ExpresionTipo {
 		this.campos = campos;
 	}
 	
+	public boolean equals(Union u){
+		return this.campos.equals(u.getCampos());
+	}
+	
 	public Producto getCampos() {
 		return campos;
 	}

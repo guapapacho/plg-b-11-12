@@ -23,7 +23,7 @@ public class Cabecera extends ExpresionTipo {
 		if (dominio.esVacio()) {
 			aux += "Cabecera que no recibe parametros";
 		} else {
-			aux += "Cabecera que recibe los parametros: " + dominio;
+			aux += "Cabecera que recibe los parametros: " + dominio.toString(true);
 		}
 		if (imagen != null) {
 			aux += " y devuelve: " + imagen;

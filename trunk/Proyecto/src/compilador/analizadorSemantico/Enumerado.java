@@ -15,10 +15,15 @@ public class Enumerado extends ExpresionTipo {
 		elementos.add(e);
 		
 	}
+	
 	public Enumerado()
 	{
 		super(TipoNoBasico.enumerado);
 		elementos = new java.util.Vector<String>();	
+	}
+	
+	public boolean equals(Enumerado e){
+		return this.elementos.equals(e.elementos);
 	}
 	
 	public String getNombreEnumerado() {

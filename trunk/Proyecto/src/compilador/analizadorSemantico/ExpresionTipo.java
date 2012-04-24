@@ -18,43 +18,6 @@ public class ExpresionTipo {
 	public enum TipoBasico{logico, caracter, entero, real, error_tipo, vacio}; 
 	public enum TipoNoBasico{enumerado, vector, producto, registro, union, puntero, cabecera, funcion, objeto, cadena}
 
-	/*
-	switch(e1.getTipoBasico()){
-	case logico:
-		switch (e2.getTipoBasico()){
-		case logico: return e1;
-		case caracter:
-		case entero: 
-		case real:
-		default: return new ExpresionTipo(TipoBasico.error_tipo);
-		}
-	case caracter:
-		switch (e2.getTipoBasico()){
-		case logico: 
-		case caracter: return e1;
-		case entero: 
-		case real:
-		default: return new ExpresionTipo(TipoBasico.error_tipo);
-		}
-	case entero:
-		switch (e2.getTipoBasico()){
-		case logico: 
-		case caracter:
-		case entero: return e1;
-		case real:
-		default: return new ExpresionTipo(TipoBasico.error_tipo);
-		}
-	case real:
-		switch (e2.getTipoBasico()){
-		case logico: 
-		case caracter:
-		case entero: 
-		case real: return e1;
-		default: return new ExpresionTipo(TipoBasico.error_tipo);
-		}
-	default: return new ExpresionTipo(TipoBasico.error_tipo);
-	}
-	*/
 	
 	/**-------------------------------------------------------------------------------------------------------------
 	* SOBRERO("~"), CIRCUNFLEJO("ˆ"), DOS_MENORES("<<"), DOS_MAYORES(">>"),			
@@ -311,13 +274,14 @@ public class ExpresionTipo {
 	}
 	
 	public boolean equals(ExpresionTipo e) {
-		if(this.esTipoBasico() != e.esTipoBasico())
+		return e.esTipoBasico() && tipoBasico.equals(e.getTipoBasico());
+		/*		if(this.esTipoBasico() != e.esTipoBasico())
 			return false;
 		if(this.esTipoBasico()) {
 			return this.getTipoBasico().equals(e.getTipoBasico());
 		} else {
 			return this.getTipoNoBasico().equals(e.getTipoNoBasico());
-		}
+		}*/
 	}
 	
 	public boolean equals(TipoBasico t) {

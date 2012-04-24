@@ -1285,13 +1285,7 @@ public class AnalizadorSintactico {
 			if(entradaTS!=null && (entradaTS.getTipo() instanceof Cabecera)){
 				if(!((Producto)params).equals(((Cabecera)entradaTS.getTipo()).getDominio()))
 					gestorErr.insertaErrorSemantico(linea, columna, "Método que implementa cabecera con paramétros que no concuerdan");
-				if(((Cabecera)entradaTS.getTipo()).getImagen()!=null && tipo_id!=null){ 
-					//JOptionPane.showMessageDialog(null, /*(((Cabecera)entradaTS.getTipo()).getImagen()).toString() + "\n" +*/ tipo_id.toString());
-					if(!(((Cabecera)entradaTS.getTipo()).getImagen()).toString().equals(tipo_id.toString()))
-						gestorErr.insertaErrorSemantico(linea, columna, "El tipo de retorno no coincide con la cabecera");
-				}else if((((Cabecera)entradaTS.getTipo()).getImagen()==null && tipo_id!=null)){
-					gestorErr.insertaErrorSemantico(linea, columna, "El tipo de retorno no coincide con la cabecera");
-				} else if((((Cabecera)entradaTS.getTipo()).getImagen()!=null && tipo_id==null))
+				if(!ExpresionTipo.sonIguales(((Cabecera)entradaTS.getTipo()).getImagen(), tipo_id))
 					gestorErr.insertaErrorSemantico(linea, columna, "El tipo de retorno no coincide con la cabecera");
 			}
 			entradaTS.setTipo(new Funcion((Producto) params, tipo_id));

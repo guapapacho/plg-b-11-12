@@ -7,6 +7,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.swing.JOptionPane;
+
 public class Producto extends ExpresionTipo {
 	/** Para simpliicar codigo se crea una tabla hash que contiene el lexema de cada 
 	 * identificador y el tipo semantico **/
@@ -30,8 +32,10 @@ public class Producto extends ExpresionTipo {
 	}
 
 	public boolean equals(Producto p){
-		//for(Iterator<>)
-		return false;
+		return this.toString(true).equals(p.toString(true));
+		//JOptionPane.showMessageDialog(null, this.toString()+"\n"+p.toString());
+		//return this.toString().equals(p.toString());
+		//return false;
 	}
 	
 	public void ponProducto(String s, ExpresionTipo e) throws Exception {
@@ -89,6 +93,7 @@ public class Producto extends ExpresionTipo {
 		String s = "";
 		Set<String> colection = tablaProd.keySet(); 
 		if(funcion) {
+		//if(true){
 			ArrayList<String> lista = new ArrayList<String>();
 			for(String tipo: colection) {
 				lista.add(tipo);

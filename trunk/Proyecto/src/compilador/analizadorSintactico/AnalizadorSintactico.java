@@ -4,6 +4,8 @@ package compilador.analizadorSintactico;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.JOptionPane;
+
 import compilador.analizadorLexico.*;
 import compilador.analizadorLexico.AnalizadorLexico.modo;
 import compilador.analizadorLexico.Token.*;
@@ -241,7 +243,8 @@ public class AnalizadorSintactico {
 		Vector<String> cabeceras = gestorTS.cabecerasRestantes();
 		if(cabeceras.size() > 0) {
 			for(String cabecera: cabeceras) {
-				gestorErr.insertaErrorSemantico(linea, columna, cabecera);
+				//gestorErr.insertaErrorSemantico(linea, columna, cabecera);
+				gestorErr.insertaWarning(linea, columna, cabecera);
 			}
 			return ExpresionTipo.getError();
 		}
@@ -960,6 +963,8 @@ public class AnalizadorSintactico {
 					entradaTS = (EntradaTS)token.getAtributo();
 					entradaTS.setConstante(false);
 					ExpresionTipo id_tipo=null;
+					/*if((entradaTS.getTipo() instanceof Cabecera) && ((Cabecera)entradaTS.getTipo()).getImagen()!=null)
+						gestorErr.insertaErrorSemantico(linea, columna, "El tipo de retorno no coincide con la cabecera");*/
 					nextToken();
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
 						gestorTS.abreBloque("Procedimiento "+entradaTS.getLexema());
@@ -1073,11 +1078,18 @@ public class AnalizadorSintactico {
 				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 					EntradaTS entradaTS = (EntradaTS)token.getAtributo();
 //					String lexema_id=(String)token.getAtributo();
-					id(aux);
+					if(!(entradaTS.getTipo() instanceof Cabecera))
+						id(aux);
+					else
+						nextToken();
+					//id(aux);
 //					gestorTS.buscaIdBloqueActual(lexema_id).setTipo(aux);
 					ExpresionTipo COSAS2_tipo_h,COSAS1_tipo_s;	
-					ExpresionTipo id_tipo=entradaTS.getTipo();
+					ExpresionTipo id_tipo=aux;//entradaTS.getTipo();
 					COSAS2_tipo_h=aux;
+					if(entradaTS.getTipo() instanceof Cabecera)
+						System.out.println("cabecera!!");
+					System.out.println("\naqui: \n"+entradaTS.getTipo().toString());
 					cosas2(COSAS2_tipo_h,id_tipo,entradaTS);
 					COSAS1_tipo_s=cosas();
 					if((aux.getTipoBasico()!=TipoBasico.error_tipo)&&(COSAS2_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)&&(COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)){
@@ -1270,6 +1282,18 @@ public class AnalizadorSintactico {
 			entradaTS.setTipo(new Cabecera((Producto)params, tipo_id));
 			return ExpresionTipo.getVacio();
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
+			if(entradaTS!=null && (entradaTS.getTipo() instanceof Cabecera)){
+				if(!((Producto)params).equals(((Cabecera)entradaTS.getTipo()).getDominio()))
+					gestorErr.insertaErrorSemantico(linea, columna, "Método que implementa cabecera con paramétros que no concuerdan");
+				if(((Cabecera)entradaTS.getTipo()).getImagen()!=null && tipo_id!=null){ 
+					//JOptionPane.showMessageDialog(null, /*(((Cabecera)entradaTS.getTipo()).getImagen()).toString() + "\n" +*/ tipo_id.toString());
+					if(!(((Cabecera)entradaTS.getTipo()).getImagen()).toString().equals(tipo_id.toString()))
+						gestorErr.insertaErrorSemantico(linea, columna, "El tipo de retorno no coincide con la cabecera");
+				}else if((((Cabecera)entradaTS.getTipo()).getImagen()==null && tipo_id!=null)){
+					gestorErr.insertaErrorSemantico(linea, columna, "El tipo de retorno no coincide con la cabecera");
+				} else if((((Cabecera)entradaTS.getTipo()).getImagen()!=null && tipo_id==null))
+					gestorErr.insertaErrorSemantico(linea, columna, "El tipo de retorno no coincide con la cabecera");
+			}
 			entradaTS.setTipo(new Funcion((Producto) params, tipo_id));
 			lexico.activaModo(modo.NoMeto);
 			lexico.desactivaModo(modo.Declaracion);

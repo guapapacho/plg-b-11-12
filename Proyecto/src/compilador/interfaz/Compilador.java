@@ -382,7 +382,7 @@ public class Compilador extends JFrame {
 						ta2.append(gestor.muestraListaErrores());
 						ta2.append("\nWarnings:");
 						ta2.append(gestor.muestraListaWarnings());
-						ta2.append("\n\n");
+						/*ta2.append("\n\n");
 						Producto p = new Producto();
 						try {
 							p.ponProducto("param1", new ExpresionTipo(TipoBasico.caracter));
@@ -392,7 +392,7 @@ public class Compilador extends JFrame {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
-						ta2.append(p.toString(true));
+						ta2.append(p.toString(true));*/
 						rellenarTP0();
 					}
 				}

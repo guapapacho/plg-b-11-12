@@ -201,10 +201,8 @@ public class ExpresionTipo {
 	public static boolean sonIguales(ExpresionTipo e1, ExpresionTipo e2) {
 		if(e1 != null && e2 != null)
 			return (e1.toString()).equals(e2.toString());
-		else if(e1 == null && e2 == null)
-			return true;
-		else
-			return false;
+		else 
+			return (e1 == null) && (e2 == null);
 	}
 	
 	public ExpresionTipo(TipoNoBasico tipo){

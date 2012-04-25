@@ -815,12 +815,13 @@ public class AnalizadorSintactico {
 			nextToken();
 			return (ExpresionTipo) tokenAnterior.getAtributo();
 		} else if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-			parse.add(6);
-			lexico.activaModo(modo.Declaracion);
-			lexico.desactivaModo(modo.NoMeto);
-			nextToken();
-			gestorErr.insertaErrorSemantico(linea, columna, "Tipo indefinido: "+tokenAnterior.getAtributo());
-			throw new Exception("Tipo indefinido.");
+			//parse.add(6);
+			//lexico.activaModo(modo.Declaracion);
+			//lexico.desactivaModo(modo.NoMeto);
+			//nextToken();
+			//gestorErr.insertaErrorSemantico(linea, columna, "Tipo indefinido: "+tokenAnterior.getAtributo());
+			//throw new Exception("Tipo indefinido.");
+			return tipo_s;
 			//return new Objeto(((String)tokenAnterior.getAtributo()));
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);

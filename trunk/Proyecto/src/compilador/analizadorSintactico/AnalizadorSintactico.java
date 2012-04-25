@@ -816,8 +816,8 @@ public class AnalizadorSintactico {
 			return (ExpresionTipo) tokenAnterior.getAtributo();
 		} else if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(6);
-			//lexico.activaModo(modo.Declaracion);
-			//lexico.desactivaModo(modo.NoMeto);
+			lexico.activaModo(modo.Declaracion);
+			lexico.desactivaModo(modo.NoMeto);
 			nextToken();
 			//gestorErr.insertaErrorSemantico(linea, columna, "Tipo indefinido: "+tokenAnterior.getAtributo());
 			//throw new Exception("Tipo indefinido.");
@@ -1059,7 +1059,7 @@ public class AnalizadorSintactico {
 				if(RESTO_ST_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 					return ExpresionTipo.getVacio();
 				else{
-					gestorErr.insertaErrorSemantico(linea, columna, "Error al definir el struct");
+					//gestorErr.insertaErrorSemantico(linea, columna, "Error al definir el struct");
 					return ExpresionTipo.getError();
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 62 /* typedef */)){
@@ -1290,7 +1290,7 @@ public class AnalizadorSintactico {
 					gestorErr.insertaErrorSemantico(linea, columna, "El tipo de retorno no coincide con la cabecera");
 			}
 			entradaTS.setTipo(new Funcion((Producto) params, tipo_id));
-			lexico.activaModo(modo.NoMeto);
+			lexico.desactivaModo(modo.NoMeto);
 			lexico.desactivaModo(modo.Declaracion);
 			parse.add(19);
 			inicializaMarcadoresGoto();
@@ -1881,8 +1881,13 @@ public class AnalizadorSintactico {
 					gestorErr.insertaErrorSemantico(linea, columna, "Tipo indefinido: "+tokenAnterior.getAtributo());
 					throw new Exception("Tipo indefinido.");
 				}
+			}else if(!token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
+				ventana.add(tokens.lastElement()); // el ultimo token
+				token = tokens.get(tokens.size()-2); // el penultimo token (tipo (id))
+				parse.add(133); // creo que deberia añadir otra regla
 			}
 
+			
 			//			lexico.desactivaModo(modo.NoMeto);
 			lexico.activaModo(modo.Declaracion);
 			//System.out.println("tipo "+TIPO_tipo);

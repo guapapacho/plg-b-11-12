@@ -815,13 +815,13 @@ public class AnalizadorSintactico {
 			nextToken();
 			return (ExpresionTipo) tokenAnterior.getAtributo();
 		} else if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-			//parse.add(6);
+			parse.add(6);
 			//lexico.activaModo(modo.Declaracion);
 			//lexico.desactivaModo(modo.NoMeto);
-			//nextToken();
+			nextToken();
 			//gestorErr.insertaErrorSemantico(linea, columna, "Tipo indefinido: "+tokenAnterior.getAtributo());
 			//throw new Exception("Tipo indefinido.");
-			return tipo_s;
+//			return tipo_s;
 			//return new Objeto(((String)tokenAnterior.getAtributo()));
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
@@ -1872,7 +1872,18 @@ public class AnalizadorSintactico {
 		else{
 			lexico.activaModo(modo.NoMeto);
 			ExpresionTipo TIPO_tipo = tipo();
-//			lexico.desactivaModo(modo.NoMeto);
+
+			//LAURA
+//			nextToken(); //Este no puede ir aqui porque se salta un token de mas...
+		
+			if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+				if (tokenAnterior.esIgual(TipoToken.IDENTIFICADOR)) {
+					gestorErr.insertaErrorSemantico(linea, columna, "Tipo indefinido: "+tokenAnterior.getAtributo());
+					throw new Exception("Tipo indefinido.");
+				}
+			}
+
+			//			lexico.desactivaModo(modo.NoMeto);
 			lexico.activaModo(modo.Declaracion);
 			//System.out.println("tipo "+TIPO_tipo);
 			if(!TIPO_tipo.getTipo().equals(TipoBasico.vacio)) {

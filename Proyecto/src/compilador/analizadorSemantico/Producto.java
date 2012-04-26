@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Set;
-
-import javax.swing.JOptionPane;
 
 public class Producto extends ExpresionTipo {
 	/** Para simpliicar codigo se crea una tabla hash que contiene el lexema de cada 

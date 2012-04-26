@@ -277,13 +277,13 @@ public class Compilador extends JFrame {
 				"\n\nint a,b[3]={1,2,3},c=7; " +
 				"\nconst bool i=true; \nconst float k=1.2; \n\nint f(int a, int b); " +
 				"\n\nfloat g=3; \n\ndouble h();");
-		ta1.setFont(new java.awt.Font(Font.MONOSPACED, Font.BOLD, 14));
+		ta1.setFont(new java.awt.Font(Font.MONOSPACED, Font.BOLD, 16));
 		ta1.setTabSize(4);
 		sp1.setViewportView(ta1);
 		panelPrincipal_1.add(sp2);
 		
 		ta2=new JTextArea();
-		ta2.setFont(new java.awt.Font("Verdana", Font.BOLD, 12));
+		ta2.setFont(new java.awt.Font("Verdana", Font.BOLD, 13));
 		sp2.setViewportView(ta2);
 		ta2.setEditable(false);
 		

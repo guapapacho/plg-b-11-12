@@ -3559,7 +3559,9 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 164. RESTO_PE → ( POSTFIX-3
+	 * 		{ RESTO_PE.tipo_s := POSTFIX3.tipo_s }
 	 * 165. RESTO_PE → lambda
+	 * 		{ RESTO_PE.tipo_s := vacio }
 	 * @throws Exception 
 	 */
 	private ExpresionTipo resto_pe() throws Exception {
@@ -3767,25 +3769,6 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 * 171. POSTFIX4 → (
-	 * 					{POSTFIX4.tipo_s := vacio}
-	 * 172. POSTFIX4 → lambda
-	 * 					{POSTFIX4.tipo_s := vacio}
-	 * @throws Exception 
-	 */
-//	private ExpresionTipo postfix4() throws Exception {
-//		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
-//			parse.add(171);
-//			nextToken();
-//			return ExpresionTipo.getVacio();
-//		} else {
-//			parse.add(172);
-//			return ExpresionTipo.getVacio();
-//		}
-//	}
-	
-	
-	/**
 	 * 173. POSTFIX-2 → ( POSTFIX-3
 	 * 					{ POSTFIX-2.tipo_s := POSTFIX-3.tipo_s }
 	 * @throws Exception 0 
@@ -3798,7 +3781,6 @@ public class AnalizadorSintactico {
 			aux = postfix3();
 		} else {
 			gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"(\"");
-			//ruptura=parse.size();
 		}
 		return aux;
 	}
@@ -4230,8 +4212,6 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 				nextToken();
 				parse.add(197);
-				//Esto es mas complicado TODO por hacer
-				//Esto es de POO
 				aux = cast_expression();
 			}else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `*` ");
@@ -4241,7 +4221,6 @@ public class AnalizadorSintactico {
 			if (token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 				parse.add(198);
 				nextToken();
-				//Esto es mas complicado TODO por hacer
 				aux = cast_expression();
 			}else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `*` ");
@@ -4289,47 +4268,26 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 200. RESTO-MULT → * MULTIPLICATIVE-EXPRESSION
-	 *   { if (RESTO_MULT.tipo_h == PM-EXPRESSION.tipo_s) then
-	 *   		if ((RESTO-MULT.tipo_h := entero) & (MULTIPLICATIVE-EXPRESSION.tipo_s := entero) then 
-	 *   			RESTO-MULT.tipo_s := entero;
-	 *   		else if ((RESTO-MULT.tipo_h := entero) & (MULTIPLICATIVE-EXPRESSION.tipo_s := real) then 
-	 *   			RESTO-MULT.tipo_s := real;
-	 *   		else if ((RESTO-MULT.tipo_h := real) & (MULTIPLICATIVE-EXPRESSION.tipo_s := entero) then 
-	 *   			RESTO-MULT.tipo_s := real;
-	 *   		else if ((RESTO-MULT.tipo_h := real) & (MULTIPLICATIVE-EXPRESSION.tipo_s := real) then 
-	 *   			RESTO-MULT.tipo_s := real;
-	 *     else    
-	 *     		RESTO-MULT.tipo_s := error_tipo }
+	 *   { if (SonEquivalentes(MULTIPLICATIVE-EXPRESSION.tipo_s, RESTO_MULT.tipo_h))
+	 *   		RESTO_MULT.tipo_s := tipo_equivalente
+	 *   	else
+	 *   		RESTO-MULT.tipo_s := error_tipo; }
 	 * 201. RESTO-MULT → / MULTIPLICATIVE-EXPRESSION
-	 *   { if (RESTO_MULT.tipo_h == PM-EXPRESSION.tipo_s) then
-	 *   		if ((RESTO-MULT.tipo_h := entero) & (MULTIPLICATIVE-EXPRESSION.tipo_s := entero) then 
-	 *   			RESTO-MULT.tipo_s := entero;
-	 *   		else if ((RESTO-MULT.tipo_h := entero) & (MULTIPLICATIVE-EXPRESSION.tipo_s := real) then 
-	 *   			RESTO-MULT.tipo_s := real;
-	 *   		else if ((RESTO-MULT.tipo_h := real) & (MULTIPLICATIVE-EXPRESSION.tipo_s := entero) then 
-	 *   			RESTO-MULT.tipo_s := real;
-	 *   		else if ((RESTO-MULT.tipo_h := real) & (MULTIPLICATIVE-EXPRESSION.tipo_s := real) then 
-	 *   			RESTO-MULT.tipo_s := real;
-	 *     else    
-	 *     		RESTO-MULT.tipo_s := error_tipo }
+	 *   { if (SonEquivalentes(MULTIPLICATIVE-EXPRESSION.tipo_s, RESTO_MULT.tipo_h))
+	 *   		RESTO_MULT.tipo_s := tipo_equivalente
+	 *   	else
+	 *   		RESTO-MULT.tipo_s := error_tipo; }
 	 * 202. RESTO-MULT → % MULTIPLICATIVE-EXPRESSION
-	 *   { if (RESTO_MULT.tipo_h == PM-EXPRESSION.tipo_s) then
-	 *   		if ((RESTO-MULT.tipo_h := entero) & (MULTIPLICATIVE-EXPRESSION.tipo_s := entero) then 
-	 *   			RESTO-MULT.tipo_s := entero;
-	 *   		else if ((RESTO-MULT.tipo_h := entero) & (MULTIPLICATIVE-EXPRESSION.tipo_s := real) then 
-	 *   			RESTO-MULT.tipo_s := real;
-	 *   		else if ((RESTO-MULT.tipo_h := real) & (MULTIPLICATIVE-EXPRESSION.tipo_s := entero) then 
-	 *   			RESTO-MULT.tipo_s := real;
-	 *   		else if ((RESTO-MULT.tipo_h := real) & (MULTIPLICATIVE-EXPRESSION.tipo_s := real) then 
-	 *   			RESTO-MULT.tipo_s := real;
-	 *     else    
-	 *     		RESTO-MULT.tipo_s := error_tipo }
+	 *   { if (SonEquivalentes(MULTIPLICATIVE-EXPRESSION.tipo_s, RESTO_MULT.tipo_h))
+	 *   		RESTO_MULT.tipo_s := tipo_equivalente
+	 *   	else
+	 *   		RESTO-MULT.tipo_s := error_tipo; }
 	 * 203. RESTO-MULT → lambda
 	 * 	{RESTO-MULT.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo resto_mult(ExpresionTipo tipo_h/*RESTO-MULT.tipo_h*/) throws Exception{
-		ExpresionTipo aux1,aux2 = ExpresionTipo.getVacio(); //MULTIPLICATIVE-EXPRESSION.tipo_s
+	private ExpresionTipo resto_mult(ExpresionTipo tipo_h) throws Exception{
+		ExpresionTipo aux1,aux2 = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 			nextToken();
 			parse.add(200);
@@ -4387,30 +4345,16 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 205. RESTO_ADD → + ADDITIVE_EXPRESSION
-	 *   { if (RESTO_ADD.tipo_h == ADDITIVE_EXPRESSION.tipo_s) then
-	 *    	if ((RESTO_ADD.tipo_h := entero) & ADDITIVE_EXPRESSION.tipo_s := entero) then 
-	 *  	  		RESTO_ADD.tipo_s := entero;
-	 * 		else if ((RESTO_ADD.tipo_h := entero) & (ADDITIVE_EXPRESSION.tipo_s := real) then 
-	 *    			RESTO_ADD.tipo_s := real;
-	 *    	else if ((RESTO_ADD.tipo_h := real) & (ADDITIVE_EXPRESSION.tipo_s := entero) then 
-	 *    			RESTO_ADD.tipo_s := real;
-	 *    	else if ((RESTO_ADD.tipo_h := real) & (ADDITIVE_EXPRESSION.tipo_s := real) then 
-	 *    			RESTO_ADD.tipo_s := real;
-	 *    else
-	 *    	RESTO_ADD.tipo_s := error_tipo }
-	 *    
+	 * { if (SonEquivalentes(ADDITIVE-EXPRESSION.tipo_s, RESTO_ADD.tipo_h))
+	 * 		RESTO_ADD.tipo_s := tipo_equivalente
+	 * 	else
+	 * 		RESTO-ADD.tipo_s := error_tipo; }   
+	 * 
 	 * 206. RESTO_ADD → - ADDITIVE_EXPRESSION
-	 * 	{ if (RESTO_ADD.tipo_h == ADDITIVE_EXPRESSION.tipo_s) then
-	 *    	if ((RESTO_ADD.tipo_h := entero) & ADDITIVE_EXPRESSION.tipo_s := entero) then 
-	 *  	  		RESTO_ADD.tipo_s := entero;
-	 * 		else if ((RESTO_ADD.tipo_h := entero) & (ADDITIVE_EXPRESSION.tipo_s := real) then 
-	 *    			RESTO_ADD.tipo_s := real;
-	 *    	else if ((RESTO_ADD.tipo_h := real) & (ADDITIVE_EXPRESSION.tipo_s := entero) then 
-	 *    			RESTO_ADD.tipo_s := real;
-	 *    	else if ((RESTO_ADD.tipo_h := real) & (ADDITIVE_EXPRESSION.tipo_s := real) then 
-	 *    			RESTO_ADD.tipo_s := real;
-	 *    else
-	 *    	RESTO_ADD.tipo_s := error_tipo }
+	 * { if (SonEquivalentes(ADDITIVE-EXPRESSION.tipo_s, RESTO_ADD.tipo_h))
+	 * 		RESTO_ADD.tipo_s := tipo_equivalente
+	 * 	else
+	 * 		RESTO-ADD.tipo_s := error_tipo; } 
 	 *    
 	 * 207. RESTO_ADD → lambda
 	 *	 {RESTO_ADD.tipo := vacio }
@@ -4473,25 +4417,17 @@ public class AnalizadorSintactico {
 		} else {
 			return ExpresionTipo.getError();
 		}
-		//return literal();
-		
 	}
 
 	/** 209. RESTO_SHIFT →  <<  SHIFT-EXPRESSION
-	 *   { if (RESTO_SHIFT.tipo_h == SHIFT_EXPRESSION.tipo_s) then
-	 *   	 if ((RESTO_SHIFT.tipo_h := entero) & SHIFT_EXPRESSION.tipo_s := entero) then 
-	 *   		RESTO_SHIFT.tipo_s := entero;
-	 *       else
-	 *          RESTO_SHIFT.tipo_s := error_tipo
-	 *     else 
+	 * 	{ if (SonEquivalentes(SHIFT-EXPRESSION.tipo_s,RESTO_SHIFT.tipo_h)) then
+	 * 		RESTO_SHIFT.tipo_s := tipo_equivalente
+	 *   else 
 	 *   	RESTO_SHIFT.tipo_s := error_tipo }
 	 *          
 	 * 210. RESTO_SHIFT →  >> SHIFT-EXPRESSION
-	 * { if (RESTO_SHIFT.tipo_h == SHIFT_EXPRESSION.tipo_s) then
-	 *   	 if ((RESTO_SHIFT.tipo_h := entero) & SHIFT_EXPRESSION.tipo_s := entero) then 
-	 *   		RESTO_SHIFT.tipo_s := entero;
-	 *       else
-	 *          RESTO_SHIFT.tipo_s := error_tipo 
+	 * 	{ if (SonEquivalentes(SHIFT-EXPRESSION.tipo_s,RESTO_SHIFT.tipo_h)) then
+	 * 		RESTO_SHIFT.tipo_s := tipo_equivalente
 	 *   else 
 	 *   	RESTO_SHIFT.tipo_s := error_tipo }
 	 * 211. RESTO_SHIFT → lambda

@@ -33,7 +33,6 @@ import compilador.analizadorLexico.Token.OpComparacion;
 import compilador.analizadorLexico.Token.OpLogico;
 import compilador.analizadorSemantico.ExpresionTipo;
 import compilador.analizadorSemantico.ExpresionTipo.TipoBasico;
-import compilador.analizadorSemantico.Producto;
 import compilador.analizadorSintactico.AnalizadorSintactico;
 import compilador.gestionErrores.GestorErrores;
 import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
@@ -278,7 +277,7 @@ public class Compilador extends JFrame {
 				"\nconst bool i=true; \nconst float k=1.2; \n\nint f(int a, int b); " +
 				"\n\nfloat g=3; \n\ndouble h();");
 		ta1.setFont(new java.awt.Font(Font.MONOSPACED, Font.BOLD, 16));
-		ta1.setTabSize(4);
+		ta1.setTabSize(3);
 		sp1.setViewportView(ta1);
 		panelPrincipal_1.add(sp2);
 		

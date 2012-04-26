@@ -37,7 +37,7 @@ public class AnalizadorSintactico {
 	private Vector<Integer> parse;
 	
 	/** Vector para guardar la secuencia ordenadas de las declaraciones que vayamos haciendo */
-	private Vector<String> declaraciones;
+//	private Vector<String> declaraciones;
 	
 	/** Vector usado en los casos en los que haga falta ampliar la ventana de tokens */
 	private Vector<Token> ventana;
@@ -72,7 +72,7 @@ public class AnalizadorSintactico {
 	public AnalizadorSintactico(AnalizadorLexico lexico){
 		this.lexico = lexico;
 		parse = new Vector<Integer>();
-		declaraciones = new Vector<String>();
+//		declaraciones = new Vector<String>();
 		tokens = new Vector<Token>();
 		ventana = new Vector<Token>();
 		gestorTS = GestorTablasSimbolos.getGestorTS();
@@ -114,7 +114,7 @@ public class AnalizadorSintactico {
 			ExpresionTipo LITERAL_tipo=literal();
 			if(LITERAL_tipo != null) {
 				if(ExpresionTipo.sonEquivAsig(tipo, LITERAL_tipo, OpAsignacion.ASIGNACION)!=null){
-					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: \'"+tipo.getTipo().toString()+"\'");
+//					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: \'"+tipo.getTipo().toString()+"\'");
 					return tipo;
 				} else {
 					//gestorErr.insertaErrorSintactico(linea, columna, "Constante mal inicializada");
@@ -199,16 +199,16 @@ public class AnalizadorSintactico {
 		return string;
 	}
 	
-	public String muestraDeclaraciones() {
-		String string = "";
-		int i = 0;
-		while(i < declaraciones.size()) {
-			string += declaraciones.get(i);
-			string += "\n";
-			i++;
-		}
-		return string+"\n";
-	}
+//	public String muestraDeclaraciones() {
+//		String string = "";
+//		int i = 0;
+//		while(i < declaraciones.size()) {
+//			string += declaraciones.get(i);
+//			string += "\n";
+//			i++;
+//		}
+//		return string+"\n";
+//	}
 	
 	public Vector<Token> getTokens() {
 		return tokens;
@@ -818,7 +818,7 @@ public class AnalizadorSintactico {
 			lexico.desactivaModo(modo.NoMeto);
 			nextToken();
 			if(tipo_s!=null && token.getAtributo()!=null && (token.getAtributo() instanceof EntradaTS)){
-				declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: \'"+tipo_s.getTipo().toString()+"\'");
+//				declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: \'"+tipo_s.getTipo().toString()+"\'");
 				return tipo_s;
 			}else if(token.getAtributo() instanceof EntradaTS)
 				return ExpresionTipo.getError();
@@ -839,7 +839,7 @@ public class AnalizadorSintactico {
 			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			nextToken();
 			if(tipo_s!=null && token.getAtributo()!=null && (token.getAtributo() instanceof EntradaTS)){
-				declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipo().toString());
+//				declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: "+tipo_s.getTipo().toString());
 				return tipo_s;
 			}else if(token.getAtributo() instanceof EntradaTS)
 				return ExpresionTipo.getError();
@@ -1739,7 +1739,7 @@ public class AnalizadorSintactico {
 					//Aqui debemos cambiar el tipo asociado a la variable ya insertada en la TS
 					compilador.analizadorSemantico.Vector v = new compilador.analizadorSemantico.Vector((Integer)(token_aux.getAtributo()), tipo_h); //TODO cambiar longitud
 					entrada.setTipo(v);
-					declaraciones.add("Declaramos "+ entrada.getLexema()+ " con tipo semantico: \'"+v.getTipo().toString()+"\'");
+//					declaraciones.add("Declaramos "+ entrada.getLexema()+ " con tipo semantico: \'"+v.getTipo().toString()+"\'");
 					nextToken();
 					ExpresionTipo DIMENSION_tipo=dimension();
 					ExpresionTipo INIC_DIM_tipo_s=inicDim(tipo_h,v.getLongitud());

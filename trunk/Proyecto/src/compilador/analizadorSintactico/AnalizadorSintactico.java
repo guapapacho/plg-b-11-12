@@ -4,7 +4,6 @@ package compilador.analizadorSintactico;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.JOptionPane;
 
 import compilador.analizadorLexico.*;
 import compilador.analizadorLexico.AnalizadorLexico.modo;
@@ -259,7 +258,6 @@ public class AnalizadorSintactico {
 	 */
 	private void programa() throws Exception {
 		parse.add(1);
-		System.out.println("1");//TODO
 		libreria();
 		resto_programa();
 		if (!token.esIgual(TipoToken.EOF)) {
@@ -305,8 +303,6 @@ public class AnalizadorSintactico {
 	 * 						{RESTO_LIBRERIA.tipo_s:=LIBRERIA.tipo_s}
 	 * 5. RESTO_LIBRERIA → <ID.ID> LIBRERIA
 	 * 						{RESTO_LIBRERIA.tipo_s:=LIBRERIA.tipo_s}
-	 * 						{if(LIBRERIA.tipo_s!=error_tipo) then RESTO_LIBRERIA:=vacio
-	 * 						 else RESTO_LIBRERIA:=error_tipo}
 	 * @throws Exception 
 	 */
 	private ExpresionTipo resto_libreria() throws Exception {
@@ -327,12 +323,6 @@ public class AnalizadorSintactico {
 						nextToken();
 						if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR)) {
 							nextToken();
-							//ExpresionTipo LIBRERIA_tipo_s=libreria();
-							//if(LIBRERIA_tipo_s.getTipoBasico() != TipoBasico.error_tipo)
-							//	return ExpresionTipo.getVacio();
-							//else
-								//return ExpresionTipo.getError();
-							System.out.println("5");//TODO
 							ExpresionTipo LIBRERIA_tipo_s=libreria();
 							return LIBRERIA_tipo_s;
 						} else {
@@ -409,12 +399,10 @@ public class AnalizadorSintactico {
 				} else {
 					gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"{\"");
 					return null;
-					//ruptura=parse.size();
 				}
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el nombre de la clase");
 				return null;
-				//ruptura=parse.size();
 			}
 		} else {
 			parse.add(106);
@@ -801,7 +789,7 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 6. TIPO → id		
-	 * 			{ TIPO.tipo := { TIPO.tipo_s := id.entrada.lexema} 								
+	 * 			{TIPO.tipo_s := id.entrada.lexema} 								
 	 * 7. TIPO → TIPO_SIMPLE
 	 * 			{ TIPO.tipo := TIPO_SIMPLE.tipo }
 	 * @throws Exception 
@@ -1088,9 +1076,9 @@ public class AnalizadorSintactico {
 					ExpresionTipo COSAS2_tipo_h,COSAS1_tipo_s;	
 					ExpresionTipo id_tipo=aux;//entradaTS.getTipo();
 					COSAS2_tipo_h=aux;
-					if(entradaTS.getTipo() instanceof Cabecera)
-						System.out.println("cabecera!!");
-					System.out.println("\naqui: \n"+entradaTS.getTipo().toString());
+//					if(entradaTS.getTipo() instanceof Cabecera)
+//						System.out.println("cabecera!!");
+//					System.out.println("\naqui: \n"+entradaTS.getTipo().toString());
 					cosas2(COSAS2_tipo_h,id_tipo,entradaTS);
 					COSAS1_tipo_s=cosas();
 					if((aux.getTipoBasico()!=TipoBasico.error_tipo)&&(COSAS2_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)&&(COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)){

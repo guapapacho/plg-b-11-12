@@ -406,7 +406,7 @@ public class AnalizadorSintactico {
 			}
 		} else {
 			parse.add(106);
-			System.out.println("106");
+//			System.out.println("106");
 			ExpresionTipo aux1, aux2;
 			aux1 = cosas();
 			aux2 = compuebaFuncionesImplementadas();
@@ -1087,7 +1087,7 @@ public class AnalizadorSintactico {
 				return ExpresionTipo.getVacio();
 			}
 		} 
-		System.out.println("cosas");
+//		System.out.println("cosas");
 		return ExpresionTipo.getVacio(); //TODO: completar con las expresiones de tipo correspondientes
 		
 	}
@@ -4724,7 +4724,7 @@ public class AnalizadorSintactico {
 			parse.add(225);
 			nextToken();
 			ExpresionTipo aux1 = exclusive_or_expression();
-			System.out.println("izquierda: "+tipo_h.getTipoBasico().toString()+"\nderecha"+aux1.getTipoBasico().toString());
+//			System.out.println("izquierda: "+tipo_h.getTipoBasico().toString()+"\nderecha"+aux1.getTipoBasico().toString());
 			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.CIRCUNFLEJO);
 			if(aux2!=null)
 				return aux2;

@@ -264,7 +264,7 @@ public class ExpresionTipo {
 	
 	public static ExpresionTipo expresionTipoDeString(String s){
 	
-		System.out.println("El tipo es: "+ s);
+//		System.out.println("El tipo es: "+ s);
 		if (s.equals("bool")) return new ExpresionTipo(TipoBasico.logico);
 		if (s.equals("char")) return new ExpresionTipo(TipoBasico.caracter);
 		if (s.equals("char_16t")) return new ExpresionTipo(TipoBasico.caracter);

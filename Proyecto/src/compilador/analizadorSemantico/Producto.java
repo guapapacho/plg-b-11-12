@@ -112,7 +112,9 @@ public class Producto extends ExpresionTipo {
 				s += ", ";
 			}
 		}
-		return s.substring(0, s.length()-2);
+		if(s.length() > 2)
+			s = s.substring(0, s.length()-2);
+		return s;
 	}
 
 }

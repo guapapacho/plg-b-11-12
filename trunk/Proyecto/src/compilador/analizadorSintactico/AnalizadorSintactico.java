@@ -87,7 +87,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			programa();
 		} catch (Exception e) {
-			gestorErr.insertaWarning(linea, columna, "Excepcion: "+e.getMessage()); // TODO qiutar para la presentacion y entrega :P
+			//gestorErr.insertaWarning(linea, columna, "Excepcion: "+e.getMessage()); // TODO qiutar para la presentacion y entrega :P
 			e.printStackTrace();
 		}
 	}

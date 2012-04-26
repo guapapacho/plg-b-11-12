@@ -871,16 +871,7 @@ public class AnalizadorSintactico {
 	 *  8. COSAS → const TIPO ID = LITERAL INIC_CONST ; COSAS
 	 *  			{ INIC_CONST.tipo_h := TIPO.tipo_s;
    	 *  			  if ((Tipo.tipo_s==LITERAL.tipo_s)&&(Tipo.tipo_s!=error_tipo) &&(INIC_CONST!=error_tipo) &&(Cosas'.tipo_s!=error_tipo))
-   	 *				  then COSAS.tipo_s := else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
-			parse.add(7);
-			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
-			nextToken();
-			if(tipo_s!=null && token.getAtributo()!=null && (token.getAtributo() instanceof EntradaTS)){
-				declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: \'"+tipo_s.getTipo().toString()+"\'");
-				return tipo_s;
-			}else if(token.getAtributo() instanceof EntradaTS)
-				return ExpresionTipo.getError();
-		}
+   	 *				  then COSAS.tipo_s := vacio
    	 *				  else .COSAS.tipo := error_tipo }
 	 *  9. COSAS → TIPO ID COSAS2 COSAS
 	 *  			{ COSAS2.tipo_h := TIPO.tipo_s

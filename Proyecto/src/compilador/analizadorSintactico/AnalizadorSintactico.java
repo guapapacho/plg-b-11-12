@@ -5046,7 +5046,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.OP_ASIGNACION)){
 			lexico.desactivaModo(modo.Declaracion); lexico.desactivaModo(modo.NoMeto);
 			ExpresionTipo res = ExpresionTipo.getVacio();
-			if(!tokenAnterior.esIgual(TipoToken.IDENTIFICADOR)) {
+			if(!(tokenAnterior.esIgual(TipoToken.IDENTIFICADOR) || tokenAnterior.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_CORCHETE))) {
 				gestorErr.insertaErrorSemantico(linea, columna, "Debe haber una variable a la izquierda de la asignacion");
 				res = ExpresionTipo.getError();
 			}

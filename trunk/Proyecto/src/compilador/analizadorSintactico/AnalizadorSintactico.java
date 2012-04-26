@@ -1295,12 +1295,11 @@ public class AnalizadorSintactico {
 	}
 
 	/**20. LISTA_PARAM → CONSTANTE TIPO ID PASO RESTO_LISTA
-	 * 					{	if (CONSTANTE.tipo_s != error_tipo) & (TIPO_tipo_s != error_tipo) & 
-	 * 						   (PASO_tipo_s != error_tipo) & (RESTO_LISTA_tipo_s != error_tipo) 
-	 * 						then LISTA_PARAM.tipo := vacio
+	 * 					{	if (RESTO_LISTA_tipo_s != error_tipo) 
+	 * 						then LISTA_PARAM.tipo := Producto(RESTO_LISTA_tipo_s)
 	 * 						else LISTA_PARAM.tipo := error_tipo  } 
 	 * 21. LISTA_PARAM → lambda
-	 * 					{ LISTA_PARAM.tipo := vacio }
+	 * 					{ LISTA_PARAM.tipo := Producto }
 	 * @param RESTO_LISTA_tipo_h 
 	 * @throws Exception 
 	 */	private ExpresionTipo lista_param() throws Exception {
@@ -1400,7 +1399,7 @@ public class AnalizadorSintactico {
 	 * 22. RESTO_LISTA → , LISTA_PARAM
 	 * 					{ RESTO_LISTA.tipo := LISTA_PARAM.tipo } 
 	 * 23. RESTO_LISTA → lambda
-	 * 					{ RESTO_LISTA.tipo := vacio }
+	 * 					{ RESTO_LISTA.tipo := Producto }
 	 * @param RESTO_LISTA_tipo_h 
 	 * @throws Exception 
 	 */

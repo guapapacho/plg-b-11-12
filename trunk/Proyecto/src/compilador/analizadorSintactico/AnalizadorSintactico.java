@@ -3281,6 +3281,7 @@ public class AnalizadorSintactico {
 		ExpresionTipo CUERPO2_tipo;
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(99);
+			gestorTS.abreBloque("If");
 			nextToken();
 			EXPRESSION_tipo = expression();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
@@ -3291,6 +3292,7 @@ public class AnalizadorSintactico {
 					SENT_ELSE_tipo.getTipoBasico() != TipoBasico.error_tipo &&
 					EXPRESSION_tipo.getTipoBasico() != TipoBasico.error_tipo) { //== TipoBasico.logico) { // TODO se supone que vale todo, creo
 						ExpresionTipo tipo = ExpresionTipo.getVacio();
+						gestorTS.cierraBloque();
 						tipo.setRetorno(CUERPO2_tipo.hayRetorno() && SENT_ELSE_tipo.hayRetorno());							
 						return tipo;
 				}

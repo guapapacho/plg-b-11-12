@@ -1454,7 +1454,9 @@ public class AnalizadorSintactico {
 
 	/**	
 	 * 26. INIC_DIM → = INIC_DIM2
-	 * 					{ INIC_DIM_tipo_s := INIC_DIM2.tipo_s }
+	 * 					{if(INIC_DIM2.tipo_s!=error_tipo) 
+	 * 					 then INIC_DIM_tipo_s := INIC_DIM2.tipo_s
+	 * 					 else INIC_DIM_tipo_s := error_tipo }
 	 * 27. INIC_DIM → lambda
 	 * 					{ INIC_DIM.tipo_s := vacio }
 	 * @throws Exception 
@@ -1506,7 +1508,7 @@ public class AnalizadorSintactico {
 	}
 
 	/**	29. INIC_DIM3 → LITERAL INIC_DIM4 
-	 * 					{  if ((LITERAL.tipo_s != error_tipo) && (INIC_DIM4.tipo_s != error_tipo))                                                                                                    {  if ((LITERAL.tipo_s != error_tipo) && (INIC_DIM4.tipo_s != error_tipo))
+	 * 					{  if ((LITERAL.tipo_s==INIC_DIM4.tipo_s) && (INIC_DIM4.tipo_s != error_tipo))                                                                                                    {  if ((LITERAL.tipo_s != error_tipo) && (INIC_DIM4.tipo_s != error_tipo))
      *					   then INIC_DIM3.tipo_s := vacio
      *					   else INIC_DIM3.tipo_s := error_tipo  } 
 	 *	30. INIC_DIM3 → INIC_DIM2 INIC_DIM5

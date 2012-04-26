@@ -75,7 +75,7 @@ public class TablaSimbolos {
 	public String toString(String tab) {
 		String s = "";
 		
-		s += tab + "--- Entradas Ámbito " + nombre + " ---\n";
+		s += tab + "--- Entradas Ambito " + nombre + " ---\n";
 		for(EntradaTS entrada: entradasTS.values()){
 			if(entrada.getTipo()!= null)
 				if (entrada.getTipo().equals(TipoNoBasico.funcion) || entrada.getTipo().equals(TipoNoBasico.cabecera)) {

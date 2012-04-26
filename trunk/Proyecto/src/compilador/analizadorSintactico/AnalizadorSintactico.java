@@ -1556,7 +1556,7 @@ public class AnalizadorSintactico {
 	}
 
 	/**	31. INIC_DIM4 → , LITERAL INIC_DIM4 
-	 * 					{  if ((LITERAL.tipo_s != error_tipo) && (INIC_DIM4.tipo_s != error_tipo))
+	 * 					{   if ((LITERAL.tipo_s==INIC_DIM4.tipo_s) && (INIC_DIM4.tipo_s != error_tipo))                                                                                                    {  if ((LITERAL.tipo_s != error_tipo) && (INIC_DIM4.tipo_s != error_tipo))
      *					   then INIC_DIM4.tipo_s := vacio
      *					   else INIC_DIM4.tipo_s := error_tipo  } 
 	 *	32. INIC_DIM4 → lambda
@@ -1628,11 +1628,12 @@ public class AnalizadorSintactico {
 
 	/**
 	 * 35. INIC_CONST → , ID = LITERAL INIC_CONST
-	 * 					{ INIC_CONST1.tipo_s := LITERAL.TIPOSIMPLE } 
+	 * 					{ INIC_CONST1.tipo_h := LITERAL.TIPO } 
 	 *   				  if ((INIC_CONST1.tipo_s != error_tipo))                                                                                                     {  if ((LITERAL.tipo_s != error_tipo) && (INIC_CONST.tipo_s != error_tipo))
      *					  then INIC_CONST.tipo_s := vacio
      *					  else INIC_CONST.tipo_s := error_tipo  } 
 	 * 36. INIC_CONST → lambda
+	 * 					{ INIC_CONST.tipo_s := vacio }
 	 * @throws Exception 
 	 */
 	private ExpresionTipo inic_const(ExpresionTipo tipo) throws Exception {
@@ -1703,7 +1704,7 @@ public class AnalizadorSintactico {
    	 *						  then INICIALIZACION.tipo_s := vacio
    	 *						  else INICIALIZACION.tipo_s := error_tipo }
 	 * 40. INICIALIZACION → [NUM_ENTERO] DIMENSION INIC_DIM
-	 * 						{ if((NUM_ENTERO_tipo!=error_tipo)&&(DIMENSION_tipo!=error_tipo)&&(INIC_DIM_tipo_s!=error_tipo))
+	 * 						{ if((NUM_ENTERO_tipo==entero)&&(DIMENSION_tipo!=error_tipo)&&(INIC_DIM_tipo_s!=error_tipo))
 	 * 						  then INICIALIZACION.tipo_s:=vacio
 	 * 						  else INICIALIZACION.tipo_s:=error_tipo}
 	 * 41. INICIALIZACION → lambda
@@ -1789,6 +1790,7 @@ public class AnalizadorSintactico {
 	 * 					  then INSTRUCCION.tipo := vacio
 	 * 					  else INSTRUCCION.tipo := error_tipo }
 	 * 48. INSTRUCCION → ;
+	 * 					{ INSTRUCCION.tipo := vacio }
 	 * 133.INSTRUCCION → EXPRESSION_OPT ;
 	 * 					{ INSTRUCCION.tipo := EXPRESSION_OPT.tipo }
 	 * @throws Exception 
@@ -5154,7 +5156,7 @@ public class AnalizadorSintactico {
 			parse.add(55);
 			lexico.desactivaModo(modo.Declaracion); 
 			lexico.activaModo(modo.NoMeto);
-			nextToken();/**enum ID ID ;*/
+			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				aux1 = ExpresionTipo.getVacio();
 				String IDlexema = (String)token.atrString();
@@ -5162,7 +5164,7 @@ public class AnalizadorSintactico {
 				if(!e.equals(TipoNoBasico.registro)){
 					gestorErr.insertaErrorSemantico(linea, columna, "El nombre de tipo no se corresponde con un registro");
 					aux1 = ExpresionTipo.getError();
-				} // TODO: queremos que continue compilando?
+				} 
 				lexico.activaModo(modo.Declaracion); 
 				lexico.desactivaModo(modo.NoMeto);
 				lexico.setModos(modos);

@@ -112,8 +112,8 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
 			nextToken();
 			ExpresionTipo LITERAL_tipo=literal();
-			if(literal() != null) {
-				if(ExpresionTipo.sonEquivAsig(entradaTS.getTipo(), LITERAL_tipo, OpAsignacion.ASIGNACION)!=null){
+			if(LITERAL_tipo != null) {
+				if(ExpresionTipo.sonEquivAsig(tipo, LITERAL_tipo, OpAsignacion.ASIGNACION)!=null){
 					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: \'"+tipo.getTipo().toString()+"\'");
 					return tipo;
 				} else {

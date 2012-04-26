@@ -1532,7 +1532,7 @@ public class AnalizadorSintactico {
 					}
 				}
 				else {
-					gestorErr.insertaErrorSemantico(linea, columna, "ERROR Tipo de inicializacion no compatible");
+					gestorErr.insertaErrorSemantico(linea, columna, "Tipo de inicializacion no compatible");
 					return ExpresionTipo.getError();
 				}
 			}
@@ -1587,7 +1587,7 @@ public class AnalizadorSintactico {
 						return ExpresionTipo.getError();
 					}
 				} else {
-					gestorErr.insertaErrorSemantico(linea, columna, "ERROR Tipo de inicializacion no compatible");
+					gestorErr.insertaErrorSemantico(linea, columna, "Tipo de inicializacion no compatible");
 					return ExpresionTipo.getError();
 				}
 			}
@@ -1746,7 +1746,8 @@ public class AnalizadorSintactico {
 					if((token_aux.esIgual(TipoToken.NUM_ENTERO))&&(DIMENSION_tipo.getTipoBasico()!=TipoBasico.error_tipo)&&(INIC_DIM_tipo_s.getTipoBasico()!=TipoBasico.error_tipo))
 						return ExpresionTipo.getVacio();
 					else{
-						gestorErr.insertaErrorSemantico(linea, columna, "Se esperaba un número entero");
+						if(!token_aux.esIgual(TipoToken.NUM_ENTERO))
+							gestorErr.insertaErrorSemantico(linea, columna, "Se esperaba un entero");
 						return ExpresionTipo.getError();
 					}
 				}

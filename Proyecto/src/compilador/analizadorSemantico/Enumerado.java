@@ -43,8 +43,17 @@ public class Enumerado extends ExpresionTipo {
 		}
 	}
 	
+	public java.util.Vector<String> elementosOrdenados(){
+		java.util.Vector<String> aux= new java.util.Vector<String>();
+		for(int i=elementos.size()-1;i>=0;i--){
+			aux.add(elementos.get(i));
+		}
+		return aux;
+	}
+	
 	public String toString() {
-		return "Enumerado' con los siguientes elementos: " + elementos;
+//		return "Enumerado con los siguientes elementos: " + elementos;
+		return "Enumerado con los siguientes elementos: " + elementosOrdenados();
 	}
 
 }

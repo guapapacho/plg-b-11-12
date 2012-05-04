@@ -5094,21 +5094,21 @@ public class AnalizadorSintactico {
 			lexico.desactivaModo(modo.Declaracion); 
 			lexico.activaModo(modo.NoMeto);
 			nextToken();
-			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+			if(token.esIgual(TipoToken.TIPODEFINIDO)){
 				aux1 = ExpresionTipo.getVacio();
-				String IDlexema = (String)token.atrString();
-				ExpresionTipo e = gestorTS.buscaIdGeneral(IDlexema).getTipo();
-				if(!e.equals(TipoNoBasico.registro)){
+//				String IDlexema = (token.esIgual(TipoToken.IDENTIFICADOR)?(String)token.atrString():(String)token.getAtributo());
+//				ExpresionTipo e = gestorTS.buscaIdGeneral(IDlexema).getTipo();
+				if(!(token.getAtributo() instanceof Registro)){
 					gestorErr.insertaErrorSemantico(linea, columna, "El nombre de tipo no se corresponde con un registro");
 					aux1 = ExpresionTipo.getError();
 				} 
-				lexico.activaModo(modo.Declaracion); 
-				lexico.desactivaModo(modo.NoMeto);
-				lexico.setModos(modos);
+				lexico.desactivaModo(modo.Declaracion); 
+				lexico.activaModo(modo.NoMeto);
+//				lexico.setModos(modos);
 				nextToken();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
 					// crear nuevo tipo semántico "definido" y completar el ID con este en la TS
-					gestorTS.setTipoDefinido(token.atrString(), e);
+					gestorTS.setTipoDefinido((String) token.getAtributo(), (ExpresionTipo) tokenAnterior.getAtributo());
 					nextToken();
 					lexico.setModos(modos);
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)){
@@ -5129,23 +5129,23 @@ public class AnalizadorSintactico {
 		}else if(token.esIgual(TipoToken.PAL_RESERVADA, 23 /* enum */)){
 			parse.add(56);
 			lexico.desactivaModo(modo.Declaracion); 
-			//lexico.activaModo(modo.NoMeto);
+//			lexico.activaModo(modo.NoMeto);
 			nextToken();/**enum ID ID ;*/
-			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+			if(token.esIgual(TipoToken.TIPODEFINIDO)){
 				aux1 = ExpresionTipo.getVacio();
-				String IDlexema = token.atrString();
-				ExpresionTipo e = gestorTS.buscaIdGeneral(IDlexema).getTipo();
-				if(!e.equals(TipoNoBasico.enumerado)){
+//				String IDlexema = token.atrString();
+//				ExpresionTipo e = gestorTS.buscaIdGeneral(IDlexema).getTipo();
+				if(!(token.getAtributo() instanceof Enumerado)){
 					gestorErr.insertaErrorSemantico(linea, columna, "El nombre de tipo no se corresponde con un enumerado");
 					aux1 = ExpresionTipo.getError();
 				} // TODO: queremos que continue compilando?
-				lexico.activaModo(modo.Declaracion); 
-				lexico.desactivaModo(modo.NoMeto);
-				lexico.setModos(modos);
+				lexico.desactivaModo(modo.Declaracion); 
+				lexico.activaModo(modo.NoMeto);
+//				lexico.setModos(modos);
 				nextToken();
 				if(token.esIgual(TipoToken.IDENTIFICADOR)){
 					// crear nuevo tipo semántico "definido" y completar el ID con este en la TS
-					gestorTS.setTipoDefinido(token.atrString(), e);
+					gestorTS.setTipoDefinido((String) token.getAtributo(), (ExpresionTipo) tokenAnterior.getAtributo());
 					nextToken();
 					lexico.setModos(modos);
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)){
@@ -5166,7 +5166,7 @@ public class AnalizadorSintactico {
 		}
 		
 		
-		return null;
+		return aux1;
 	}
 	
 	

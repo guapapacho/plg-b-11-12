@@ -1864,7 +1864,7 @@ public class AnalizadorSintactico {
 					gestorErr.insertaErrorSemantico(linea, columna, "Tipo indefinido: "+tokenAnterior.getAtributo());
 					throw new Exception("Tipo indefinido.");
 				}
-			}else if(!token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){
+			}else if(!token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE)){// && !token.esIgual(TipoToken.PAL_RESERVADA,6)){
 				ventana.add(tokens.lastElement()); // el ultimo token
 				token = tokens.get(tokens.size()-2); // el penultimo token (tipo (id))
 				parse.add(133); // creo que deberia añadir otra regla
@@ -2546,7 +2546,13 @@ public class AnalizadorSintactico {
 	 */
 	private ExpresionTipo cuerpo() throws Exception
 	{
-		if(token.esIgual(TipoToken.PAL_RESERVADA,29 /*for*/))
+		
+
+		if(token.esIgual(TipoToken.PAL_RESERVADA,6) /*case*/ || token.esIgual(TipoToken.PAL_RESERVADA,17) /*default*/){
+			parse.add(86);
+			return ExpresionTipo.getVacio();
+		}
+		else if(token.esIgual(TipoToken.PAL_RESERVADA,29 /*for*/))
 		{
 			ExpresionTipo RESTO_FOR_tipo, CUERPO_tipo;
 			parse.add(81);
@@ -3204,6 +3210,8 @@ public class AnalizadorSintactico {
 			if(LITERAL_tipo != null)
 			{
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
+					lexico.desactivaModo(modo.NoMeto);
+					lexico.desactivaModo(modo.Declaracion);
 					nextToken();
 					if(ExpresionTipo.sonEquivLog(EXPRESSION_tipo, LITERAL_tipo, OpLogico.AND) == null){	//TODO tiene que ser un tipo enumerado: int, char, bool creo
 						gestorErr.insertaErrorSemantico(linea, columna, "No coincide el identificador del case...");
@@ -3239,6 +3247,8 @@ public class AnalizadorSintactico {
 				numDefaults++;
 				nextToken();
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
+					lexico.desactivaModo(modo.NoMeto);
+					lexico.desactivaModo(modo.Declaracion);
 					nextToken();
 					ExpresionTipo aux1 = cuerpo();
 					ExpresionTipo aux2 = cuerpo_case(EXPRESSION_tipo);

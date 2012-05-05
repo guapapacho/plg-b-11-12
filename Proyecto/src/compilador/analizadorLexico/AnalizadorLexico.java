@@ -76,7 +76,7 @@ public class AnalizadorLexico {
 	private Vector<modo> modos;
 	
 	public enum modo {
-		Declaracion, NoMeto, GoTo;
+		Declaracion, NoMeto;
 	}
 	
 	
@@ -743,42 +743,37 @@ public class AnalizadorLexico {
 							 asterisco=true;
 							 return token;
 						 }
-						 if(esModoActivo(modo.GoTo)) { //si está en modo GoTo se devuelve el token con el lexema de la etiqueta
+						 //Dependiendo de si se esta en modo declaracion se insertara el atributo en la TS o se consultara para comprobar su existencia. 
+						 if(esModoActivo(modo.Declaracion) && !esModoActivo(modo.NoMeto)) {
+							 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
+							 if (puntero == null) { //si no esta en la T.S. se inserta.
+								 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
+							 }
+							 else {
+								 //si ya esta habria que mirar si se encuentra en el mismo ambito o no. 
+								 //Si ya hay un id con ese mismo nombre en el mismo ambito deberia lanzar error y devolver el token para seguir con el analisis semantico
+								 if(gestorTS.buscaIdBloqueActual(lexema) == null) {
+									 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
+								 } else if(puntero.getTipo().equals(TipoNoBasico.cabecera)) {
+									 token = new Token(TipoToken.IDENTIFICADOR,puntero,comentario);
+								 } else {
+									 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.buscaIdGeneral(lexema), comentario);
+									 gestorErrores.insertaErrorSemantico(numlinea, numcolumna,"Multiple declaracion de "+lexema);
+								 }
+							}
+						 }
+						 else if(esModoActivo(modo.NoMeto)) {
 							 token = new Token(TipoToken.IDENTIFICADOR,lexema,comentario);
 						 }
-						 else {
-							 //Dependiendo de si se esta en modo declaracion se insertara el atributo en la TS o se consultara para comprobar su existencia. 
-							 if(esModoActivo(modo.Declaracion) && !esModoActivo(modo.NoMeto)) {
-								 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
-								 if (puntero == null) { //si no esta en la T.S. se inserta.
-									 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
-								 }
-								 else {
-									 //si ya esta habria que mirar si se encuentra en el mismo ambito o no. 
-									 //Si ya hay un id con ese mismo nombre en el mismo ambito deberia lanzar error y devolver el token para seguir con el analisis semantico
-									 if(gestorTS.buscaIdBloqueActual(lexema) == null) {
-										 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.insertaIdentificador(lexema), comentario);
-									 } else if(puntero.getTipo().equals(TipoNoBasico.cabecera)) {
-										 token = new Token(TipoToken.IDENTIFICADOR,puntero,comentario);
-									 } else {
-										 token = new Token(TipoToken.IDENTIFICADOR, gestorTS.buscaIdGeneral(lexema), comentario);
-										 gestorErrores.insertaErrorSemantico(numlinea, numcolumna,"Multiple declaracion de "+lexema);
-									 }
-								}
+						 else { // si no esta en modo declaracion ni en modo noMeto
+							 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
+							 if(puntero == null) {
+								 //error semantico (variable no declarada)
+								 gestorErrores.insertaErrorSemantico(numlinea, numcolumna,"Identificador "+lexema+" no declarado");
+								 throw new Exception("Uso de identificador no declarado");
 							 }
-							 else if(esModoActivo(modo.NoMeto)) {
-								 token = new Token(TipoToken.IDENTIFICADOR,lexema,comentario);
-							 }
-							 else { // si no esta en modo declaracion ni en modo noMeto
-								 EntradaTS puntero = gestorTS.buscaIdGeneral(lexema);
-								 if(puntero == null) {
-									 //error semantico (variable no declarada)
-									 gestorErrores.insertaErrorSemantico(numlinea, numcolumna,"Identificador "+lexema+" no declarado");
-									 throw new Exception("Uso de identificador no declarado");
-								 }
-								 else
-									 token = new Token(TipoToken.IDENTIFICADOR, puntero, comentario);
-							 }
+							 else
+								 token = new Token(TipoToken.IDENTIFICADOR, puntero, comentario);
 						 }
 					 }	
 					 else { // es una palabra reservada

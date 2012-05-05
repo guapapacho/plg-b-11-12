@@ -23,7 +23,7 @@ public class ExpresionTipo {
 	* SOBRERO("~"), CIRCUNFLEJO("ˆ"), DOS_MENORES("<<"), DOS_MAYORES(">>"),			
 	* AND("&&"), ANDEQ(""), BIT_AND("&"), BIT_OR("|"), COMPL("~"), NOT("!"), NOT_EQ(""), OR("||"), OR_EQ(""), XOR("^"), XOR_EQ("");			
 	* -------------------------------------------------------------------------------------------------------------**/	
-	public static ExpresionTipo sonEquivLog(ExpresionTipo e1, ExpresionTipo e2, OpLogico op){
+	public static ExpresionTipo sonCompLog(ExpresionTipo e1, ExpresionTipo e2, OpLogico op){
 		if(e1!=null && !e1.esTipoBasico() && e1.getTipoNoBasico().equals(TipoNoBasico.enumerado)){
 			e1 = new ExpresionTipo(TipoBasico.entero);
 		}
@@ -72,7 +72,7 @@ public class ExpresionTipo {
 	/**-------------------------------------------------------------------------------------------------------------
 	* IGUALDAD("=="), DISTINTO("!="), MENOR("<"), MAYOR(">"), MENOR_IGUAL("<="), MAYOR_IGUAL(">=");
 	* -------------------------------------------------------------------------------------------------------------**/	
-	public static ExpresionTipo sonEquivComp(ExpresionTipo e1, ExpresionTipo e2, OpComparacion op){
+	public static ExpresionTipo sonCompComp(ExpresionTipo e1, ExpresionTipo e2, OpComparacion op){
 		if(e1!=null && !e1.esTipoBasico() && e1.getTipoNoBasico().equals(TipoNoBasico.enumerado)){
 			e1 = new ExpresionTipo(TipoBasico.entero);
 		}
@@ -100,7 +100,7 @@ public class ExpresionTipo {
 	/**-------------------------------------------------------------------------------------------------------------
 	* SUMA("+"), RESTA("-"), INCREMENTO("++"), DECREMENTO("--"), MULTIPLICACION("*"), DIVISION("/"), PORCENTAJE("%");
 	* -------------------------------------------------------------------------------------------------------------**/	
-	public static ExpresionTipo sonEquivArit(ExpresionTipo e1, ExpresionTipo e2, OpAritmetico op){
+	public static ExpresionTipo sonCompArit(ExpresionTipo e1, ExpresionTipo e2, OpAritmetico op){
 		if(e1!=null && !e1.esTipoBasico() && e1.getTipoNoBasico().equals(TipoNoBasico.enumerado)){
 			e1 = new ExpresionTipo(TipoBasico.entero);
 		}
@@ -162,7 +162,7 @@ public class ExpresionTipo {
 	* En las asignaciones, independientemente del tipo de la derecha, 
 	* siempre se retorna el tipo correspondiente a la variable asignada
 	**/
-	public static ExpresionTipo sonEquivAsig(ExpresionTipo e1, ExpresionTipo e2, OpAsignacion op){
+	public static ExpresionTipo sonCompAsig(ExpresionTipo e1, ExpresionTipo e2, OpAsignacion op){
 		if(e1!=null && !e1.esTipoBasico() && e1.getTipoNoBasico().equals(TipoNoBasico.enumerado)){
 			e1 = new ExpresionTipo(TipoBasico.entero);
 		}
@@ -311,10 +311,7 @@ public class ExpresionTipo {
 	 * @return boolean
 	 */
 	public boolean paramsEquivalentes(Producto dominio) {
-		if(!this.equals(TipoNoBasico.producto))
-			return false;
-		//TODO terminar este método. habría que ver si los parametros tienen el mismo tipo y si en c se permite pasar menos params
-		return true;
+		return this.equals(TipoNoBasico.producto);
 	}
 	
 

@@ -66,7 +66,6 @@ public class AnalizadorSintactico {
 	private int linea;
 	/** Numero de columna del siguiente al token anterior */
 	private int columna;
-	private boolean hayRetornoEnDefault;
 	private boolean hayBreak;
 		
 	public AnalizadorSintactico(AnalizadorLexico lexico){
@@ -81,7 +80,6 @@ public class AnalizadorSintactico {
 		estamosEnBucle = false;
 		estamosEnSwitch = false;
 		tipoRetorno = null;
-		hayRetornoEnDefault = false;
 		hayBreak = false;
 		try {
 			nextToken();
@@ -113,7 +111,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			ExpresionTipo LITERAL_tipo=literal();
 			if(LITERAL_tipo != null) {
-				if(ExpresionTipo.sonEquivAsig(tipo, LITERAL_tipo, OpAsignacion.ASIGNACION)!=null){
+				if(ExpresionTipo.sonCompAsig(tipo, LITERAL_tipo, OpAsignacion.ASIGNACION)!=null){
 //					declaraciones.add("Declaramos "+ ((EntradaTS)token.getAtributo()).getLexema()+ " con tipo semantico: \'"+tipo.getTipo().toString()+"\'");
 					return tipo;
 				} else {
@@ -1523,7 +1521,7 @@ public class AnalizadorSintactico {
 			if(LITERAL_TIPOSIMPLE != null){
 				parse.add(29);
 				ExpresionTipo INIC_DIM4_tipo_s=inicDim4(tipo_h, num_comp-1);
-				if(ExpresionTipo.sonEquivComp(LITERAL_TIPOSIMPLE, tipo_h, OpComparacion.IGUALDAD)!=null){
+				if(ExpresionTipo.sonCompComp(LITERAL_TIPOSIMPLE, tipo_h, OpComparacion.IGUALDAD)!=null){
 					if(INIC_DIM4_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 						return ExpresionTipo.getVacio();
 					else{
@@ -1574,7 +1572,7 @@ public class AnalizadorSintactico {
 			}
 			else{
 				ExpresionTipo INIC_DIM4_tipo_s=inicDim4(tipo_h,num_comp-1);
-				if(ExpresionTipo.sonEquivComp(LITERAL_TIPOSIMPLE, tipo_h, OpComparacion.IGUALDAD)!=null){
+				if(ExpresionTipo.sonCompComp(LITERAL_TIPOSIMPLE, tipo_h, OpComparacion.IGUALDAD)!=null){
 					if(INIC_DIM4_tipo_s.getTipoBasico()!=TipoBasico.error_tipo){
 						if(num_comp<=0){
 							gestorErr.insertaErrorSemantico(linea, columna, "Numero de componentes inicializados erróneo");
@@ -1721,7 +1719,7 @@ public class AnalizadorSintactico {
 			//comprueba que los tipos son equivalentes
 			ExpresionTipo ASSIGNMENT_EXPRESSION_tipo_s=assignment_expression();
 			lexico.setModos(modos);
-			ExpresionTipo equiv = ExpresionTipo.sonEquivAsig(ASSIGNMENT_EXPRESSION_tipo_s, tipo_h, OpAsignacion.ASIGNACION);
+			ExpresionTipo equiv = ExpresionTipo.sonCompAsig(ASSIGNMENT_EXPRESSION_tipo_s, tipo_h, OpAsignacion.ASIGNACION);
 			if(equiv != null && ASSIGNMENT_EXPRESSION_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 				return ExpresionTipo.getVacio();
 			else{
@@ -2721,7 +2719,7 @@ public class AnalizadorSintactico {
 						gestorErr.insertaErrorSemantico(linea, columna, "Falta instrucción de retorno.");
 						tipo = ExpresionTipo.getError();
 						tipo.setRetorno(true);
-					} else if(ExpresionTipo.sonEquivAsig(aux, tipoRetorno, OpAsignacion.ASIGNACION) == null) {
+					} else if(ExpresionTipo.sonCompAsig(aux, tipoRetorno, OpAsignacion.ASIGNACION) == null) {
 						gestorErr.insertaErrorSemantico(linea, columna, "Tipo de retorno incorrecto, se espera "+tipoRetorno+".");
 						tipo = ExpresionTipo.getError();
 						tipo.setRetorno(true);
@@ -2737,7 +2735,7 @@ public class AnalizadorSintactico {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \";\"");
 			}
 		}  else if(token.esIgual(TipoToken.PAL_RESERVADA, 31 /*goto*/)) {
-			lexico.activaModo(modo.GoTo);
+			lexico.activaModo(modo.NoMeto);
 			parse.add(131);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
@@ -2746,7 +2744,7 @@ public class AnalizadorSintactico {
 				} else {
 					gestorErr.insertaErrorSemantico(linea, columna, "Etiqueta inválida");
 				}
-				lexico.desactivaModo(modo.GoTo);
+				lexico.desactivaModo(modo.NoMeto);
 				nextToken();
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 					lexico.desactivaModo(modo.Declaracion);
@@ -3123,12 +3121,7 @@ public class AnalizadorSintactico {
 			lexico.setModos(modos);
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
-				hayRetornoEnDefault = false;
 				ExpresionTipo RESTO_CASE_tipo = resto_case2(EXPRESSION_tipo);
-				if(hayRetornoEnDefault)
-					RESTO_CASE_tipo.setRetorno(true);
-				else if(tokenAnterior.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS))
-					RESTO_CASE_tipo.setRetorno(false);
 				if(EXPRESSION_tipo.getTipoBasico() != TipoBasico.error_tipo)
 					return RESTO_CASE_tipo;
 				else {
@@ -3213,7 +3206,7 @@ public class AnalizadorSintactico {
 					lexico.desactivaModo(modo.NoMeto);
 					lexico.desactivaModo(modo.Declaracion);
 					nextToken();
-					if(ExpresionTipo.sonEquivLog(EXPRESSION_tipo, LITERAL_tipo, OpLogico.AND) == null){	//TODO tiene que ser un tipo enumerado: int, char, bool creo
+					if(ExpresionTipo.sonCompLog(EXPRESSION_tipo, LITERAL_tipo, OpLogico.AND) == null){	//TODO tiene que ser un tipo enumerado: int, char, bool creo
 						gestorErr.insertaErrorSemantico(linea, columna, "No coincide el identificador del case...");
 						return new ExpresionTipo(TipoBasico.error_tipo);
 					}
@@ -3252,14 +3245,13 @@ public class AnalizadorSintactico {
 					nextToken();
 					ExpresionTipo aux1 = cuerpo();
 					ExpresionTipo aux2 = cuerpo_case(EXPRESSION_tipo);
-					hayRetornoEnDefault = aux1.hayRetorno();
 					if(aux1.getTipoBasico()!=TipoBasico.error_tipo && aux2.getTipoBasico()!=TipoBasico.error_tipo) {
 						ExpresionTipo tipo = ExpresionTipo.getVacio();
-						tipo.setRetorno(aux2.hayRetorno());
+						tipo.setRetorno(aux1.hayRetorno() && aux2.hayRetorno());
 						return tipo;
 					} else {
 						ExpresionTipo tipo = ExpresionTipo.getError();
-						tipo.setRetorno(aux2.hayRetorno());
+						tipo.setRetorno(aux1.hayRetorno() && aux2.hayRetorno());
 						return tipo;
 					}
 				} else {
@@ -4302,17 +4294,17 @@ public class AnalizadorSintactico {
 			nextToken();
 			parse.add(200);
 			aux1 = multiplicative_expression();
-			aux2 = ExpresionTipo.sonEquivArit(aux1,tipo_h,OpAritmetico.MULTIPLICACION);
+			aux2 = ExpresionTipo.sonCompArit(aux1,tipo_h,OpAritmetico.MULTIPLICACION);
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.DIVISION)){
 			nextToken();
 			parse.add(201);
 			aux1 = multiplicative_expression();
-			aux2 = ExpresionTipo.sonEquivArit(aux1,tipo_h,OpAritmetico.DIVISION);
+			aux2 = ExpresionTipo.sonCompArit(aux1,tipo_h,OpAritmetico.DIVISION);
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.PORCENTAJE)){
 			nextToken();
 			parse.add(202);
 			aux1 = multiplicative_expression();
-			aux2 = ExpresionTipo.sonEquivArit(aux1,tipo_h,OpAritmetico.PORCENTAJE);
+			aux2 = ExpresionTipo.sonCompArit(aux1,tipo_h,OpAritmetico.PORCENTAJE);
 		} else{
 			parse.add(203);
 			//lambda
@@ -4377,13 +4369,13 @@ public class AnalizadorSintactico {
 			parse.add(205);
 			nextToken();
 			aux1 = additive_expression();
-			aux2 = ExpresionTipo.sonEquivArit(aux1,tipo_h,OpAritmetico.SUMA);
+			aux2 = ExpresionTipo.sonCompArit(aux1,tipo_h,OpAritmetico.SUMA);
 		}
 		else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.RESTA)){
 			parse.add(206);
 			nextToken();
 			aux1 = additive_expression();
-			aux2 = ExpresionTipo.sonEquivArit(aux1,tipo_h,OpAritmetico.RESTA);
+			aux2 = ExpresionTipo.sonCompArit(aux1,tipo_h,OpAritmetico.RESTA);
 		} else{
 			parse.add(207);
 			// lambda
@@ -4451,13 +4443,13 @@ public class AnalizadorSintactico {
 			parse.add(209);
 			nextToken();
 			aux1 = shift_expression();
-			aux2 = ExpresionTipo.sonEquivLog(aux1,tipo_h,OpLogico.DOS_MENORES);
+			aux2 = ExpresionTipo.sonCompLog(aux1,tipo_h,OpLogico.DOS_MENORES);
 		}
 		else if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.DOS_MAYORES)){
 			parse.add(210);
 			nextToken();
 			aux1 = shift_expression();
-			aux2 = ExpresionTipo.sonEquivLog(aux1,tipo_h,OpLogico.DOS_MAYORES);
+			aux2 = ExpresionTipo.sonCompLog(aux1,tipo_h,OpLogico.DOS_MAYORES);
 		}
 		else{
 			parse.add(211);
@@ -4511,7 +4503,7 @@ public class AnalizadorSintactico {
 			parse.add(213);
 			nextToken();
 			ExpresionTipo aux1 = shift_expression();
-			ExpresionTipo aux2 = ExpresionTipo.sonEquivComp(aux1, tipo_h, OpComparacion.MENOR);
+			ExpresionTipo aux2 = ExpresionTipo.sonCompComp(aux1, tipo_h, OpComparacion.MENOR);
 			if(aux2!=null)
 				return aux2;
 			else{
@@ -4523,7 +4515,7 @@ public class AnalizadorSintactico {
 			parse.add(214);
 			nextToken();
 			ExpresionTipo aux1 = shift_expression();
-			ExpresionTipo aux2 = ExpresionTipo.sonEquivComp(aux1, tipo_h, OpComparacion.MAYOR);
+			ExpresionTipo aux2 = ExpresionTipo.sonCompComp(aux1, tipo_h, OpComparacion.MAYOR);
 			if(aux2!=null)
 				return aux2;
 			else{
@@ -4535,7 +4527,7 @@ public class AnalizadorSintactico {
 			parse.add(216);
 			nextToken();
 			ExpresionTipo aux1 = shift_expression();
-			ExpresionTipo aux2 = ExpresionTipo.sonEquivComp(aux1, tipo_h, OpComparacion.MAYOR_IGUAL);
+			ExpresionTipo aux2 = ExpresionTipo.sonCompComp(aux1, tipo_h, OpComparacion.MAYOR_IGUAL);
 			if(aux2!=null)
 				return aux2;
 			else{
@@ -4547,7 +4539,7 @@ public class AnalizadorSintactico {
 			parse.add(217);
 			nextToken();
 			ExpresionTipo aux1 = shift_expression();
-			ExpresionTipo aux2 = ExpresionTipo.sonEquivComp(aux1, tipo_h, OpComparacion.MENOR_IGUAL);
+			ExpresionTipo aux2 = ExpresionTipo.sonCompComp(aux1, tipo_h, OpComparacion.MENOR_IGUAL);
 			if(aux2!=null)
 				return aux2;
 			else{
@@ -4623,7 +4615,7 @@ public class AnalizadorSintactico {
 			parse.add(219);
 			nextToken();
 			ExpresionTipo aux1 = equality_expression();
-			ExpresionTipo aux2 = ExpresionTipo.sonEquivComp(aux1, tipo_h, OpComparacion.IGUALDAD);
+			ExpresionTipo aux2 = ExpresionTipo.sonCompComp(aux1, tipo_h, OpComparacion.IGUALDAD);
 			if(aux2!=null)
 				return aux2;
 			else{
@@ -4635,7 +4627,7 @@ public class AnalizadorSintactico {
 			parse.add(220);
 			nextToken();
 			ExpresionTipo aux1 = equality_expression();
-			ExpresionTipo aux2 = ExpresionTipo.sonEquivComp(aux1, tipo_h, OpComparacion.DISTINTO);
+			ExpresionTipo aux2 = ExpresionTipo.sonCompComp(aux1, tipo_h, OpComparacion.DISTINTO);
 			if(aux2!=null)
 				return aux2;
 			else{
@@ -4688,7 +4680,7 @@ public class AnalizadorSintactico {
 			parse.add(222);
 			nextToken();
 			ExpresionTipo aux1 = and_expression();
-			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.BIT_AND);
+			ExpresionTipo aux2 = ExpresionTipo.sonCompLog(aux1, tipo_h, OpLogico.BIT_AND);
 			if(aux2!=null)
 				return aux2;
 			else{
@@ -4735,7 +4727,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			ExpresionTipo aux1 = exclusive_or_expression();
 //			System.out.println("izquierda: "+tipo_h.getTipoBasico().toString()+"\nderecha"+aux1.getTipoBasico().toString());
-			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.CIRCUNFLEJO);
+			ExpresionTipo aux2 = ExpresionTipo.sonCompLog(aux1, tipo_h, OpLogico.CIRCUNFLEJO);
 			if(aux2!=null)
 				return aux2;
 			else{
@@ -4781,7 +4773,7 @@ public class AnalizadorSintactico {
 			parse.add(228);
 			nextToken();
 			ExpresionTipo aux1 = incl_or_expression();
-			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.BIT_OR);
+			ExpresionTipo aux2 = ExpresionTipo.sonCompLog(aux1, tipo_h, OpLogico.BIT_OR);
 			if(aux2!=null)
 				return aux2;
 			else{
@@ -4826,7 +4818,7 @@ public class AnalizadorSintactico {
 			parse.add(231);
 			nextToken();
 			ExpresionTipo aux1 = log_and_expression();
-			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.AND);
+			ExpresionTipo aux2 = ExpresionTipo.sonCompLog(aux1, tipo_h, OpLogico.AND);
 			if(aux2!=null)
 				return aux2;
 			else{
@@ -4872,7 +4864,7 @@ public class AnalizadorSintactico {
 			parse.add(234);
 			nextToken();
 			ExpresionTipo aux1 = log_or_expression();
-			ExpresionTipo aux2 = ExpresionTipo.sonEquivLog(aux1, tipo_h, OpLogico.OR);
+			ExpresionTipo aux2 = ExpresionTipo.sonCompLog(aux1, tipo_h, OpLogico.OR);
 			if(aux2!=null)
 				return aux2;
 			else{
@@ -4915,8 +4907,8 @@ public class AnalizadorSintactico {
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)){
 				nextToken();
 				ExpresionTipo aux2 = assignment_expression();
-				if(ExpresionTipo.sonEquivLog(tipo_h, new ExpresionTipo(TipoBasico.logico), OpLogico.AND)!=null){
-					ExpresionTipo aux3 = ExpresionTipo.sonEquivArit(aux1, aux2, OpAritmetico.SUMA); 
+				if(ExpresionTipo.sonCompLog(tipo_h, new ExpresionTipo(TipoBasico.logico), OpLogico.AND)!=null){
+					ExpresionTipo aux3 = ExpresionTipo.sonCompArit(aux1, aux2, OpAritmetico.SUMA); 
 					// Realmente retorna el tipo del resultado?????
 					if(aux3!=null)
 						return aux3; 
@@ -4984,7 +4976,7 @@ public class AnalizadorSintactico {
 			parse.add(243);
 			nextToken();
 			ExpresionTipo aux1 = assignment_expression();
-			ExpresionTipo aux2 = ExpresionTipo.sonEquivAsig(aux1, tipo_h, OpAsignacion.ASIGNACION);
+			ExpresionTipo aux2 = ExpresionTipo.sonCompAsig(aux1, tipo_h, OpAsignacion.ASIGNACION);
 			if(aux2!=null){
 				if(res.equals(TipoBasico.error_tipo))
 					return res;

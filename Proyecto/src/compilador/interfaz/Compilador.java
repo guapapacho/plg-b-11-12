@@ -414,8 +414,8 @@ public class Compilador extends JFrame {
 				for(OpLogico op : OpLogico.values()){
 					if(e1.getTipoBasico()!=TipoBasico.error_tipo && e1.getTipoBasico()!=TipoBasico.vacio
 							&& e2.getTipoBasico()!=TipoBasico.error_tipo && e2.getTipoBasico()!=TipoBasico.vacio)
-						if(ExpresionTipo.sonEquivLog(e1, e2, op)!=null)
-							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonEquivLog(e1, e2, op).getTipoBasico().toString());
+						if(ExpresionTipo.sonCompLog(e1, e2, op)!=null)
+							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonCompLog(e1, e2, op).getTipoBasico().toString());
 				}
 			}	
 		}
@@ -431,8 +431,8 @@ public class Compilador extends JFrame {
 				for(OpAsignacion op : OpAsignacion.values()){
 					if(e1.getTipoBasico()!=TipoBasico.error_tipo && e1.getTipoBasico()!=TipoBasico.vacio
 							&& e2.getTipoBasico()!=TipoBasico.error_tipo && e2.getTipoBasico()!=TipoBasico.vacio)
-						if(ExpresionTipo.sonEquivAsig(e1, e2, op)!=null)
-							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonEquivAsig(e1, e2, op).getTipoBasico().toString());
+						if(ExpresionTipo.sonCompAsig(e1, e2, op)!=null)
+							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonCompAsig(e1, e2, op).getTipoBasico().toString());
 				}
 			}	
 		}
@@ -448,8 +448,8 @@ public class Compilador extends JFrame {
 				for(OpComparacion op : OpComparacion.values()){
 					if(e1.getTipoBasico()!=TipoBasico.error_tipo && e1.getTipoBasico()!=TipoBasico.vacio
 							&& e2.getTipoBasico()!=TipoBasico.error_tipo && e2.getTipoBasico()!=TipoBasico.vacio)
-						if(ExpresionTipo.sonEquivComp(e1, e2, op)!=null)
-							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonEquivComp(e1, e2, op).getTipoBasico().toString());
+						if(ExpresionTipo.sonCompComp(e1, e2, op)!=null)
+							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonCompComp(e1, e2, op).getTipoBasico().toString());
 				}
 			}	
 		}
@@ -465,8 +465,8 @@ public class Compilador extends JFrame {
 				for(OpAritmetico op : OpAritmetico.values()){
 					if(e1.getTipoBasico()!=TipoBasico.error_tipo && e1.getTipoBasico()!=TipoBasico.vacio
 							&& e2.getTipoBasico()!=TipoBasico.error_tipo && e2.getTipoBasico()!=TipoBasico.vacio)
-						if(ExpresionTipo.sonEquivArit(e1, e2, op)!=null)
-							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonEquivArit(e1, e2, op).getTipoBasico().toString());
+						if(ExpresionTipo.sonCompArit(e1, e2, op)!=null)
+							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonCompArit(e1, e2, op).getTipoBasico().toString());
 				}
 			}	
 		}

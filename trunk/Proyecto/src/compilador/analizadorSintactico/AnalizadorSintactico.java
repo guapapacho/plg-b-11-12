@@ -1,6 +1,7 @@
 package compilador.analizadorSintactico;
 
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -67,7 +68,7 @@ public class AnalizadorSintactico {
 	/** Numero de columna del siguiente al token anterior */
 	private int columna;
 	private boolean hayBreak;
-		
+			
 	public AnalizadorSintactico(AnalizadorLexico lexico){
 		this.lexico = lexico;
 		parse = new Vector<Integer>();
@@ -952,6 +953,8 @@ public class AnalizadorSintactico {
 							nextToken();
 							COSAS3_tipo_s = cosas3(LISTA_PARAM_tipo_s,id_tipo,entradaTS);
 							COSAS1_tipo_s = cosas();
+							// traducirVariables();
+							// traducirCodigo();
 							if(LISTA_PARAM_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS3_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 								return ExpresionTipo.getVacio();
 							else

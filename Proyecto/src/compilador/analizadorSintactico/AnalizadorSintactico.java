@@ -1286,6 +1286,7 @@ public class AnalizadorSintactico {
 			}
 			nextToken();
 			lexico.activaModo(modo.Declaracion);
+			
 			gestorTS.cierraBloque();//se termina la funcion, cerramos el bloque
 			return CUERPO_tipo_s;
 		}
@@ -4099,7 +4100,9 @@ public class AnalizadorSintactico {
 	
 	/**
 	 * 256. RESTO_DELETE → ID
-	 * 257. RESTO_DELETE → [ ] ID 
+	 * 						{ }
+	 * 257. RESTO_DELETE → [ ] ID
+	 * 						{ } 
 	 * @throws Exception 
 	 */
 	private void resto_delete() throws Exception{
@@ -4488,7 +4491,7 @@ public class AnalizadorSintactico {
 	}
 
 	/**	213. RESTO-RELATIONAL → < SHIFT_EXPRESSION
-	 * 							  { if (RESTO_RELATIONAL.tipo_h == SHIFT_EXPRESSION.tipo_s)
+	 * 							  { if ( sonEquivalentes(RESTO_RELATIONAL.tipo_h, SHIFT_EXPRESSION.tipo_s) )
 	 * 								then   RESTO_RELATIONAL.tipo_s := logico
 	 * 								else    RESTO_RELATIONAL.tipo_s := error_tipo } 
 	 * 214. RESTO-RELATIONAL → > SHIFT_EXPRESSION
@@ -4603,7 +4606,7 @@ public class AnalizadorSintactico {
 
 	
 	/**	219. RESTO-EQUALITY → igualdad EQUALITY-EXPRESSION
-	 * 						  { if (RESTO_EQUALITY.tipo_h == EQUALITY_EXPRESSION.tipo_s)
+	 * 						  { if ( sonEquivalentes(RESTO_EQUALITY.tipo_h, EQUALITY_EXPRESSION.tipo_s) )
 	 * 							then RESTO_EQUALITY.tipo_s := logico
 	 * 							else RESTO_EQUALITY.tipo_s := error_tipo } 
 	 * 	220. RESTO-EQUALITY → distinto EQUALITY-EXPRESSION
@@ -4671,7 +4674,7 @@ public class AnalizadorSintactico {
 	}
 	
 	/**	222. RESTO-AND → & AND-EXPRESSION
-	 * 						  { if (RESTO_AND.tipo_h == AND_EXPRESSION.tipo_s)
+	 * 						  { if ( sonEquivalentes(RESTO_AND.tipo_h, AND_EXPRESSION.tipo_s) )
 	 * 							then RESTO_AND.tipo_s := logico
 	 * 							else RESTO_AND.tipo_s := error_tipo } 
 	 *	223. RESTO-AND → lambda
@@ -4717,7 +4720,7 @@ public class AnalizadorSintactico {
 	}
 
 	/**	225. RESTO-EXCLUSIVE → ^ EXCLUSIVE-OR-EXPRESSION
-	 * 						  { if (RESTO_EXCLUSIVE.tipo_h == EXCLUSIVE_OR_EXPRESSION.tipo_s)
+	 * 						  { if ( sonEquivalentes(RESTO_EXCLUSIVE.tipo_h, EXCLUSIVE_OR_EXPRESSION.tipo_s) )
 	 * 							then RESTO_EXCLUSIVE.tipo_s := logico
 	 * 							else RESTO_EXCLUSIVE.tipo_s := error_tipo } 
 	 * 226. RESTO-EXCLUSIVE → lambda
@@ -4764,7 +4767,7 @@ public class AnalizadorSintactico {
 	}
 
 	/**	228. RESTO-INCL-OR → | INCL-OR-EXPRESSION
-	 * 						  { if (RESTO_INCL_OR.tipo_h == INCL_OR_EXPRESSION.tipo_s)
+	 * 						  { if ( sonEquivalentes(RESTO_INCL_OR.tipo_h, INCL_OR_EXPRESSION.tipo_s) )
 	 * 							then RESTO_INCL_OR.tipo_s := logico
 	 * 							else RESTO_INCL_OR.tipo_s := error_tipo } 
 	 * 229. RESTO-INCL-OR → lambda
@@ -4810,7 +4813,7 @@ public class AnalizadorSintactico {
 	}
 	
 	/**	231. RESTO-LOG-AND → && LOG-AND-EXPRESSION
-	 * 						  { if (RESTO_LOG_AND.tipo_h == LOG_AND_EXPRESSION.tipo_s)
+	 * 						  { if ( sonEquivalentes(RESTO_LOG_AND.tipo_h, LOG_AND_EXPRESSION.tipo_s) )
 	 * 							then RESTO_LOG_AND.tipo_s := logico
 	 * 							else RESTO_LOG_AND.tipo_s := error_tipo } 
 	 * 232. RESTO-LOG-AND → lambda
@@ -4855,7 +4858,7 @@ public class AnalizadorSintactico {
 	}
 
 	/**	234. RESTO-LOG-OR → || LOG-OR-EXPRESSION
-	 * 						  { if (RESTO_LOG_OR.tipo_h == LOG_OR_EXPRESSION.tipo_s)
+	 * 						  { if ( sonEquivalentes(RESTO_LOG_OR.tipo_h, LOG_OR_EXPRESSION.tipo_s) )
 	 * 							then RESTO_LOG_OR.tipo_s := logico
 	 * 							else RESTO_LOG_OR.tipo_s := error_tipo } 
 	 * 235. RESTO-LOG-OR → lambda
@@ -4893,8 +4896,8 @@ public class AnalizadorSintactico {
 	
 	/**	
 	 * 238. RESTO_CONDITIONAL →  ? EXPRESSION  :  ASSIGNMENT_EXPRESSION
-	 * 						  { if (RESTO_CONDITIONAL.tipo_h == logico)
-	 * 							then   	if (EXPRESSION.tipo_s == ASSIGNMENT_EXPRESSION.tipo_s)
+	 * 						  { if ( sonEquivalentes(RESTO_CONDITIONAL.tipo_h, logico) )
+	 * 							then   	if ( sonEquivalentes(EXPRESSION.tipo_s, ASSIGNMENT_EXPRESSION.tipo_s) )
 	 * 									then RESTO_CONDITIONAL.tipo_s := EXPRESSION.tipo_s
 	 * 									else RESTO_CONDITIONAL.tipo_s := error_tipo 
 	 * 							else RESTO_CONDITIONAL.tipo_s := error_tipo }
@@ -4912,7 +4915,6 @@ public class AnalizadorSintactico {
 				ExpresionTipo aux2 = assignment_expression();
 				if(ExpresionTipo.sonCompLog(tipo_h, new ExpresionTipo(TipoBasico.logico), OpLogico.AND)!=null){
 					ExpresionTipo aux3 = ExpresionTipo.sonCompArit(aux1, aux2, OpAritmetico.SUMA); 
-					// Realmente retorna el tipo del resultado?????
 					if(aux3!=null)
 						return aux3; 
 					else{
@@ -4927,7 +4929,6 @@ public class AnalizadorSintactico {
 			}
 			else{
 				gestorErr.insertaErrorSintactico(linea, columna,"Se esperaba \":\"");
-				//ruptura=parse.size();
 				return ExpresionTipo.getVacio();
 			}
 		}
@@ -4963,8 +4964,11 @@ public class AnalizadorSintactico {
 	 * 						  { RESTO_CONDITIONAL.tipo_h := RESTO_ASSIG.tipo_h;
 	 * 							RESTO_ASSIG.tipo_s := RESTO_CONDITIONAL.tipo_s }
 	 * 243. RESTO_ASSIG → op_asignacion ASSIGNMENT_EXPRESSION
-	 * 						  { if (RESTO_ASSIG.tipo_h == ASSIGNMENT_EXPRESSION.tipo_s)
-	 * 							then RESTO_ASSIG.tipo_s := RESTO_ASSIG.tipo_h
+	 * 						  { if ( sonEquivalentes(RESTO_ASSIG.tipo_h, ASSIGNMENT_EXPRESSION.tipo_s) )
+	 * 							then if (! ((token_anterior==ID) || (token_anterior==']') || (token_anterior==')')) )
+	 * 									RESTO_ASSIG.tipo_s := RESTO_ASSIG.tipo_h
+	 * 								 else
+	 * 	 								RESTO_ASSIG.tipo_s := error_tipo
 	 * 							else RESTO_ASSIG.tipo_s := error_tipo }
 	 * @throws Exception 
 	 */

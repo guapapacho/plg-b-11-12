@@ -1,10 +1,7 @@
 package compilador.gestionSalida;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
 
 public class GestorSalida {
 
@@ -15,7 +12,7 @@ public class GestorSalida {
 	/** Cadena de caracteres que almacena el codigo "definitivo" **/
 	private String resultado;
 	
-	public static GestorSalida getGestorTS() {
+	public static GestorSalida getGestorSalida() {
 		if(instance == null) {
 			instance = new GestorSalida();
 		}

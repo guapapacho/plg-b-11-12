@@ -23,18 +23,14 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import compilador.analizadorLexico.AnalizadorLexico;
-import compilador.analizadorLexico.Token.OpAritmetico;
-import compilador.analizadorLexico.Token.OpAsignacion;
-import compilador.analizadorLexico.Token.OpComparacion;
-import compilador.analizadorLexico.Token.OpLogico;
-import compilador.analizadorSemantico.ExpresionTipo;
-import compilador.analizadorSemantico.ExpresionTipo.TipoBasico;
 import compilador.analizadorSintactico.AnalizadorSintactico;
 import compilador.gestionErrores.GestorErrores;
+import compilador.gestionSalida.GestorSalida;
 import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
 
 /**
@@ -48,17 +44,20 @@ public class Compilador extends JFrame {
 	 * @param args
 	 */
 	private JPanel panelPrincipal_1;
+	private JTabbedPane panelPestanas;
 	private JMenuBar barraMenu=null;
 	private JMenu ficheroMenu=null;
 	private JMenuItem abrir=null;
 	private JMenuItem guardar=null;
 	private JTextArea ta0=null;
 	private JTextArea ta1=null;
-	private JTextArea ta2=null;
+	private JTextArea ta2a=null;
+	private JTextArea ta2b=null;
 	private JTextArea ta3=null;
 	private JScrollPane sp0 =null;
 	private JScrollPane sp1 =null;
-	private JScrollPane sp2 =null;
+	private JScrollPane sp2a =null;
+	private JScrollPane sp2b =null;
 	private JScrollPane sp3 =null;
 	private JLabel l0=null;
 	private JLabel l1=null;
@@ -94,8 +93,6 @@ public class Compilador extends JFrame {
 	 * Metodo que configura la interfaz de usuario
 	 */
 	public void crearInterfaz() {
-		//this.setSize(1250, 630);
-		//this.setLocation(50, 50);
 		this.setSize(screenSize.width, screenSize.height);
 		this.setJMenuBar(getBarraMenu());
 		this.setContentPane(getPanelPrincipal());
@@ -221,6 +218,9 @@ public class Compilador extends JFrame {
 	private JPanel getPanelPrincipal(){
 		panelPrincipal_1=new JPanel();
 		panelPrincipal_1.setLayout(null);
+		
+		panelPestanas = new JTabbedPane();
+		
 		l0=new JLabel();
 		l0.setBounds(puntox2, 7, 250, 34);
 		l0.setFont(new java.awt.Font("Verdana", Font.BOLD, 18));
@@ -245,11 +245,17 @@ public class Compilador extends JFrame {
 		sp1.setVerticalScrollBarPolicy(sp1.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp1.setHorizontalScrollBarPolicy(sp1.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
-		sp2=new JScrollPane();
-		/** CON EL ULTIMO PARAMETRO DE ESTA FUN DISMINUYES EL TAMAÑO DEL PANEL DERECHO */
-		sp2.setBounds(puntox4, puntoy1, puntox5, puntoy2);
-		sp2.setVerticalScrollBarPolicy(sp2.VERTICAL_SCROLLBAR_AS_NEEDED);
-		sp2.setHorizontalScrollBarPolicy(sp2.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		sp2a=new JScrollPane();
+		sp2a.setVerticalScrollBarPolicy(sp2a.VERTICAL_SCROLLBAR_AS_NEEDED);
+		sp2a.setHorizontalScrollBarPolicy(sp2a.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		
+		sp2b=new JScrollPane();
+		sp2b.setVerticalScrollBarPolicy(sp2b.VERTICAL_SCROLLBAR_AS_NEEDED);
+		sp2b.setHorizontalScrollBarPolicy(sp2b.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		
+		panelPestanas.setBounds(puntox4, puntoy1, puntox5, puntoy2);
+		panelPestanas.add("Salidas Analizadores", sp2a);
+		panelPestanas.add("Traduccción a Pascal", sp2b);
 		
 		sp3=new JScrollPane();
 		sp3.setBounds(puntox3, puntoy3 - 50, 60, 20);
@@ -257,11 +263,8 @@ public class Compilador extends JFrame {
 		sp3.setHorizontalScrollBarPolicy(sp3.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
 		ta3 = new JTextArea();
-		//ta3.setBounds(100, 25, 20, 20);
 		ta3.setFont(new java.awt.Font("Verdana", Font.PLAIN, 11));
 		sp3.setViewportView(ta3);
-		//ta3.setEditable(false);
-		//ta3.setText("prueba");
 		
 		panelPrincipal_1.add(l0);
 		panelPrincipal_1.add(l1);
@@ -279,12 +282,19 @@ public class Compilador extends JFrame {
 		ta1.setFont(new java.awt.Font(Font.MONOSPACED, Font.BOLD, 16));
 		ta1.setTabSize(3);
 		sp1.setViewportView(ta1);
-		panelPrincipal_1.add(sp2);
 		
-		ta2=new JTextArea();
-		ta2.setFont(new java.awt.Font("Verdana", Font.BOLD, 13));
-		sp2.setViewportView(ta2);
-		ta2.setEditable(false);
+		panelPrincipal_1.add(panelPestanas);
+		
+		ta2a=new JTextArea();
+		ta2a.setFont(new java.awt.Font("Verdana", Font.BOLD, 13));
+		ta2a.setEditable(false);
+		sp2a.setViewportView(ta2a);
+		
+		ta2b=new JTextArea();
+		ta2b.setFont(new java.awt.Font(Font.MONOSPACED, Font.BOLD, 16));
+		ta2b.setEditable(false);
+		sp2b.setViewportView(ta2b);
+		
 		
 		ta0 = new JTextArea();
 		ta0.setFont(new java.awt.Font("Verdana", Font.BOLD, 12));
@@ -364,113 +374,35 @@ public class Compilador extends JFrame {
 					else{
 						in=new StringBufferInputStream(contenido);
 						GestorTablasSimbolos.resetTablasSimbolos();
-						GestorErrores gestor = GestorErrores.getGestorErrores();
-						gestor.resetErrores();
-						gestor.resetWarnings();
+						GestorErrores gestorE = GestorErrores.getGestorErrores();
+						GestorSalida gestorS = GestorSalida.getGestorSalida();
+						
+						gestorE.resetErrores();
+						gestorE.resetWarnings();
 						AnalizadorLexico anLex = new AnalizadorLexico(in);						
 						AnalizadorSintactico anSin = new AnalizadorSintactico(anLex);
-						ta2.setText("");
-						ta2.append("Tokens:");
-						ta2.append(anSin.getStringTokens());
-						ta2.append("\nParse:\n");
-						ta2.append(anSin.getStringParse());
-						ta2.append("Total:\n"+anSin.getParse().size()+" reglas aplicadas.\n");
-						ta2.append("\nTablas de símbolos:\n");
-						ta2.append(GestorTablasSimbolos.getGestorTS().toString());
-						ta2.append("\nErrores:");
-						ta2.append(gestor.muestraListaErrores());
-						ta2.append("\nWarnings:");
-						ta2.append(gestor.muestraListaWarnings());
-						/*ta2.append("\n\n");
-						Producto p = new Producto();
-						try {
-							p.ponProducto("param1", new ExpresionTipo(TipoBasico.caracter));
-							p.ponProducto("param2", new ExpresionTipo(TipoBasico.entero));
-							p.ponProducto("param3", new ExpresionTipo(TipoBasico.logico));
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						ta2.append(p.toString(true));*/
+						
+						ta2a.setText("");
+						ta2a.append("Tokens:");
+						ta2a.append(anSin.getStringTokens());
+						ta2a.append("\nParse:\n");
+						ta2a.append(anSin.getStringParse());
+						ta2a.append("Total:\n"+anSin.getParse().size()+" reglas aplicadas.\n");
+						ta2a.append("\nTablas de símbolos:\n");
+						ta2a.append(GestorTablasSimbolos.getGestorTS().toString());
+						ta2a.append("\nErrores:");
+						ta2a.append(gestorE.muestraListaErrores());
+						ta2a.append("\nWarnings:");
+						ta2a.append(gestorE.muestraListaWarnings());
+						
+						ta2b.setText("");
+						ta2b.append(gestorS.getResultado());
+						
 						rellenarTP0();
 					}
 				}
 			});
 		return botonTokens;
-	}
-	
-	
-
-	@SuppressWarnings("unused")
-	private static void comprobarExpresiones(){
-		ExpresionTipo e1,e2;
-		System.out.println("------------------------------");
-		System.out.println("OPERADORES LOGICOS: ");
-		System.out.println("------------------------------");
-		for(TipoBasico t1 : TipoBasico.values()){
-			e1 = new ExpresionTipo(t1);
-			for(TipoBasico t2 : TipoBasico.values()){
-				e2 = new ExpresionTipo(t2);
-				for(OpLogico op : OpLogico.values()){
-					if(e1.getTipoBasico()!=TipoBasico.error_tipo && e1.getTipoBasico()!=TipoBasico.vacio
-							&& e2.getTipoBasico()!=TipoBasico.error_tipo && e2.getTipoBasico()!=TipoBasico.vacio)
-						if(ExpresionTipo.sonCompLog(e1, e2, op)!=null)
-							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonCompLog(e1, e2, op).getTipoBasico().toString());
-				}
-			}	
-		}
-		System.out.println("-----------------------------");
-		System.out.println();
-		System.out.println("------------------------------");
-		System.out.println("OPERADORES DE ASIGNACION: ");
-		System.out.println("------------------------------");
-		for(TipoBasico t1 : TipoBasico.values()){
-			e1 = new ExpresionTipo(t1);
-			for(TipoBasico t2 : TipoBasico.values()){
-				e2 = new ExpresionTipo(t2);
-				for(OpAsignacion op : OpAsignacion.values()){
-					if(e1.getTipoBasico()!=TipoBasico.error_tipo && e1.getTipoBasico()!=TipoBasico.vacio
-							&& e2.getTipoBasico()!=TipoBasico.error_tipo && e2.getTipoBasico()!=TipoBasico.vacio)
-						if(ExpresionTipo.sonCompAsig(e1, e2, op)!=null)
-							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonCompAsig(e1, e2, op).getTipoBasico().toString());
-				}
-			}	
-		}
-		System.out.println("-----------------------------");
-		System.out.println();
-		System.out.println("------------------------------");
-		System.out.println("OPERADORES DE COMPARACION: ");
-		System.out.println("------------------------------");
-		for(TipoBasico t1 : TipoBasico.values()){
-			e1 = new ExpresionTipo(t1);
-			for(TipoBasico t2 : TipoBasico.values()){
-				e2 = new ExpresionTipo(t2);
-				for(OpComparacion op : OpComparacion.values()){
-					if(e1.getTipoBasico()!=TipoBasico.error_tipo && e1.getTipoBasico()!=TipoBasico.vacio
-							&& e2.getTipoBasico()!=TipoBasico.error_tipo && e2.getTipoBasico()!=TipoBasico.vacio)
-						if(ExpresionTipo.sonCompComp(e1, e2, op)!=null)
-							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonCompComp(e1, e2, op).getTipoBasico().toString());
-				}
-			}	
-		}
-		System.out.println("-----------------------------");
-		System.out.println();
-		System.out.println("------------------------------");
-		System.out.println("OPERADORES ARITMETICOS: ");
-		System.out.println("------------------------------");
-		for(TipoBasico t1 : TipoBasico.values()){
-			e1 = new ExpresionTipo(t1);
-			for(TipoBasico t2 : TipoBasico.values()){
-				e2 = new ExpresionTipo(t2);
-				for(OpAritmetico op : OpAritmetico.values()){
-					if(e1.getTipoBasico()!=TipoBasico.error_tipo && e1.getTipoBasico()!=TipoBasico.vacio
-							&& e2.getTipoBasico()!=TipoBasico.error_tipo && e2.getTipoBasico()!=TipoBasico.vacio)
-						if(ExpresionTipo.sonCompArit(e1, e2, op)!=null)
-							System.out.println(t1.toString()+" "+op.toString()+" "+t1.toString()+" --> "+ExpresionTipo.sonCompArit(e1, e2, op).getTipoBasico().toString());
-				}
-			}	
-		}
-		System.out.println("-----------------------------");
 	}
 	
 }

@@ -60,6 +60,14 @@ public class TablaSimbolos {
 	public EntradaTS getEntrada(String lexema) {
 		return entradasTS.get(lexema);
 	}
+	
+	public EntradaTS getEntradaTrad(String lexema) {
+		for(EntradaTS entrada: entradasTS.values()){
+			if(entrada.getLexemaTrad().equals(lexema))
+				return entrada;
+		}
+		return null;
+	}
 
 	/**
 	 * Metodo que inserta un identificador en la tabla de simbolos
@@ -68,8 +76,22 @@ public class TablaSimbolos {
 	 */
 	public EntradaTS inserta(String lexema) {
 		EntradaTS entrada = new EntradaTS(lexema);
+		entrada.setLexemaTrad(generaLexemaTrad(lexema));
 		entradasTS.put(lexema, entrada);
 		return entrada;
+	}
+	
+	private String generaLexemaTrad(String lexema) {
+		// TODO (alina) si ya hay una función con ese nombre también debería renombrar la nueva variable?
+		GestorTablasSimbolos gestorTS = GestorTablasSimbolos.getGestorTS();
+		if(gestorTS.buscaIdGeneralTrad(lexema) != null) { // el lexema ya aparece en un ámbito superior
+			int i = 1;
+			while(gestorTS.buscaIdGeneralTrad(lexema + i) != null && i<100) {
+				i++;
+			}
+			lexema = (i < 100) ? (lexema + i) : "NoDeberíaHaberseLlegadoAquí";
+		}
+		return lexema;
 	}
 	
 	public String toString(String tab) {
@@ -82,7 +104,7 @@ public class TablaSimbolos {
 					s += tab + entrada.getLexema()+" \'"+entrada.getTipo().toString()+"\'\n";
 				} else {
 					s += entrada.isConstante() ? tab+"Constante ": tab+"Variable ";
-					s += entrada.getLexema()+" declarada con tipo \'"+entrada.getTipo().toString()+"\'\n";
+					s += entrada.getLexema()+" (Pascal: "+entrada.getLexemaTrad()+") "+" declarada con tipo \'"+entrada.getTipo().toString()+"\'\n";
 				}
 			else 
 				s += "Jolines, " + entrada.getLexema() + " tiene tipo null\n";

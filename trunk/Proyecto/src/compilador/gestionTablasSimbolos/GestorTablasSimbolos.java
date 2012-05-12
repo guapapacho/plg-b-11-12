@@ -128,6 +128,23 @@ public class GestorTablasSimbolos {
 	}
 	
 	/**
+	 * Igual que buscaIdGeneral pero mirando los lexemas renombrados
+	 * para la traducción;
+	 */
+	public EntradaTS buscaIdGeneralTrad(String lexema){
+		TablaSimbolos ambito = bloque_actual;
+		EntradaTS entrada = null;
+		// Busca por el ámbito actual y los padres hasta dar con la solución
+		while (ambito != null && entrada == null){
+			entrada = ambito.getEntradaTrad(lexema);
+			if (entrada == null) { // Si no está
+				ambito = ambito.getContinente(); // Actualiza al ámbito padre
+			}
+		}
+		return entrada;
+	}
+	
+	/**
 	 * Busca una palabra dada en el ambito actual. 
 	 * Devuelve un puntero a la entrada de la TS del identificador
 	 * o null si no la ha encontrado.

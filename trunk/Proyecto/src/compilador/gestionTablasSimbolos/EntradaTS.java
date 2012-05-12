@@ -10,6 +10,8 @@ public class EntradaTS {
 	
 	/** Lexema del identificador */
 	private String lexema;
+	/** Lexema del identificador para la traducción */
+	private String lexemaTrad;
 	/** Tipo del identificador */
 	private ExpresionTipo tipo;
 	/** Si es constante o no */
@@ -22,6 +24,7 @@ public class EntradaTS {
 	
 	public EntradaTS(String lexema, ExpresionTipo tipo, boolean constante) {
 		this.lexema = lexema;
+		this.lexemaTrad = lexema;
 		this.tipo = tipo;
 		this.constante = constante;
 	}
@@ -44,6 +47,14 @@ public class EntradaTS {
 
 	public String getLexema() {
 		return lexema;
+	}
+	
+	public String getLexemaTrad() {
+		return lexemaTrad;
+	}
+	
+	public void setLexemaTrad(String lexema) {
+		lexemaTrad = lexema;
 	}
 	
 }

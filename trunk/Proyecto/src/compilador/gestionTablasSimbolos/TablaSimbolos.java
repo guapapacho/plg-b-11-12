@@ -1,5 +1,6 @@
 package compilador.gestionTablasSimbolos;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -45,6 +46,20 @@ public class TablaSimbolos {
 		return continente;
 	}
 
+	public ArrayList<EntradaTS> getEntradasTrad(){
+		ArrayList<EntradaTS> a = new ArrayList<EntradaTS>();
+		for(EntradaTS entrada: entradasTS.values()){
+			if(entrada.getTipo()!= null){
+				if (!entrada.getTipo().equals(TipoNoBasico.funcion) && !entrada.getTipo().equals(TipoNoBasico.cabecera)){ 
+					a.add(entrada);
+					}
+			}
+			/*else 
+				ERROR!!*/
+		}
+		return a;
+	}
+	
 	public void addContenido(TablaSimbolos contenido) {
 		contenidos.add(contenido);
 	}

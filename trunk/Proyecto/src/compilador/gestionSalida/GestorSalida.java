@@ -3,6 +3,9 @@ package compilador.gestionSalida;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import compilador.gestionTablasSimbolos.EntradaTS;
+import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
+
 public class GestorSalida {
 
 	/** Buffer que almacena el codigo de funciones/procedimientos **/
@@ -24,13 +27,46 @@ public class GestorSalida {
 		resultado = "";	
 	}
 	
+	/*
 	public void anyadirAbuffer(String s){
 		bufferMetodos.add(s);
 	}
+	*/
 	
-	public void volcarBuffer(){
+	public void finalBloque(){
+		resultado += "\nVAR\n";
+		GestorTablasSimbolos gestorTS = GestorTablasSimbolos.getGestorTS();
+		ArrayList<EntradaTS> al = gestorTS.getEntradasBloqueActual();
+		EntradaTS entrada;
+		for(Iterator<EntradaTS> i = al.iterator(); i.hasNext();){
+			entrada = i.next();
+			resultado += entrada.getLexemaTrad()+": ";
+			switch(entrada.getTipo().getTipoBasico()){
+			case logico:
+				resultado += "BOOLEAN;\n";
+				break;
+			case caracter:
+				resultado += "CHAR;\n";
+				break;
+			case entero:
+				resultado += "INTEGER;\n";
+				break;
+			case real:
+				resultado += "FLOAT;\n";
+				break;
+			case vacio:
+				resultado += "VACIO?? ;\n";
+				break;
+			case error_tipo: 	
+				resultado += "ERROR?? ;\n";
+			}
+		}
+		
+		resultado += "\nBEGIN\n";
 		for(Iterator<String> i = bufferMetodos.iterator(); i.hasNext();)
-			emite(i.next());
+			resultado += " "+i.next();
+		resultado += "END;\n\n";
+		
 		bufferMetodos.clear();
 	}
 
@@ -41,7 +77,8 @@ public class GestorSalida {
 	}
 	
 	public void emite(String s) {
-		resultado += s;
+		//resultado += " " + s;
+		bufferMetodos.add(s);
 	}
 	
 	public void emiteEnPos(int pos, String s) {
@@ -49,6 +86,7 @@ public class GestorSalida {
 		String s2 = resultado.substring(pos, resultado.length());
 		resultado = s1 + s + s2;
 	}
+
 	
 	public String getResultado(){
 		return resultado;

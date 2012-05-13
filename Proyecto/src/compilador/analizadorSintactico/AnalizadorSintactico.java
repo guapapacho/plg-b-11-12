@@ -1172,6 +1172,7 @@ public class AnalizadorSintactico {
 			parse.add(102);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
+				gestorSal.emite(" , "+token.atrString());
 				entradaTS = (EntradaTS)token.getAtributo();
 				entradaTS.setConstante(true);
 				entradaTS.setTipo(new ExpresionTipo(TipoBasico.entero));
@@ -2035,7 +2036,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(52);
 			((EntradaTS)token.getAtributo()).setTipo(aux2);
-			
+			gestorSal.emite(" "+token.atrString()+" ");
 			nextToken();
 			
 			/*aux3 = mas_cosas(tipo_h);
@@ -2067,6 +2068,7 @@ public class AnalizadorSintactico {
 		aux1 = inicializacion(tipo_h,entrada);
 		aux2 = declaraciones(tipo_h);
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
+			gestorSal.emite(";");
 			lexico.desactivaModo(modo.Declaracion);
 			lexico.desactivaModo(modo.NoMeto);
 			nextToken();
@@ -2490,7 +2492,7 @@ public class AnalizadorSintactico {
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,76 /*endl*/)){ 
 			parse.add(74);
-			gestorSal.emite("ln();");
+			gestorSal.emite("ln;");
 			nextToken();
 			return ins_esc2();
 		}
@@ -2600,7 +2602,7 @@ public class AnalizadorSintactico {
 		{
 			ExpresionTipo RESTO_FOR_tipo, CUERPO_tipo;
 			parse.add(81);
-			gestorSal.emite("while");
+			gestorSal.emite("while ");
 			nextToken();
 			RESTO_FOR_tipo = resto_for();
 			CUERPO_tipo = cuerpo();
@@ -2617,7 +2619,7 @@ public class AnalizadorSintactico {
 		{
 			ExpresionTipo RESTO_DO_tipo, CUERPO_tipo;
 			parse.add(82);
-			gestorSal.emite("repeat"); 
+			gestorSal.emite("repeat\n"); 
 			nextToken();
 			RESTO_DO_tipo = resto_do();
 			CUERPO_tipo = cuerpo();
@@ -2634,7 +2636,7 @@ public class AnalizadorSintactico {
 		{
 			ExpresionTipo RESTO_WHILE_tipo, CUERPO_tipo;
 			parse.add(83);
-			gestorSal.emite("while"); 
+			gestorSal.emite("while "); 
 			nextToken();
 			RESTO_WHILE_tipo = resto_while();
 			CUERPO_tipo = cuerpo();
@@ -2651,7 +2653,7 @@ public class AnalizadorSintactico {
 		{
 			ExpresionTipo RESTO_IF_tipo, CUERPO_tipo;
 			parse.add(84);
-			gestorSal.emite("if");
+			gestorSal.emite("if ");
 			nextToken();
 			RESTO_IF_tipo = resto_if();
 			CUERPO_tipo = cuerpo();
@@ -2668,7 +2670,7 @@ public class AnalizadorSintactico {
 		{
 			ExpresionTipo RESTO_CASE_tipo, CUERPO_tipo;
 			parse.add(85);
-			gestorSal.emite("case");
+			gestorSal.emite("case ");
 			nextToken();
 			RESTO_CASE_tipo = resto_case();
 			CUERPO_tipo = cuerpo();
@@ -2686,7 +2688,6 @@ public class AnalizadorSintactico {
 //			nextToken();
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(104);
-			gestorSal.emiteTabs(4);
 			gestorTS.abreBloque("Anónimo");
 			nextToken();
 			ExpresionTipo CUERPO1_tipo = cuerpo();
@@ -2896,46 +2897,48 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,72 /*while*/))
 		{
 			parse.add(87);
-			gestorSal.emite("while");
+			gestorSal.emite("while ");
 			nextToken();
 			return resto_while();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,29 /*for*/))
 		{
 			parse.add(88);
-			gestorSal.emite("while");
+			gestorSal.emite("while ");
 			nextToken();
 			return resto_for();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,19 /*do*/))
 		{
 			parse.add(89);
-			gestorSal.emite("repeat");
+			gestorSal.emite("repeat\n");
 			nextToken();
 			return resto_do();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,32 /*if*/))
 		{
 			parse.add(90);
-			gestorSal.emite("if");
+			gestorSal.emite("if ");
 			nextToken();
 			return resto_if();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,55 /*switch*/))
 		{
 			parse.add(91);
-			gestorSal.emite("case");
+			gestorSal.emite("case ");
 			nextToken();
 			return resto_case();
 		}
 		else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			ExpresionTipo CUERPO_tipo; 
+			gestorSal.emite("\nbegin\n");
 			nextToken();
 			parse.add(92);
 			CUERPO_tipo = cuerpo();
 			if (!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)) {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta }");
 			}
+			gestorSal.emite("\nend;\n");
 			nextToken();
 			return CUERPO_tipo;
 		}
@@ -2961,7 +2964,7 @@ public class AnalizadorSintactico {
 	
 	
 	/**
-	 *  94. RESTO_WHILE --> (EXPRESSION) do CUERPO2
+	 *  94. RESTO_WHILE --> (EXPRESSION) CUERPO2
 	 *  {
 	 *    if(EXPRESSION.tipo == logico) then 
        		RESTO_WHILE.tipo = CUERPO2.tipo
@@ -2976,7 +2979,7 @@ public class AnalizadorSintactico {
 			parse.add(94);
 			nextToken();
 			 EXPRESSION_tipo = expression();
-			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){			
 				nextToken();
 				if(EXPRESSION_tipo.getTipoBasico() == TipoBasico.logico) {
 					gestorTS.abreBloque("While");
@@ -2995,6 +2998,7 @@ public class AnalizadorSintactico {
 					tipo.setRetorno(aux.hayRetorno());
 					return tipo;
 				}
+		
 			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta el separador \")\"");
 			}
@@ -3024,6 +3028,7 @@ public class AnalizadorSintactico {
 		gestorTS.cierraBloque();
 		
 		if(token.esIgual(TipoToken.PAL_RESERVADA,72 /*while*/))	{
+			gestorSal.emite("\nuntil\n");
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 				nextToken();
@@ -3195,6 +3200,7 @@ public class AnalizadorSintactico {
 			lexico.setModos(modos);
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
+				gestorSal.emite(" of\n");
 				ExpresionTipo RESTO_CASE_tipo = resto_case2(EXPRESSION_tipo);
 				if(EXPRESSION_tipo.getTipoBasico() != TipoBasico.error_tipo)
 					return RESTO_CASE_tipo;
@@ -3277,6 +3283,7 @@ public class AnalizadorSintactico {
 			if(LITERAL_tipo != null)
 			{
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.DOS_PUNTOS)){
+					gestorSal.emite(":\n");
 					lexico.desactivaModo(modo.NoMeto);
 					lexico.desactivaModo(modo.Declaracion);
 					nextToken();
@@ -3363,6 +3370,7 @@ public class AnalizadorSintactico {
 			gestorTS.abreBloque("If");
 			nextToken();
 			EXPRESSION_tipo = expression();
+			gestorSal.emite(" then ");
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
 				CUERPO2_tipo = cuerpo2();
@@ -3400,6 +3408,7 @@ public class AnalizadorSintactico {
 	 */
 	private ExpresionTipo sent_else() throws Exception {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,22 /*else*/)) {
+			gestorSal.emite("else\n");
 			parse.add(100);
 			nextToken();
 			return cuerpo2();

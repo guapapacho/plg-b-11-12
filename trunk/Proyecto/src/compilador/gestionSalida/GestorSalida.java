@@ -44,8 +44,10 @@ public class GestorSalida {
 		resultado += s;
 	}
 	
-	public void emiteEnPos() {
-		
+	public void emiteEnPos(int pos, String s) {
+		String s1 = resultado.substring(0, pos);
+		String s2 = resultado.substring(pos, resultado.length());
+		resultado = s1 + s + s2;
 	}
 	
 	public String getResultado(){

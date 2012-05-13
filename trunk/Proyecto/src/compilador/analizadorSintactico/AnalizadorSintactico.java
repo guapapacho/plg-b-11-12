@@ -58,7 +58,6 @@ public class AnalizadorSintactico {
 	
 	/** Marca las etiquetas a las que se salta con goto en la función */
 	private Vector<String> etiquetasConGoto;
-	
 	/** Marca las etiquetas definidas en la función */
 	private Hashtable<String, String> etiquetasSinGoto;
 	
@@ -72,6 +71,7 @@ public class AnalizadorSintactico {
 	/** Numero de columna del siguiente al token anterior */
 	private int columna;
 	private boolean hayBreak;
+	
 			
 	public AnalizadorSintactico(AnalizadorLexico lexico){
 		this.lexico = lexico;
@@ -106,8 +106,12 @@ public class AnalizadorSintactico {
 		} else {
 			token = lexico.scan();
 			tokens.add(token);
-			if(token.getComentario() != "")
-				gestorSal.emite("{ " + token.getComentario() + " }"); // suponemos que todos los comentarios son de varias lineas
+			
+			String comentario = token.getComentario();
+			if(comentario != "") {
+				comentario = comentario.replaceAll("}", "'cierra_llave'");
+				gestorSal.emite(" { " + comentario + " } "); // suponemos que todos los comentarios son de varias lineas
+			}
 		}
 	}
 	
@@ -152,32 +156,32 @@ public class AnalizadorSintactico {
 	 */
 	private ExpresionTipo literal() throws Exception {
 		if(token.esIgual(TipoToken.CARACTER)){
-			gestorSal.emite((String) token.getAtributo());
+			gestorSal.emite('\'' + token.getAtributo().toString() + '\'');
 			nextToken();
 			return new ExpresionTipo(TipoBasico.caracter);
 		} 
 		else if(token.esIgual(TipoToken.LIT_CADENA)) {
-			gestorSal.emite((String) token.getAtributo());
+			gestorSal.emite('"' + token.getAtributo().toString() + '"');
 			nextToken();
 			return new Cadena(((String) tokenAnterior.getAtributo()).length());
 		}
 		else if(token.esIgual(TipoToken.LIT_CARACTER)){
-			gestorSal.emite((String) token.getAtributo());
+			gestorSal.emite('\'' + token.getAtributo().toString() + '\'');
 			nextToken();
 			return new Cadena(((String) tokenAnterior.getAtributo()).length()); //TODO a lo mejor hay que añadir un otro tipo de cadena
 		} 
 		else if (token.esIgual(TipoToken.NUM_ENTERO)){
-			gestorSal.emite((String) token.getAtributo());
+			gestorSal.emite(token.getAtributo().toString());
 			nextToken();
 			return new ExpresionTipo(TipoBasico.entero);
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL)){
-			gestorSal.emite((String) token.getAtributo());
+			gestorSal.emite(token.getAtributo().toString());
 			nextToken();
 			return new ExpresionTipo(TipoBasico.real);
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL_EXPO)){
-			gestorSal.emite((String) token.getAtributo());
+			gestorSal.emite(token.getAtributo().toString());
 			nextToken();
 			return new ExpresionTipo(TipoBasico.real);
 		}
@@ -3558,7 +3562,9 @@ public class AnalizadorSintactico {
 			}
 		} else if (token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(153);
-			ExpresionTipo tipoSem = ((EntradaTS)token.getAtributo()).getTipo();
+			EntradaTS entrada = (EntradaTS) token.getAtributo();
+			gestorSal.emite(entrada.getLexemaTrad()); 
+			ExpresionTipo tipoSem = entrada.getTipo();
 			nextToken();
 			ExpresionTipo params = resto_pe();
 			if(params.equals(TipoNoBasico.producto)) { // se trata de una función
@@ -3673,6 +3679,7 @@ public class AnalizadorSintactico {
 		ExpresionTipo tipo = ExpresionTipo.getVacio();
 		
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_CORCHETE)) {
+			gestorSal.emite("[");
 			parse.add(155);
 			nextToken();
 			ExpresionTipo aux = expression();
@@ -3691,6 +3698,7 @@ public class AnalizadorSintactico {
 			}
 			
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)) {
+				gestorSal.emite("]");
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \"]\"");
@@ -3698,6 +3706,7 @@ public class AnalizadorSintactico {
 		} else if (token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.PUNTERO)) {
 			parse.add(156);
 			nextToken();
+			gestorSal.emite("^.");
 			tipo = resto_postfix_exp3(exp);
 //			if(!exp.equals(TipoNoBasico.objeto)) {
 //				tipo = ExpresionTipo.getError();
@@ -3708,6 +3717,7 @@ public class AnalizadorSintactico {
 			lexico.activaModo(modo.NoMeto);
 			nextToken();
 			lexico.desactivaModo(modo.NoMeto);
+			gestorSal.emite(".");
 			tipo = resto_postfix_exp3(exp);
 //			if(!exp.equals(TipoNoBasico.objeto)) {
 //				tipo = ExpresionTipo.getError();

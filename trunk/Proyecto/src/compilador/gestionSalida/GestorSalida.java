@@ -40,8 +40,12 @@ public class GestorSalida {
 		}
 	}
 	
-	public void emite(String s){
+	public void emite(String s) {
 		resultado += s;
+	}
+	
+	public void emiteEnPos() {
+		
 	}
 	
 	public String getResultado(){

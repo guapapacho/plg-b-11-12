@@ -153,6 +153,8 @@ public class Token {
 		 break;
 		case LIT_CADENA:	s=(String)atributo;
 		 break;
+		case CARACTER: 		s=(String)atributo;
+		 break;
 		case PAL_RESERVADA:	s=g.dameNombrePalRes((Integer)atributo); 
 		 break;
 		case IDENTIFICADOR:	s=((EntradaTS)atributo).getLexema()+""; 

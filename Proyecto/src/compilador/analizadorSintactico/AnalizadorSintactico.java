@@ -2741,9 +2741,9 @@ public class AnalizadorSintactico {
 			parse.add(130);
 			lexico.desactivaModo(modo.Declaracion);
 			lexico.desactivaModo(modo.NoMeto);
-			nextToken();
 			gestorSal.emiteTabs(gestorTS.getNumTabs());
 			gestorSal.emite(this.nombreFuncion + " := ");
+			nextToken();
 			ExpresionTipo aux = expressionOpt();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				nextToken();

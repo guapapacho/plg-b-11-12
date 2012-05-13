@@ -294,7 +294,7 @@ public class Compilador extends JFrame {
 		ta2b=new JTextArea();
 		ta2b.setFont(new java.awt.Font(Font.MONOSPACED, Font.BOLD, 16));
 		ta2b.setEditable(false);
-		ta2b.setTabSize(1);
+		ta2b.setTabSize(3);
 		sp2b.setViewportView(ta2b);
 		
 		

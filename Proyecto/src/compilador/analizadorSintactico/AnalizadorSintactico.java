@@ -1,7 +1,6 @@
 package compilador.analizadorSintactico;
 
 
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -153,32 +152,40 @@ public class AnalizadorSintactico {
 	 */
 	private ExpresionTipo literal() throws Exception {
 		if(token.esIgual(TipoToken.CARACTER)){
+			gestorSal.emite((String) token.getAtributo());
 			nextToken();
 			return new ExpresionTipo(TipoBasico.caracter);
 		} 
 		else if(token.esIgual(TipoToken.LIT_CADENA)) {
+			gestorSal.emite((String) token.getAtributo());
 			nextToken();
 			return new Cadena(((String) tokenAnterior.getAtributo()).length());
 		}
 		else if(token.esIgual(TipoToken.LIT_CARACTER)){
+			gestorSal.emite((String) token.getAtributo());
 			nextToken();
 			return new Cadena(((String) tokenAnterior.getAtributo()).length()); //TODO a lo mejor hay que añadir un otro tipo de cadena
 		} 
 		else if (token.esIgual(TipoToken.NUM_ENTERO)){
+			gestorSal.emite((String) token.getAtributo());
 			nextToken();
 			return new ExpresionTipo(TipoBasico.entero);
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL)){
+			gestorSal.emite((String) token.getAtributo());
 			nextToken();
 			return new ExpresionTipo(TipoBasico.real);
 		}
 		else if (token.esIgual(TipoToken.NUM_REAL_EXPO)){
+			gestorSal.emite((String) token.getAtributo());
 			nextToken();
 			return new ExpresionTipo(TipoBasico.real);
 		}
 		else if (token.esIgual(TipoToken.PAL_RESERVADA) &&
 				( (Integer)token.getAtributo() == 27 /*false*/ || 
 				  (Integer)token.getAtributo() == 60 /*true*/)){
+			String sal = ((Integer)token.getAtributo() == 27) ? "false" : "true";
+			gestorSal.emite(sal);
 			nextToken();
 			return ExpresionTipo.expresionTipoDeString("bool");
 		}
@@ -1920,9 +1927,11 @@ public class AnalizadorSintactico {
 			} 
 			else{
 				parse.add(133);
+				gestorSal.emiteTabs(gestorTS.getNumTabs());
 				ExpresionTipo aux1 = expressionOpt();
 				if (!aux1.equals(TipoBasico.vacio)) {
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
+						gestorSal.emite(";\n");
 						lexico.desactivaModo(modo.Declaracion);
 						lexico.desactivaModo(modo.NoMeto);
 						nextToken();
@@ -2671,6 +2680,8 @@ public class AnalizadorSintactico {
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA,5 /*break*/)) {
 			parse.add(128);
+			gestorSal.emiteTabs(gestorTS.getNumTabs());
+			gestorSal.emite("break");
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				hayBreak = true;
@@ -2683,7 +2694,7 @@ public class AnalizadorSintactico {
 					gestorErr.insertaErrorSemantico(linea, columna, "No está permitido usar break fuera de un bucle o switch.");
 					aux1 = ExpresionTipo.getError();
 				}
-				gestorSal.emite("break;\n");
+				gestorSal.emite(";\n");
 				aux2 = cuerpo();
 				if(aux1.getTipoBasico() != TipoBasico.error_tipo && aux2.getTipoBasico() != TipoBasico.error_tipo ) {
 					return aux2;
@@ -2697,6 +2708,8 @@ public class AnalizadorSintactico {
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA, 12 /*continue*/)) {
 			parse.add(129);
+			gestorSal.emiteTabs(gestorTS.getNumTabs());
+			gestorSal.emite("continue");
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				lexico.desactivaModo(modo.Declaracion);
@@ -2708,7 +2721,7 @@ public class AnalizadorSintactico {
 					gestorErr.insertaErrorSemantico(linea, columna, "No está permitido usar continue fuera de un bucle.");
 					aux1 = ExpresionTipo.getError();
 				}
-				gestorSal.emite("continue;\n");
+				gestorSal.emite(";\n");
 				aux2 = cuerpo();
 				if(aux1.getTipoBasico() != TipoBasico.error_tipo && aux2.getTipoBasico() != TipoBasico.error_tipo ) {
 					return aux2;
@@ -2725,6 +2738,7 @@ public class AnalizadorSintactico {
 			lexico.desactivaModo(modo.Declaracion);
 			lexico.desactivaModo(modo.NoMeto);
 			nextToken();
+			gestorSal.emiteTabs(gestorTS.getNumTabs());
 			gestorSal.emite(this.nombreFuncion + " := ");
 			ExpresionTipo aux = expressionOpt();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
@@ -2755,9 +2769,12 @@ public class AnalizadorSintactico {
 		}  else if(token.esIgual(TipoToken.PAL_RESERVADA, 31 /*goto*/)) {
 			lexico.activaModo(modo.NoMeto);
 			parse.add(131);
+			gestorSal.emiteTabs(gestorTS.getNumTabs());
+			gestorSal.emite("GOTO ");
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
 				if(token.getAtributo() instanceof String) {
+					gestorSal.emite((String) token.getAtributo());
 					etiquetasConGoto.add((String) token.getAtributo());
 				} else {
 					gestorErr.insertaErrorSemantico(linea, columna, "Etiqueta inválida");
@@ -2765,6 +2782,7 @@ public class AnalizadorSintactico {
 				lexico.desactivaModo(modo.NoMeto);
 				nextToken();
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
+					gestorSal.emite(";\n");
 					lexico.desactivaModo(modo.Declaracion);
 					lexico.desactivaModo(modo.NoMeto);
 					nextToken();
@@ -2778,6 +2796,9 @@ public class AnalizadorSintactico {
 		} else {
 			parse.add(132);
 			ExpresionTipo aux1, aux2;
+			
+			gestorSal.emiteTabs(gestorTS.getNumTabs());
+			
 			aux1 = instruccion();
 			if(aux1 != null){
 				if(!token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_LLAVE))
@@ -3090,6 +3111,7 @@ public class AnalizadorSintactico {
 				inicializacion(null,entrada); // la llamamos para que no de error sintáctico
 				tipo = ExpresionTipo.getError();
 			} else {
+				gestorSal.emite(entrada.getLexemaTrad());
 				tipo = inicializacion(entrada.getTipo(),entrada);
 			}
 		} else {
@@ -3369,16 +3391,20 @@ public class AnalizadorSintactico {
 	private ExpresionTipo primary_expression() throws Exception {
 		ExpresionTipo tipo = null;
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
+			gestorSal.emite(" (");
 			parse.add(147);
 			nextToken();
 			tipo = expression();
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
+				gestorSal.emite(") ");
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
 			}
 		} else if (token.esIgual(TipoToken.PAL_RESERVADA, 57 /* this */)) {
 			parse.add(145);
+			gestorSal.emiteTabs(gestorTS.getNumTabs());
+			gestorSal.emite("{ No se puede traducir a pascal el 'this' }\n");
 			nextToken();
 			tipo = new Objeto(nombreClase);
 		} else {
@@ -3416,6 +3442,7 @@ public class AnalizadorSintactico {
 					gestorErr.insertaErrorSemantico(linea, columna, campo + " no es un campo del registro " + reg.getNombreRegistro());
 					tipo = ExpresionTipo.getError();
 				} else {
+					gestorSal.emite(campo);
 					tipo = tipoCampo;
 				}
 			} else {
@@ -3424,6 +3451,8 @@ public class AnalizadorSintactico {
 			}
 			nextToken();
 		} else if (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {
+			gestorSal.emiteTabs(gestorTS.getNumTabs());
+			gestorSal.emite("{ No se puede traducir a pascal la regla UNQUALIFIED-ID →  ~ RESTO_UNQ }\n");
 			parse.add(149);
 			nextToken();
 			tipo = resto_unq();
@@ -4067,6 +4096,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			aux = ExpresionTipo.getVacio();
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.RESTA)){
+			gestorSal.emite("-");
 			parse.add(138);
 			gestorSal.emite("-");
 			nextToken();
@@ -4222,11 +4252,13 @@ public class AnalizadorSintactico {
 	 */
 	private ExpresionTipo resto_cast() throws Exception{
 		ExpresionTipo tipo = tipo_simple();
+		gestorSal.emite(" (");
 		if(tipo != null){
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
 				parse.add(139);
 				ExpresionTipo aux = cast_expression(); //TODO a lo mejor deberia pasarle el tipo
+				gestorSal.emite(")");
 				if(!tipo.equals(TipoBasico.error_tipo)){
 					tipo = aux;
 				}
@@ -4237,6 +4269,7 @@ public class AnalizadorSintactico {
 			parse.add(140);
 			tipo = expression();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
+				gestorSal.emite(")");
 				nextToken();
 			} else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ')' ");

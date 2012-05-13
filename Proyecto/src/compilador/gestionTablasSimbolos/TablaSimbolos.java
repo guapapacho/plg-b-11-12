@@ -140,5 +140,15 @@ public class TablaSimbolos {
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
 	}
+
+	public int getProfundidad() {
+		int p = 0;
+		TablaSimbolos ts = getContinente();
+		while(ts != null) {
+			ts = ts.getContinente();
+			p++;
+		}
+		return p;
+	}
 	
 }

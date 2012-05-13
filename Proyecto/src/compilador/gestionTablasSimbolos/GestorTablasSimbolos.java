@@ -52,6 +52,10 @@ public class GestorTablasSimbolos {
 	public void setTipoDefinido(String s, ExpresionTipo tipo) {
 		tiposDefinidos.put(s, tipo);
 	}
+	
+	public int getNumTabs() {
+		return bloque_actual.getProfundidad();
+	}
 
 	public static void resetTablasSimbolos() {
 		instance = new GestorTablasSimbolos();

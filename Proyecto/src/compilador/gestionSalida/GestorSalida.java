@@ -33,9 +33,15 @@ public class GestorSalida {
 			emite(i.next());
 		bufferMetodos.clear();
 	}
+
+	public void emiteTabs(int num) {
+		for(int i=0; i < num; i++) {
+			resultado += "\t";
+		}
+	}
 	
 	public void emite(String s){
-		resultado += s+" ";
+		resultado += s;
 	}
 	
 	public String getResultado(){

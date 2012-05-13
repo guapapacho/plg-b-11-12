@@ -59,7 +59,7 @@ public class Compilador extends JFrame {
 	private JScrollPane sp2a =null;
 	private JScrollPane sp2b =null;
 	private JScrollPane sp3 =null;
-	private JLabel l0=null;
+//	private JLabel l0=null;
 	private JLabel l1=null;
 	private JLabel l2=null;
 	private JButton botonTokens=null;
@@ -75,10 +75,10 @@ public class Compilador extends JFrame {
 	private int puntox3= screenSize.width / 3;
 	private int puntoy3=puntoy1*6;
 	private int puntox4= (int) (screenSize.width /(2.25));
-	private int puntox5=(screenSize.width/4)*2;
+	private int puntox5=(screenSize.width/17)*9;
 	private int puntox6=screenSize.width/10;
 	private int puntox7=(screenSize.width/3)*2;
-	private int puntoy4= screenSize.height/40;
+	private int puntoy4= screenSize.height/90;
 	private int puntox8=puntox1-30;
 	
 	
@@ -221,10 +221,10 @@ public class Compilador extends JFrame {
 		
 		panelPestanas = new JTabbedPane();
 		
-		l0=new JLabel();
-		l0.setBounds(puntox2, 7, 250, 34);
-		l0.setFont(new java.awt.Font("Verdana", Font.BOLD, 18));
-		l0.setText("Analizador sintáctico");
+//		l0=new JLabel();
+//		l0.setBounds(puntox2, 7, 250, 34);
+//		l0.setFont(new java.awt.Font("Verdana", Font.BOLD, 18));
+//		l0.setText("Analizador sintáctico");
 		l1=new JLabel();
 		l1.setBounds(puntox6, puntoy4, 163, 34);
 		l1.setText("Código de entrada");
@@ -254,19 +254,20 @@ public class Compilador extends JFrame {
 		sp2b.setHorizontalScrollBarPolicy(sp2b.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
 		panelPestanas.setBounds(puntox4, puntoy1, puntox5, puntoy2);
-		panelPestanas.add("Salidas Analizadores", sp2a);
 		panelPestanas.add("Traduccción a Pascal", sp2b);
+		panelPestanas.add("Salidas Analizadores", sp2a);
 		
 		sp3=new JScrollPane();
-		sp3.setBounds(puntox3, puntoy3 - 50, 60, 20);
+		sp3.setBounds(puntox3+30, puntoy3 - 50, 60, 20);
 		sp3.setVerticalScrollBarPolicy(sp3.VERTICAL_SCROLLBAR_AS_NEEDED);
 		sp3.setHorizontalScrollBarPolicy(sp3.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
 		ta3 = new JTextArea();
+		ta3.setBounds(puntox3+30, puntoy3 - 50, 60, 20);
 		ta3.setFont(new java.awt.Font("Verdana", Font.PLAIN, 11));
 		sp3.setViewportView(ta3);
 		
-		panelPrincipal_1.add(l0);
+//		panelPrincipal_1.add(l0);
 		panelPrincipal_1.add(l1);
 		panelPrincipal_1.add(l2);
 		panelPrincipal_1.add(getBotonTokens());
@@ -359,9 +360,10 @@ public class Compilador extends JFrame {
 	private JButton getBotonTokens() {
 		botonTokens=new JButton();
 		botonTokens.setBounds(puntox3, puntoy3, puntox1*3, 50);
-		botonTokens.setText("Parse");
+		botonTokens.setText("Traducir");
 		botonTokens.setFont(new java.awt.Font("Verdana", Font.BOLD, 11));
 		botonTokens.revalidate();
+		
 		botonTokens.addActionListener(
 			new ActionListener(){
 				public void actionPerformed(ActionEvent e){
@@ -379,6 +381,8 @@ public class Compilador extends JFrame {
 						
 						gestorE.resetErrores();
 						gestorE.resetWarnings();
+						gestorS.resetResultado();
+						
 						AnalizadorLexico anLex = new AnalizadorLexico(in);						
 						AnalizadorSintactico anSin = new AnalizadorSintactico(anLex);
 						

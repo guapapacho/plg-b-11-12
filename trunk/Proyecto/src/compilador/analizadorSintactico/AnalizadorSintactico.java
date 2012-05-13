@@ -13,6 +13,7 @@ import compilador.analizadorSemantico.*;
 import compilador.analizadorSemantico.ExpresionTipo.TipoBasico;
 import compilador.analizadorSemantico.ExpresionTipo.TipoNoBasico;
 import compilador.gestionErrores.GestorErrores;
+import compilador.gestionSalida.GestorSalida;
 import compilador.gestionTablasSimbolos.*;
 
 public class AnalizadorSintactico {
@@ -25,12 +26,15 @@ public class AnalizadorSintactico {
 	
 	/** Lista de tokens obtenidos del Analizador lexico */
 	private Vector<Token> tokens;
+	
 	/** Analizador lexico */
 	private AnalizadorLexico lexico;
 	/** Gestor tablas de simbolos */
 	private GestorTablasSimbolos gestorTS;
 	/** Gestor errores */
 	private GestorErrores gestorErr;
+	/** Gestor salida */
+	private GestorSalida gestorSal;
 	/**
 	 * Vector para guardar la secuencia ordenada de los numeros de reglas aplicadas
 	 * para construir el arbol de derivacion de la cadena de tokens de entrada..
@@ -47,7 +51,6 @@ public class AnalizadorSintactico {
 	
 	/** Marca si estamos en el cuerpo de un bucle */
 	private boolean estamosEnBucle;
-	
 	/** Marca si estamos en el cuerpo de un Switch */
 	private boolean estamosEnSwitch;
 	
@@ -62,6 +65,8 @@ public class AnalizadorSintactico {
 	
 	/** Nombre de la clase si es una clase o null si no lo es */
 	private String nombreClase;
+	/** Nombre de la funcion */
+	private String nombreFuncion;
 	
 	/** Numero de linea del token anterior */
 	private int linea;
@@ -77,7 +82,9 @@ public class AnalizadorSintactico {
 		ventana = new Vector<Token>();
 		gestorTS = GestorTablasSimbolos.getGestorTS();
 		gestorErr = GestorErrores.getGestorErrores();
+		gestorSal = GestorSalida.getGestorSalida();
 		nombreClase = null;
+		nombreFuncion = null;
 		estamosEnBucle = false;
 		estamosEnSwitch = false;
 		tipoRetorno = null;
@@ -100,6 +107,8 @@ public class AnalizadorSintactico {
 		} else {
 			token = lexico.scan();
 			tokens.add(token);
+			if(token.getComentario() != "")
+				gestorSal.emite("{ " + token.getComentario() + " }"); // suponemos que todos los comentarios son de varias lineas
 		}
 	}
 	
@@ -1058,6 +1067,7 @@ public class AnalizadorSintactico {
 //				lexico.activaModo(modo.Declaracion);
 				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 					EntradaTS entradaTS = (EntradaTS)token.getAtributo();
+					nombreFuncion = entradaTS.getLexema();
 //					String lexema_id=(String)token.getAtributo();
 					if(!(entradaTS.getTipo() instanceof Cabecera))
 						id(aux);
@@ -2673,6 +2683,7 @@ public class AnalizadorSintactico {
 					gestorErr.insertaErrorSemantico(linea, columna, "No está permitido usar break fuera de un bucle o switch.");
 					aux1 = ExpresionTipo.getError();
 				}
+				gestorSal.emite("break;\n");
 				aux2 = cuerpo();
 				if(aux1.getTipoBasico() != TipoBasico.error_tipo && aux2.getTipoBasico() != TipoBasico.error_tipo ) {
 					return aux2;
@@ -2697,6 +2708,7 @@ public class AnalizadorSintactico {
 					gestorErr.insertaErrorSemantico(linea, columna, "No está permitido usar continue fuera de un bucle.");
 					aux1 = ExpresionTipo.getError();
 				}
+				gestorSal.emite("continue;\n");
 				aux2 = cuerpo();
 				if(aux1.getTipoBasico() != TipoBasico.error_tipo && aux2.getTipoBasico() != TipoBasico.error_tipo ) {
 					return aux2;
@@ -2713,9 +2725,11 @@ public class AnalizadorSintactico {
 			lexico.desactivaModo(modo.Declaracion);
 			lexico.desactivaModo(modo.NoMeto);
 			nextToken();
+			gestorSal.emite(this.nombreFuncion + " := ");
 			ExpresionTipo aux = expressionOpt();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				nextToken();
+				gestorSal.emite(";\n");
 				ExpresionTipo tipo = ExpresionTipo.getVacio();
 				tipo.setRetorno(true);
 				if(tipoRetorno != null) {

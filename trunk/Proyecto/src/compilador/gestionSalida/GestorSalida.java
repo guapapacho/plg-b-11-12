@@ -41,5 +41,9 @@ public class GestorSalida {
 	public String getResultado(){
 		return resultado;
 	}
+
+	public void resetResultado() {
+		resultado = "";
+	}
 	
 }

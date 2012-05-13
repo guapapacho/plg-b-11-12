@@ -3714,6 +3714,7 @@ public class AnalizadorSintactico {
 			nextToken();
 		} else if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(160);
+			gestorSal.emite("("); 
 			nextToken(); 
 			tipo = resto_postfix_exp2();
 		} else {
@@ -3736,12 +3737,14 @@ public class AnalizadorSintactico {
 		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 			parse.add(162);
+			gestorSal.emite(")");
 			nextToken();
 			aux = ExpresionTipo.getVacio();
 		} else {
 			parse.add(163);
 			aux = initializer_list();
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
+				gestorSal.emite(")");
 				nextToken();
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
@@ -3763,6 +3766,7 @@ public class AnalizadorSintactico {
 		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {	
 			parse.add(166);
+			gestorSal.emite("{ NO TIENE TRADUCCION }");
 			nextToken();
 			if (token.esIgual(TipoToken.PAL_RESERVADA, 16)) {
 				nextToken();
@@ -3797,6 +3801,7 @@ public class AnalizadorSintactico {
 		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(173);
+			gestorSal.emite("(");
 			nextToken();
 			aux = postfix3();
 		} else {
@@ -3818,6 +3823,7 @@ public class AnalizadorSintactico {
 		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 			parse.add(174);
+			gestorSal.emite(")");
 			nextToken();
 			aux = new Producto();
 		} else {
@@ -3825,6 +3831,7 @@ public class AnalizadorSintactico {
 			aux = initializer_list();
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 				nextToken();
+				gestorSal.emite(")");
 			} else {
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta el separador \")\"");
 			}
@@ -3874,6 +3881,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_init(ExpresionTipo tipo_h) throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){
 			parse.add(177);
+			gestorSal.emite(",");
 			nextToken();
 			return initializer_list();
 		}
@@ -3911,11 +3919,13 @@ public class AnalizadorSintactico {
 			parse.add(179);
 			nextToken();
 			aux = cast_expression();
+			gestorSal.emite("+ 1");
 		}
 		else if(token.esIgual(TipoToken.OP_ARITMETICO, OpAritmetico.DECREMENTO)){
 			parse.add(180);
 			nextToken();
 			aux = cast_expression();
+			gestorSal.emite("- 1");
 		}
 		else if(unary_operator() != null){
 			parse.add(181);
@@ -3924,17 +3934,21 @@ public class AnalizadorSintactico {
 		else if(token.esIgual(TipoToken.PAL_RESERVADA)
 				&& (Integer)token.getAtributo()==50 /*sizeof*/ ){
 			parse.add(182);
+			gestorSal.emite("sizeof ");
 			nextToken();
 			aux = resto_unary();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA)
 				&& (Integer)token.getAtributo()==1 /*alignof*/ ){
+			gestorSal.emite("AlignOf");
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)) {
 				nextToken();
+				gestorSal.emite("(");
 				if(tipo().getTipoBasico()!=TipoBasico.vacio){
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 						parse.add(183);
+						gestorSal.emite(")");	//TODO no se si se tiene que hacer aqui o despues de aux = tipo();
 						nextToken();
 						aux = tipo();
 					}else{
@@ -3949,6 +3963,7 @@ public class AnalizadorSintactico {
 		} else if (token.esIgual(TipoToken.PAL_RESERVADA)
 				&& (Integer)token.getAtributo()==39 /*noexcept*/ ){
 			parse.add(184);
+			gestorSal.emite("{ NO TIENE TRADUCCION }");
 			nextToken();
 			aux = noexcept_expression();
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && (Integer)token.getAtributo()==38 /*new*/ ){
@@ -3985,11 +4000,13 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_unary() throws Exception{
 		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
+			gestorSal.emite("(");
 			nextToken();
 			//if(tipo()){
 			if(tipo().getTipoBasico()!=TipoBasico.vacio){
 				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)){
 					parse.add(186);
+					gestorSal.emite(")");	//TODO no se si se tiene que hacer aqui o despues de aux = tipo();
 					nextToken();
 					aux = tipo();
 				}else{
@@ -4026,26 +4043,32 @@ public class AnalizadorSintactico {
 		ExpresionTipo aux = null;
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 			parse.add(188);
+			gestorSal.emite("*");
 			nextToken();
 			aux = ExpresionTipo.getVacio();
 		}else if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.BIT_AND)){
 			parse.add(189);
+			gestorSal.emite("and");
 			nextToken();
 			aux = ExpresionTipo.getVacio();
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.SUMA)){
 			parse.add(190);
+			gestorSal.emite("+");
 			nextToken();
 			aux = ExpresionTipo.getVacio();
 		}else if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.NOT)){
 			parse.add(191);
+			gestorSal.emite("not");
 			nextToken();
 			aux = ExpresionTipo.getVacio();
 		}else if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)){
 			parse.add(192);
+			gestorSal.emite("xor");
 			nextToken();
 			aux = ExpresionTipo.getVacio();
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.RESTA)){
 			parse.add(138);
+			gestorSal.emite("-");
 			nextToken();
 			aux = ExpresionTipo.getVacio();
 		}
@@ -4145,10 +4168,12 @@ public class AnalizadorSintactico {
 	private ExpresionTipo noexcept_expression() throws Exception{
 		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
+			gestorSal.emite("(");
 			nextToken();
 			aux = expression();
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)){
 				parse.add(193);
+				gestorSal.emite(")");
 				nextToken();
 			}else{
 				// error
@@ -4174,6 +4199,7 @@ public class AnalizadorSintactico {
 		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(195);
+			gestorSal.emite("(");
 			nextToken();
 			aux = resto_cast();
 		} else {
@@ -4230,6 +4256,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo pm_expression() throws Exception{
 		ExpresionTipo aux = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO)){
+			gestorSal.emite("{ NO TIENE TRADUCCION }");
 			nextToken();
 			if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 				nextToken();
@@ -4239,6 +4266,7 @@ public class AnalizadorSintactico {
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba `*` ");
 			}
 		} else if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.PUNTERO)){
+			gestorSal.emite("{ NO TIENE TRADUCCION }");
 			nextToken();
 			if (token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
 				parse.add(198);
@@ -4311,16 +4339,19 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_mult(ExpresionTipo tipo_h) throws Exception{
 		ExpresionTipo aux1,aux2 = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.MULTIPLICACION)){
+			gestorSal.emite("*");
 			nextToken();
 			parse.add(200);
 			aux1 = multiplicative_expression();
 			aux2 = ExpresionTipo.sonCompArit(aux1,tipo_h,OpAritmetico.MULTIPLICACION);
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.DIVISION)){
+			gestorSal.emite("/");
 			nextToken();
 			parse.add(201);
 			aux1 = multiplicative_expression();
 			aux2 = ExpresionTipo.sonCompArit(aux1,tipo_h,OpAritmetico.DIVISION);
 		}else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.PORCENTAJE)){
+			gestorSal.emite("mod");
 			nextToken();
 			parse.add(202);
 			aux1 = multiplicative_expression();
@@ -4387,12 +4418,14 @@ public class AnalizadorSintactico {
 		ExpresionTipo aux1,aux2 = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.SUMA)){
 			parse.add(205);
+			gestorSal.emite("+");
 			nextToken();
 			aux1 = additive_expression();
 			aux2 = ExpresionTipo.sonCompArit(aux1,tipo_h,OpAritmetico.SUMA);
 		}
 		else if(token.esIgual(TipoToken.OP_ARITMETICO,OpAritmetico.RESTA)){
 			parse.add(206);
+			gestorSal.emite("-");
 			nextToken();
 			aux1 = additive_expression();
 			aux2 = ExpresionTipo.sonCompArit(aux1,tipo_h,OpAritmetico.RESTA);
@@ -4461,12 +4494,14 @@ public class AnalizadorSintactico {
 		ExpresionTipo aux1,aux2 = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.DOS_MENORES)){
 			parse.add(209);
+			gestorSal.emite("shl");
 			nextToken();
 			aux1 = shift_expression();
 			aux2 = ExpresionTipo.sonCompLog(aux1,tipo_h,OpLogico.DOS_MENORES);
 		}
 		else if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.DOS_MAYORES)){
 			parse.add(210);
+			gestorSal.emite("shr");
 			nextToken();
 			aux1 = shift_expression();
 			aux2 = ExpresionTipo.sonCompLog(aux1,tipo_h,OpLogico.DOS_MAYORES);

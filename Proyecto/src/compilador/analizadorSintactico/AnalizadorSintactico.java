@@ -1309,6 +1309,9 @@ public class AnalizadorSintactico {
 			}
 			nextToken();
 			lexico.activaModo(modo.Declaracion);
+
+			gestorSal.finalBloque();
+			//System.out.println(gestorSal.getResultado());
 			
 			gestorTS.cierraBloque();//se termina la funcion, cerramos el bloque
 			return CUERPO_tipo_s;
@@ -4164,6 +4167,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_new() throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 			parse.add(251);
+			gestorSal.emite(")");
 			nextToken();
 			return ExpresionTipo.getVacio();
 		}else{
@@ -4206,6 +4210,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_lista_exp() throws Exception{
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.COMA)){
 			parse.add(254);
+			gestorSal.emite(";");
 			nextToken();
 			return expression_list();
 		}else{
@@ -4227,8 +4232,10 @@ public class AnalizadorSintactico {
 			nextToken();
 		}else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_CORCHETE)){
 			parse.add(257);
+			gestorSal.emite("[");
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_CORCHETE)){
+				gestorSal.emite("]");
 				nextToken();
 			}else{
 				gestorErr.insertaErrorSintactico(linea, columna, "Se esperaba ']' ");
@@ -4638,6 +4645,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_relational(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MENOR)){
 			parse.add(213);
+			gestorSal.emite("<");
 			nextToken();
 			ExpresionTipo aux1 = shift_expression();
 			ExpresionTipo aux2 = ExpresionTipo.sonCompComp(aux1, tipo_h, OpComparacion.MENOR);
@@ -4650,6 +4658,7 @@ public class AnalizadorSintactico {
 		}
 		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR)){
 			parse.add(214);
+			gestorSal.emite(">");
 			nextToken();
 			ExpresionTipo aux1 = shift_expression();
 			ExpresionTipo aux2 = ExpresionTipo.sonCompComp(aux1, tipo_h, OpComparacion.MAYOR);
@@ -4662,6 +4671,7 @@ public class AnalizadorSintactico {
 		}
 		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MAYOR_IGUAL)){
 			parse.add(216);
+			gestorSal.emite(">=");
 			nextToken();
 			ExpresionTipo aux1 = shift_expression();
 			ExpresionTipo aux2 = ExpresionTipo.sonCompComp(aux1, tipo_h, OpComparacion.MAYOR_IGUAL);
@@ -4674,6 +4684,7 @@ public class AnalizadorSintactico {
 		}
 		else if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.MENOR_IGUAL)){
 			parse.add(217);
+			gestorSal.emite("<=");
 			nextToken();
 			ExpresionTipo aux1 = shift_expression();
 			ExpresionTipo aux2 = ExpresionTipo.sonCompComp(aux1, tipo_h, OpComparacion.MENOR_IGUAL);
@@ -4750,6 +4761,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_equality(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_COMPARACION, OpComparacion.IGUALDAD)){
 			parse.add(219);
+			gestorSal.emite("=");
 			nextToken();
 			ExpresionTipo aux1 = equality_expression();
 			ExpresionTipo aux2 = ExpresionTipo.sonCompComp(aux1, tipo_h, OpComparacion.IGUALDAD);
@@ -4815,6 +4827,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_and(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.BIT_AND)){
 			parse.add(222);
+			gestorSal.emite("AND");
 			nextToken();
 			ExpresionTipo aux1 = and_expression();
 			ExpresionTipo aux2 = ExpresionTipo.sonCompLog(aux1, tipo_h, OpLogico.BIT_AND);
@@ -4861,6 +4874,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_exclusive(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.CIRCUNFLEJO)){
 			parse.add(225);
+			gestorSal.emite("XOR");
 			nextToken();
 			ExpresionTipo aux1 = exclusive_or_expression();
 //			System.out.println("izquierda: "+tipo_h.getTipoBasico().toString()+"\nderecha"+aux1.getTipoBasico().toString());
@@ -4908,6 +4922,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_incl_or(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.BIT_OR)){
 			parse.add(228);
+			gestorSal.emite("OR");
 			nextToken();
 			ExpresionTipo aux1 = incl_or_expression();
 			ExpresionTipo aux2 = ExpresionTipo.sonCompLog(aux1, tipo_h, OpLogico.BIT_OR);
@@ -4953,6 +4968,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_log_and(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.AND)){
 			parse.add(231);
+			gestorSal.emite("AND");
 			nextToken();
 			ExpresionTipo aux1 = log_and_expression();
 			ExpresionTipo aux2 = ExpresionTipo.sonCompLog(aux1, tipo_h, OpLogico.AND);
@@ -4999,6 +5015,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_log_or(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO, OpLogico.OR)){
 			parse.add(234);
+			gestorSal.emite("OR");
 			nextToken();
 			ExpresionTipo aux1 = log_or_expression();
 			ExpresionTipo aux2 = ExpresionTipo.sonCompLog(aux1, tipo_h, OpLogico.OR);
@@ -5036,6 +5053,7 @@ public class AnalizadorSintactico {
 	 * 						  { RESTO_CONDITIONAL.tipo_s := vacio }
 	 * @throws Exception 
 	 */
+	// TODO: COMO NARICES SE TRADUCE ESTO???
 	private ExpresionTipo resto_conditional(ExpresionTipo tipo_h) throws Exception {//////////////////////////////////////////////
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.INTEROGACION)){
 			parse.add(238);
@@ -5112,6 +5130,7 @@ public class AnalizadorSintactico {
 				res = ExpresionTipo.getError();
 			}
 			parse.add(243);
+			gestorSal.emite(":=");
 			nextToken();
 			ExpresionTipo aux1 = assignment_expression();
 			ExpresionTipo aux2 = ExpresionTipo.sonCompAsig(aux1, tipo_h, OpAsignacion.ASIGNACION);
@@ -5166,6 +5185,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_exp() throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 			parse.add(247);
+			gestorSal.emite(";");
 			nextToken();
 			return expression();
 		}	

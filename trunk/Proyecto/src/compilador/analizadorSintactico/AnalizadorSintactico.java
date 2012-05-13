@@ -200,7 +200,7 @@ public class AnalizadorSintactico {
 	private boolean esLiteral(){
 		return (token.esIgual(TipoToken.LIT_CADENA) || token.esIgual(TipoToken.LIT_CARACTER) || token.esIgual(TipoToken.NUM_ENTERO)
 				|| token.esIgual(TipoToken.NUM_REAL) || token.esIgual(TipoToken.NUM_REAL_EXPO) || token.esIgual(TipoToken.PAL_RESERVADA, 27 /*false*/)
-				|| token.esIgual(TipoToken.PAL_RESERVADA, 60 /*true*/));
+				|| token.esIgual(TipoToken.PAL_RESERVADA, 60 /*true*/) || token.esIgual(TipoToken.CARACTER) );
 	}
 	
 	public Vector<Integer> getParse() {
@@ -380,6 +380,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_programa() throws Exception {
 		if (token.esIgual(TipoToken.PAL_RESERVADA, 8)) {
 			parse.add(105);
+			gestorSal.emite("Las clases no tienen traduccion en pascal");
 			nextToken();
 			if (token.esIgual(TipoToken.IDENTIFICADOR)) {
 				nextToken();
@@ -2374,6 +2375,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MAYORES)){
 			parse.add(68);
 			lexico.desactivaModo(modo.Declaracion); lexico.desactivaModo(modo.NoMeto);//comienza el modo "uso de variables"
+			gestorSal.emite("read");
 			nextToken();
 			return resto_lect();
 		}
@@ -2397,6 +2399,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_lect() throws Exception {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){ 
 			parse.add(69);
+			gestorSal.emite("("+token.atrString()+");\n");
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 				lexico.desactivaModo(modo.Declaracion);
@@ -2413,6 +2416,12 @@ public class AnalizadorSintactico {
 		}
 		else if(esLiteral()){
 			parse.add(70);
+			if(token.esIgual(TipoToken.LIT_CADENA))
+				gestorSal.emite("(\""+token.atrString()+"\");\n");
+			else if (token.esIgual(TipoToken.CARACTER) || token.esIgual(TipoToken.LIT_CARACTER))
+				gestorSal.emite("('"+token.atrString()+"');\n");
+			else
+				gestorSal.emite("("+token.atrString()+");\n");
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)){
 				lexico.activaModo(modo.Declaracion);//termina modo "uso variables"
@@ -2439,8 +2448,9 @@ public class AnalizadorSintactico {
 	 */
 	private ExpresionTipo ins_esc() throws Exception {
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
-			parse.add(63);
+			parse.add(71);
 			lexico.desactivaModo(modo.Declaracion); lexico.desactivaModo(modo.NoMeto);//comienza el modo "uso de variables"
+			gestorSal.emite("write");
 			nextToken();
 			return resto_esc();
 		}
@@ -2463,16 +2473,24 @@ public class AnalizadorSintactico {
 	private ExpresionTipo resto_esc() throws Exception {
 		if(esLiteral()){
 			parse.add(72);
+			if(token.esIgual(TipoToken.LIT_CADENA))
+				gestorSal.emite("(\""+token.atrString()+"\");\n");
+			else if (token.esIgual(TipoToken.CARACTER) || token.esIgual(TipoToken.LIT_CARACTER))
+				gestorSal.emite("('"+token.atrString()+"');\n");
+			else
+				gestorSal.emite("("+token.atrString()+");\n");
 			nextToken();
 			return ins_esc2();
 		}
 		else if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(73);
+			gestorSal.emite("("+token.atrString()+");\n");
 			nextToken();
 			return ins_esc2();		
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,76 /*endl*/)){ 
 			parse.add(74);
+			gestorSal.emite("ln();");
 			nextToken();
 			return ins_esc2();
 		}
@@ -2493,6 +2511,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo ins_esc2() throws Exception{
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
 			parse.add(75);
+			gestorSal.emite("write");
 			nextToken();
 			return resto_esc();
 		}
@@ -2581,6 +2600,7 @@ public class AnalizadorSintactico {
 		{
 			ExpresionTipo RESTO_FOR_tipo, CUERPO_tipo;
 			parse.add(81);
+			gestorSal.emite("while");
 			nextToken();
 			RESTO_FOR_tipo = resto_for();
 			CUERPO_tipo = cuerpo();
@@ -2597,6 +2617,7 @@ public class AnalizadorSintactico {
 		{
 			ExpresionTipo RESTO_DO_tipo, CUERPO_tipo;
 			parse.add(82);
+			gestorSal.emite("repeat"); 
 			nextToken();
 			RESTO_DO_tipo = resto_do();
 			CUERPO_tipo = cuerpo();
@@ -2613,6 +2634,7 @@ public class AnalizadorSintactico {
 		{
 			ExpresionTipo RESTO_WHILE_tipo, CUERPO_tipo;
 			parse.add(83);
+			gestorSal.emite("while"); 
 			nextToken();
 			RESTO_WHILE_tipo = resto_while();
 			CUERPO_tipo = cuerpo();
@@ -2629,6 +2651,7 @@ public class AnalizadorSintactico {
 		{
 			ExpresionTipo RESTO_IF_tipo, CUERPO_tipo;
 			parse.add(84);
+			gestorSal.emite("if");
 			nextToken();
 			RESTO_IF_tipo = resto_if();
 			CUERPO_tipo = cuerpo();
@@ -2645,6 +2668,7 @@ public class AnalizadorSintactico {
 		{
 			ExpresionTipo RESTO_CASE_tipo, CUERPO_tipo;
 			parse.add(85);
+			gestorSal.emite("case");
 			nextToken();
 			RESTO_CASE_tipo = resto_case();
 			CUERPO_tipo = cuerpo();
@@ -2662,6 +2686,7 @@ public class AnalizadorSintactico {
 //			nextToken();
 		} else if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_LLAVE)) {
 			parse.add(104);
+			gestorSal.emiteTabs(4);
 			gestorTS.abreBloque("Anónimo");
 			nextToken();
 			ExpresionTipo CUERPO1_tipo = cuerpo();
@@ -2871,30 +2896,35 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.PAL_RESERVADA,72 /*while*/))
 		{
 			parse.add(87);
+			gestorSal.emite("while");
 			nextToken();
 			return resto_while();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,29 /*for*/))
 		{
 			parse.add(88);
+			gestorSal.emite("while");
 			nextToken();
 			return resto_for();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,19 /*do*/))
 		{
 			parse.add(89);
+			gestorSal.emite("repeat");
 			nextToken();
 			return resto_do();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,32 /*if*/))
 		{
 			parse.add(90);
+			gestorSal.emite("if");
 			nextToken();
 			return resto_if();
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,55 /*switch*/))
 		{
 			parse.add(91);
+			gestorSal.emite("case");
 			nextToken();
 			return resto_case();
 		}

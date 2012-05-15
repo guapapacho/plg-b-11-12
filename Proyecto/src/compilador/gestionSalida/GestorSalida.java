@@ -8,7 +8,7 @@ import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
 
 public class GestorSalida {
 
-	public enum modoSalida {EXPRESION,NORMAL};
+	public enum modoSalida {PROGRAMA,EXPRESION,FUNCION};
 	
 	/** Buffer que almacena el codigo de funciones/procedimientos **/
 	private ArrayList<String> bufferMetodos;
@@ -18,20 +18,22 @@ public class GestorSalida {
 	private static GestorSalida instance = null;
 	/** Cadena de caracteres que almacena el codigo "definitivo" **/
 	private String resultado;
+	
 	private modoSalida modoActual;
 	
-	public static GestorSalida getGestorSalida() {
+	public static GestorSalida getGestorSalida(){//String nombre) {
 		if(instance == null) {
-			instance = new GestorSalida();
+			instance = new GestorSalida();//nombre);
 		}
 		return instance;			
 	}
 		
-	private GestorSalida(){
+	private GestorSalida(){//String nombre){
 		bufferMetodos = new ArrayList<String>();
-		bufferExpresion = new ArrayList<String>();
 		resultado = "";
-		modoActual = modoSalida.NORMAL;
+		//resultado = "PROGRAM "+nombre+";\n";	
+		bufferExpresion = new ArrayList<String>();
+		modoActual = modoSalida.PROGRAMA;
 	}
 	
 	/*
@@ -58,7 +60,7 @@ public class GestorSalida {
 		for(Iterator<String> i = bufferExpresion.iterator();i.hasNext();)
 			bufferMetodos.add(i.next());
 		bufferExpresion = new ArrayList<String>();
-		this.modoActual = modoSalida.NORMAL;
+		this.modoActual = modoSalida.FUNCION;
 	}
 	
 	public void finalBloque(){
@@ -92,10 +94,11 @@ public class GestorSalida {
 		
 		resultado += "\nBEGIN\n";
 		for(Iterator<String> i = bufferMetodos.iterator(); i.hasNext();)
-			resultado += " "+i.next();
+			resultado += i.next()+" ";
 		resultado += "END;\n\n";
 		
 		bufferMetodos.clear();
+		this.setModo(modoSalida.PROGRAMA);
 	}
 
 	public void emiteTabs(int num) {
@@ -107,23 +110,31 @@ public class GestorSalida {
 	public void emite(String s) {
 		//resultado += " " + s;
 		switch(modoActual){
-		case NORMAL:
+		case FUNCION:
 			bufferMetodos.add(s);
 			break;
 		case EXPRESION:
 			bufferExpresion.add(s);
+			break;
+		case PROGRAMA:
+			resultado += s+" ";
 		}
+		//System.out.println(s);
 	}
 	
 	public void emite(ArrayList<String> al){
 		switch(modoActual){
-		case NORMAL:
+		case FUNCION:
 			for(Iterator<String> i = al.iterator();i.hasNext();)
 				bufferMetodos.add(i.next());
 			break;
 		case EXPRESION:
 			for(Iterator<String> i = al.iterator();i.hasNext();)
 				bufferExpresion.add(i.next());
+			break;
+		case PROGRAMA:
+			for(Iterator<String> i = al.iterator();i.hasNext();)
+				resultado += i.next()+" ";
 		}
 	}
 	

@@ -282,17 +282,13 @@ public class AnalizadorSintactico {
 	 */
 	private void programa() throws Exception {
 		parse.add(1);
-		gestorSal.emite("PROGRAM Ejemplo;");
+		gestorSal.emite("PROGRAM Ejemplo;\n\n");
+		//gestorSal = GestorSalida.getGestorSalida("Ejemplo");
 		libreria();
 		resto_programa();
 		if (!token.esIgual(TipoToken.EOF)) {
 			gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");
 		}
-		// ESTO ES PARA PRUEBAS, NO BORRAR! 
-		/*expression();
-		gestorSal.finalExpresion();
-		gestorSal.finalBloque();*/
-		//-------------------------------
 	}
 	
 	
@@ -830,14 +826,14 @@ public class AnalizadorSintactico {
 		ExpresionTipo tipo_s =ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.TIPODEFINIDO)){
 			parse.add(6);
-			gestorSal.emite((String) token.getAtributo());
+			//gestorSal.emite((String) token.getAtributo());
 			lexico.activaModo(modo.Declaracion);
 			lexico.desactivaModo(modo.NoMeto);
 			nextToken();
 			return (ExpresionTipo) tokenAnterior.getAtributo();
 		} else if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(6);
-			gestorSal.emite((String) token.getAtributo());
+			//gestorSal.emite((String) token.getAtributo());
 			lexico.activaModo(modo.Declaracion);
 			lexico.desactivaModo(modo.NoMeto);
 			nextToken();
@@ -847,7 +843,8 @@ public class AnalizadorSintactico {
 			//return new Objeto(((String)tokenAnterior.getAtributo()));
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
-			gestorSal.emite((String) token.getAtributo());
+			//gestorSal.emite((String) token.getAtributo());
+			//gestorSal.emite(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			lexico.activaModo(modo.Declaracion);
 			lexico.desactivaModo(modo.NoMeto);
@@ -977,20 +974,25 @@ public class AnalizadorSintactico {
 				lexico.activaModo(modo.Declaracion);
 				lexico.desactivaModo(modo.NoMeto);
 				tipoRetorno = null;
+				gestorSal.emite("PROCEDURE");
 				nextToken();
 				ExpresionTipo LISTA_PARAM_tipo_s,COSAS3_tipo_s,COSAS1_tipo_s;
 				if(token.esIgual(TipoToken.IDENTIFICADOR)) {
 					entradaTS = (EntradaTS)token.getAtributo();
 					entradaTS.setConstante(false);
 					ExpresionTipo id_tipo=null;
+					EntradaTS ent = (EntradaTS) token.getAtributo();
+					gestorSal.emite(ent.getLexemaTrad());
 					/*if((entradaTS.getTipo() instanceof Cabecera) && ((Cabecera)entradaTS.getTipo()).getImagen()!=null)
 						gestorErr.insertaErrorSemantico(linea, columna, "El tipo de retorno no coincide con la cabecera");*/
 					nextToken();
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)){
 						gestorTS.abreBloque("Procedimiento "+entradaTS.getLexema());
+						gestorSal.emite("(");
 						nextToken();
 						LISTA_PARAM_tipo_s = lista_param();
 						if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
+							gestorSal.emite(")");
 							nextToken();
 							COSAS3_tipo_s = cosas3(LISTA_PARAM_tipo_s,id_tipo,entradaTS);
 							COSAS1_tipo_s = cosas();
@@ -1323,6 +1325,8 @@ public class AnalizadorSintactico {
 				if(!ExpresionTipo.sonIguales(((Cabecera)entradaTS.getTipo()).getImagen(), tipo_id))
 					gestorErr.insertaErrorSemantico(linea, columna, "El tipo de retorno no coincide con la cabecera");
 			}
+			gestorSal.emite(";");
+			gestorSal.setModo(modoSalida.FUNCION);
 			entradaTS.setTipo(new Funcion((Producto) params, tipo_id));
 			lexico.desactivaModo(modo.NoMeto);
 			lexico.desactivaModo(modo.Declaracion);
@@ -1342,7 +1346,7 @@ public class AnalizadorSintactico {
 			lexico.activaModo(modo.Declaracion);
 
 			gestorSal.finalBloque();
-			//System.out.println(gestorSal.getResultado());
+			System.out.println(gestorSal.getResultado());
 			
 			gestorTS.cierraBloque();//se termina la funcion, cerramos el bloque
 			return CUERPO_tipo_s;
@@ -1376,23 +1380,30 @@ public class AnalizadorSintactico {
 					PASO_tipo_s = paso();
 					
 					if(token.esIgual(TipoToken.IDENTIFICADOR)) {
-						gestorSal.emite((String) token.getAtributo());
+						//gestorSal.emite((String) token.getAtributo());
+						//String s = ""+token.getAtributo();
+						//gestorSal.emite(s);
+						
 						entradaTS = (EntradaTS)token.getAtributo();
 						entradaTS.setConstante(constante);
-						
 						if(PASO_tipo_s == null) {
 							TIPO_tipo_s.setPasoReferencia(true);
 							entradaTS.setTipo(TIPO_tipo_s);
-						} else if(PASO_tipo_s.getTipoNoBasico() == TipoNoBasico.puntero)
+						} else if(PASO_tipo_s.getTipoNoBasico() == TipoNoBasico.puntero){
 							entradaTS.setTipo(new Puntero(TIPO_tipo_s));
-						else if(PASO_tipo_s.getTipoBasico() == TipoBasico.vacio) 
+							gestorSal.emite("VAR");
+						}else if(PASO_tipo_s.getTipoBasico() == TipoBasico.vacio) 
 							entradaTS.setTipo(TIPO_tipo_s);
+						gestorSal.emite(entradaTS.getLexemaTrad());
+						gestorSal.emite(":");
+						gestorSal.emite(TIPO_tipo_s.toStringPascal());
+						
 //						RESTO_LISTA_tipo_h.ponProducto(token.atrString(), entradaTS.getTipo());
 						String IDlexema = token.atrString();
 						nextToken();					
 						RESTO_LISTA_tipo_s = restoLista();
 						if(RESTO_LISTA_tipo_s.getTipoBasico()!=TipoBasico.error_tipo){
-							gestorSal.emite(":");
+							//gestorSal.emite(":");
 							((Producto)RESTO_LISTA_tipo_s).ponProducto(IDlexema, entradaTS.getTipo());
 							return RESTO_LISTA_tipo_s;}
 						else
@@ -5128,7 +5139,7 @@ public class AnalizadorSintactico {
 				nextToken();
 				ExpresionTipo aux2 = assignment_expression();
 				ArrayList<String> al3 = gestorSal.vaciarBufferExpresion();
-				gestorSal.setModo(modoSalida.NORMAL);
+				gestorSal.setModo(modoSalida.FUNCION);
 				gestorSal.emite("IF");
 				gestorSal.emite(al1);
 				gestorSal.emite("THEN\nBEGIN");

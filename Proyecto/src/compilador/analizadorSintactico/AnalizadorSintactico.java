@@ -1,6 +1,7 @@
 package compilador.analizadorSintactico;
 
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -13,6 +14,7 @@ import compilador.analizadorSemantico.ExpresionTipo.TipoBasico;
 import compilador.analizadorSemantico.ExpresionTipo.TipoNoBasico;
 import compilador.gestionErrores.GestorErrores;
 import compilador.gestionSalida.GestorSalida;
+import compilador.gestionSalida.GestorSalida.modoSalida;
 import compilador.gestionTablasSimbolos.*;
 
 public class AnalizadorSintactico {
@@ -286,6 +288,11 @@ public class AnalizadorSintactico {
 		if (!token.esIgual(TipoToken.EOF)) {
 			gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");
 		}
+		// ESTO ES PARA PRUEBAS, NO BORRAR! 
+		/*expression();
+		gestorSal.finalExpresion();
+		gestorSal.finalBloque();*/
+		//-------------------------------
 	}
 	
 	
@@ -1786,8 +1793,11 @@ public class AnalizadorSintactico {
 			gestorSal.emite(" = ");
 			nextToken();
 			//comprueba que los tipos son equivalentes
+			gestorSal.setModo(modoSalida.EXPRESION);
 			ExpresionTipo ASSIGNMENT_EXPRESSION_tipo_s=assignment_expression();
 			lexico.setModos(modos);
+			//gestorSal.setModo(modoSalida.NORMAL);
+			gestorSal.finalExpresion();
 			ExpresionTipo equiv = ExpresionTipo.sonCompAsig(ASSIGNMENT_EXPRESSION_tipo_s, tipo_h, OpAsignacion.ASIGNACION);
 			if(equiv != null && ASSIGNMENT_EXPRESSION_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 				return ExpresionTipo.getVacio();
@@ -3987,7 +3997,10 @@ public class AnalizadorSintactico {
 	private ExpresionTipo initializer_list() throws Exception{
 		ExpresionTipo aux1,aux2,aux3 = ExpresionTipo.getVacio();
 		parse.add(176);
+		gestorSal.setModo(modoSalida.EXPRESION);
 		aux1 = assignment_expression();
+		//gestorSal.setModo(modoSalida.NORMAL);
+		gestorSal.finalExpresion();
 		if ( !aux1.getTipoBasico().equals("error_tipo")) {
 			aux3 = aux1;
 			aux2 = resto_init(aux3);
@@ -5104,14 +5117,26 @@ public class AnalizadorSintactico {
 	 * @throws Exception 
 	 */
 	// TODO: COMO NARICES SE TRADUCE ESTO???
-	private ExpresionTipo resto_conditional(ExpresionTipo tipo_h) throws Exception {//////////////////////////////////////////////
+	private ExpresionTipo resto_conditional(ExpresionTipo tipo_h) throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.INTEROGACION)){
 			parse.add(238);
+			ArrayList<String> al1 = gestorSal.vaciarBufferExpresion();
 			nextToken();
 			ExpresionTipo aux1 = expression();
+			ArrayList<String> al2 = gestorSal.vaciarBufferExpresion();
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)){
 				nextToken();
 				ExpresionTipo aux2 = assignment_expression();
+				ArrayList<String> al3 = gestorSal.vaciarBufferExpresion();
+				gestorSal.setModo(modoSalida.NORMAL);
+				gestorSal.emite("IF");
+				gestorSal.emite(al1);
+				gestorSal.emite("THEN\nBEGIN");
+				gestorSal.emite(al2);
+				gestorSal.emite(";\n");
+				gestorSal.emite("ELSE\nBEGIN");
+				gestorSal.emite(al3);
+				gestorSal.emite("END");
 				if(ExpresionTipo.sonCompLog(tipo_h, new ExpresionTipo(TipoBasico.logico), OpLogico.AND)!=null){
 					ExpresionTipo aux3 = ExpresionTipo.sonCompArit(aux1, aux2, OpAritmetico.SUMA); 
 					if(aux3!=null)
@@ -5212,8 +5237,11 @@ public class AnalizadorSintactico {
 	 */
 	private ExpresionTipo expression() throws Exception {
 		parse.add(246);
+		gestorSal.setModo(modoSalida.EXPRESION);
 		ExpresionTipo aux1 = assignment_expression();
 		ExpresionTipo aux2 = resto_exp();
+		//gestorSal.setModo(modoSalida.NORMAL);
+		gestorSal.finalExpresion();
 		if(aux1.equals(TipoBasico.error_tipo))
 			return aux1;
 		else{

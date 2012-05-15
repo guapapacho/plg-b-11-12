@@ -8,12 +8,17 @@ import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
 
 public class GestorSalida {
 
+	public enum modoSalida {EXPRESION,NORMAL};
+	
 	/** Buffer que almacena el codigo de funciones/procedimientos **/
 	private ArrayList<String> bufferMetodos;
+	/** Buffer que almacena el codigo de funciones/procedimientos **/
+	private ArrayList<String> bufferExpresion;
 	/** Instancia única de la clase */
 	private static GestorSalida instance = null;
 	/** Cadena de caracteres que almacena el codigo "definitivo" **/
 	private String resultado;
+	private modoSalida modoActual;
 	
 	public static GestorSalida getGestorSalida() {
 		if(instance == null) {
@@ -24,7 +29,9 @@ public class GestorSalida {
 		
 	private GestorSalida(){
 		bufferMetodos = new ArrayList<String>();
-		resultado = "";	
+		bufferExpresion = new ArrayList<String>();
+		resultado = "";
+		modoActual = modoSalida.NORMAL;
 	}
 	
 	/*
@@ -32,6 +39,27 @@ public class GestorSalida {
 		bufferMetodos.add(s);
 	}
 	*/
+	
+	public modoSalida getModo(){
+		return modoActual;
+	}
+	
+	public void setModo(modoSalida m){
+		this.modoActual = m;
+	}
+	
+	public ArrayList<String> vaciarBufferExpresion(){
+		ArrayList<String> temp = this.bufferExpresion;
+		this.bufferExpresion = new ArrayList<String>();
+		return temp;
+	}
+	
+	public void finalExpresion(){
+		for(Iterator<String> i = bufferExpresion.iterator();i.hasNext();)
+			bufferMetodos.add(i.next());
+		bufferExpresion = new ArrayList<String>();
+		this.modoActual = modoSalida.NORMAL;
+	}
 	
 	public void finalBloque(){
 		resultado += "\nVAR\n";
@@ -78,7 +106,25 @@ public class GestorSalida {
 	
 	public void emite(String s) {
 		//resultado += " " + s;
-		bufferMetodos.add(s);
+		switch(modoActual){
+		case NORMAL:
+			bufferMetodos.add(s);
+			break;
+		case EXPRESION:
+			bufferExpresion.add(s);
+		}
+	}
+	
+	public void emite(ArrayList<String> al){
+		switch(modoActual){
+		case NORMAL:
+			for(Iterator<String> i = al.iterator();i.hasNext();)
+				bufferMetodos.add(i.next());
+			break;
+		case EXPRESION:
+			for(Iterator<String> i = al.iterator();i.hasNext();)
+				bufferExpresion.add(i.next());
+		}
 	}
 	
 	public void emiteEnPos(int pos, String s) {

@@ -387,6 +387,7 @@ public class Compilador extends JFrame {
 						AnalizadorLexico anLex = new AnalizadorLexico(in);						
 						AnalizadorSintactico anSin = new AnalizadorSintactico(anLex);
 						
+						//GestorSalida gestorS = GestorSalida.getGestorSalida("");
 						ta2a.setText("");
 						ta2a.append("Tokens:");
 						ta2a.append(anSin.getStringTokens());

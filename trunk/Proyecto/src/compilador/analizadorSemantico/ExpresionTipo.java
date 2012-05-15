@@ -338,6 +338,21 @@ public class ExpresionTipo {
 			return "ninguno?2";
 	}
 	
+	public String toStringPascal(){
+		if(tipoBasico != null)
+			switch (tipoBasico){
+			case logico: return "BOOLEAN";
+			case caracter: return "CHAR";
+			case entero: return "INTEGER";
+			case real: return "FLOAT";
+			case error_tipo: return "Error??"; 
+			case vacio: return "Vacio??";
+			default: return "ninguno??";
+			}
+			else 
+				return "ninguno?2";
+	}
+	
 	public void setRetorno(boolean b) {
 		hayRetorno = b;
 	}

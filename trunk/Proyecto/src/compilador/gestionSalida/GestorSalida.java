@@ -9,12 +9,14 @@ import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
 
 public class GestorSalida {
 
-	public enum modoSalida {PROGRAMA,EXPRESION,FUNCION};
+	public enum modoSalida {PROGRAMA,EXPRESION,FUNCION,PRINCIPAL};
 	
 	/** Buffer que almacena el codigo de funciones/procedimientos **/
 	private ArrayList<String> bufferMetodos;
 	/** Buffer que almacena el codigo de funciones/procedimientos **/
 	private ArrayList<String> bufferExpresion;
+	/** Buffer que almacena el codigo del main **/
+	private ArrayList<String> bufferPrincipal;
 	/** Instancia única de la clase */
 	private static GestorSalida instance = null;
 	/** Cadena de caracteres que almacena el codigo "definitivo" **/
@@ -34,6 +36,7 @@ public class GestorSalida {
 		resultado = "";
 		//resultado = "PROGRAM "+nombre+";\n";	
 		bufferExpresion = new ArrayList<String>();
+		bufferPrincipal = new ArrayList<String>();
 		modoActual = modoSalida.PROGRAMA;
 	}
 	
@@ -95,7 +98,7 @@ public class GestorSalida {
 			}else{
 				switch(entrada.getTipo().getTipoNoBasico()){
 				case vector:
-					resultado += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"];\n";
+					resultado += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"] OF "+((Vector)entrada.getTipo()).getTipoElementos().toStringPascal()+"; \n";
 				}
 			}
 		}
@@ -115,6 +118,14 @@ public class GestorSalida {
 		}
 	}
 	
+	public void emitirPrincipal(){
+		resultado += "BEGIN\n";
+		for(Iterator<String> i = bufferPrincipal.iterator();i.hasNext();){
+			resultado += i.next();
+		}
+		resultado += "END.";
+	}
+	
 	public void emite(String s) {
 		//resultado += " " + s;
 		switch(modoActual){
@@ -126,6 +137,9 @@ public class GestorSalida {
 			break;
 		case PROGRAMA:
 			resultado += s+" ";
+			break;
+		case PRINCIPAL:
+			bufferPrincipal.add(s);
 		}
 		//System.out.println(s);
 	}
@@ -143,7 +157,13 @@ public class GestorSalida {
 		case PROGRAMA:
 			for(Iterator<String> i = al.iterator();i.hasNext();)
 				resultado += i.next()+" ";
+			break;
+		case PRINCIPAL:
+			for(Iterator<String> i = al.iterator();i.hasNext();)
+				bufferPrincipal.add(i.next());
 		}
+		
+			
 	}
 	
 	public void emiteEnPos(int pos, String s) {

@@ -387,6 +387,7 @@ public class Compilador extends JFrame {
 						AnalizadorLexico anLex = new AnalizadorLexico(in);						
 						AnalizadorSintactico anSin = new AnalizadorSintactico(anLex);
 						
+						
 						//GestorSalida gestorS = GestorSalida.getGestorSalida("");
 						ta2a.setText("");
 						ta2a.append("Tokens:");
@@ -402,7 +403,7 @@ public class Compilador extends JFrame {
 						ta2a.append(gestorE.muestraListaWarnings());
 						
 						ta2b.setText("");
-						ta2b.append(gestorS.getResultado());
+						ta2b.append(gestorS.getResultadoFinal());
 						
 						rellenarTP0();
 					}

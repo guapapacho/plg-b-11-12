@@ -6,6 +6,7 @@ import java.util.Iterator;
 import compilador.analizadorSemantico.Vector;
 import compilador.gestionTablasSimbolos.EntradaTS;
 import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
+import compilador.gestionTablasSimbolos.TablaSimbolos;
 
 public class GestorSalida {
 
@@ -22,6 +23,8 @@ public class GestorSalida {
 	/** Cadena de caracteres que almacena el codigo "definitivo" **/
 	private String resultado;
 	
+	private String resultadoFinal;
+	
 	private modoSalida modoActual;
 	
 	public static GestorSalida getGestorSalida(){//String nombre) {
@@ -34,6 +37,7 @@ public class GestorSalida {
 	private GestorSalida(){//String nombre){
 		bufferMetodos = new ArrayList<String>();
 		resultado = "";
+		resultadoFinal = "";
 		//resultado = "PROGRAM "+nombre+";\n";	
 		bufferExpresion = new ArrayList<String>();
 		bufferPrincipal = new ArrayList<String>();
@@ -60,11 +64,16 @@ public class GestorSalida {
 		return temp;
 	}
 	
-	public void finalExpresion(){
-		for(Iterator<String> i = bufferExpresion.iterator();i.hasNext();)
-			bufferMetodos.add(i.next());
+	public void finalExpresion(boolean principal){
+		if(principal){
+			for(Iterator<String> i = bufferExpresion.iterator();i.hasNext();)
+				bufferPrincipal.add(i.next());
+		}else {
+			for(Iterator<String> i = bufferExpresion.iterator();i.hasNext();)
+				bufferMetodos.add(i.next());
+		}
 		bufferExpresion = new ArrayList<String>();
-		this.modoActual = modoSalida.FUNCION;
+		//this.modoActual = modoSalida.FUNCION;
 	}
 	
 	public void finalBloque(){
@@ -173,12 +182,102 @@ public class GestorSalida {
 	}
 
 	
+	public String getResultadoFinal(){
+		return resultadoFinal;
+	}
+
 	public String getResultado(){
 		return resultado;
 	}
-
+	
 	public void resetResultado() {
 		resultado = "";
+		resultadoFinal = "";
+		bufferMetodos.clear();
+		bufferExpresion.clear();
+		bufferPrincipal.clear();
+		modoActual = modoSalida.PROGRAMA;
+	}
+
+	public void emitirRes(){
+		resultadoFinal+=resultado;
+		resultado="";
+	}
+	
+	public void emitirVars() {
+		GestorTablasSimbolos gestorTS = GestorTablasSimbolos.getGestorTS();
+		ArrayList<EntradaTS> al = gestorTS.getEntradasBloqueActual();
+		EntradaTS entrada;
+		boolean yaVARS = false;
+		for(Iterator<EntradaTS> i = al.iterator(); i.hasNext();){
+			resultadoFinal += "VAR\n";
+			yaVARS = true;
+			entrada = i.next();
+			resultadoFinal += entrada.getLexemaTrad()+": ";
+			if(entrada.getTipo().esTipoBasico()){
+				switch(entrada.getTipo().getTipoBasico()){
+				case logico:
+					resultadoFinal += "BOOLEAN;\n";
+					break;
+				case caracter:
+					resultadoFinal += "CHAR;\n";
+					break;
+				case entero:
+					resultadoFinal += "INTEGER;\n";
+					break;
+				case real:
+					resultadoFinal += "FLOAT;\n";
+					break;
+				case vacio:
+					resultadoFinal += "VACIO?? ;\n";
+					break;
+				case error_tipo: 	
+					resultadoFinal += "ERROR?? ;\n";
+				}
+			}else{
+				switch(entrada.getTipo().getTipoNoBasico()){
+				case vector:
+					resultadoFinal += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"] OF "+((Vector)entrada.getTipo()).getTipoElementos().toStringPascal()+"; \n";
+				}
+			}
+		}
+		
+		TablaSimbolos t = gestorTS.dameBloqueActual().getBloquePrincipal();
+		if(t!=null)
+			al = t.getEntradasTrad();
+		for(Iterator<EntradaTS> i = al.iterator(); i.hasNext();){
+			entrada = i.next();
+			if(!yaVARS)
+				resultadoFinal += "VAR\n";
+			yaVARS = true;
+			resultadoFinal += entrada.getLexemaTrad()+": ";
+			if(entrada.getTipo().esTipoBasico()){
+				switch(entrada.getTipo().getTipoBasico()){
+				case logico:
+					resultadoFinal += "BOOLEAN;\n";
+					break;
+				case caracter:
+					resultadoFinal += "CHAR;\n";
+					break;
+				case entero:
+					resultadoFinal += "INTEGER;\n";
+					break;
+				case real:
+					resultadoFinal += "FLOAT;\n";
+					break;
+				case vacio:
+					resultadoFinal += "VACIO?? ;\n";
+					break;
+				case error_tipo: 	
+					resultadoFinal += "ERROR?? ;\n";
+				}
+			}else{
+				switch(entrada.getTipo().getTipoNoBasico()){
+				case vector:
+					resultadoFinal += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"] OF "+((Vector)entrada.getTipo()).getTipoElementos().toStringPascal()+"; \n";
+				}
+			}
+		}
 	}
 	
 }

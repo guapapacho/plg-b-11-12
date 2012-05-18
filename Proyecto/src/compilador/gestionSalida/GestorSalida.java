@@ -3,6 +3,7 @@ package compilador.gestionSalida;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import compilador.analizadorSemantico.Vector;
 import compilador.gestionTablasSimbolos.EntradaTS;
 import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
 
@@ -71,24 +72,31 @@ public class GestorSalida {
 		for(Iterator<EntradaTS> i = al.iterator(); i.hasNext();){
 			entrada = i.next();
 			resultado += entrada.getLexemaTrad()+": ";
-			switch(entrada.getTipo().getTipoBasico()){
-			case logico:
-				resultado += "BOOLEAN;\n";
-				break;
-			case caracter:
-				resultado += "CHAR;\n";
-				break;
-			case entero:
-				resultado += "INTEGER;\n";
-				break;
-			case real:
-				resultado += "FLOAT;\n";
-				break;
-			case vacio:
-				resultado += "VACIO?? ;\n";
-				break;
-			case error_tipo: 	
-				resultado += "ERROR?? ;\n";
+			if(entrada.getTipo().esTipoBasico()){
+				switch(entrada.getTipo().getTipoBasico()){
+				case logico:
+					resultado += "BOOLEAN;\n";
+					break;
+				case caracter:
+					resultado += "CHAR;\n";
+					break;
+				case entero:
+					resultado += "INTEGER;\n";
+					break;
+				case real:
+					resultado += "FLOAT;\n";
+					break;
+				case vacio:
+					resultado += "VACIO?? ;\n";
+					break;
+				case error_tipo: 	
+					resultado += "ERROR?? ;\n";
+				}
+			}else{
+				switch(entrada.getTipo().getTipoNoBasico()){
+				case vector:
+					resultado += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"];\n";
+				}
 			}
 		}
 		

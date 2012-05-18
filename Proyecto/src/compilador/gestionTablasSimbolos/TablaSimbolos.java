@@ -134,6 +134,14 @@ public class TablaSimbolos {
 		return s;
 	}
 
+	public TablaSimbolos getBloquePrincipal(){
+		for(TablaSimbolos contenido: contenidos){
+			if(contenido.getNombre().equals("Función main") || contenido.getNombre().equals("Procedimiento main"))
+				return contenido;
+		}
+		return null;
+	}
+	
 	public Vector<String> cabecerasRestantes() {
 		Vector<String> cabeceras = new Vector<String>();
 		for(EntradaTS entrada: entradasTS.values()){

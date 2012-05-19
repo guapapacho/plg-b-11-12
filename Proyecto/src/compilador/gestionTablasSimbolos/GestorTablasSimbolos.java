@@ -50,6 +50,10 @@ public class GestorTablasSimbolos {
 		return bloque_actual.getEntradasTrad();
 	}
 	
+	public ArrayList<EntradaTS> getEntradasCompletas(){
+		return bloque_actual.getEntradasTradCompletas();
+	}
+	
 	public ExpresionTipo getTipoDefinido(String s) {
 		return tiposDefinidos.get(s);
 	}

@@ -79,38 +79,42 @@ public class GestorSalida {
 	public void finalBloque(){
 		resultado += "\nVAR\n";
 		GestorTablasSimbolos gestorTS = GestorTablasSimbolos.getGestorTS();
-		ArrayList<EntradaTS> al = gestorTS.getEntradasBloqueActual();
+		ArrayList<EntradaTS> al = gestorTS.getEntradasCompletas();
 		EntradaTS entrada;
 		for(Iterator<EntradaTS> i = al.iterator(); i.hasNext();){
 			entrada = i.next();
-			resultado += entrada.getLexemaTrad()+": ";
-			if(entrada.getTipo().esTipoBasico()){
-				switch(entrada.getTipo().getTipoBasico()){
-				case logico:
-					resultado += "BOOLEAN;\n";
-					break;
-				case caracter:
-					resultado += "CHAR;\n";
-					break;
-				case entero:
-					resultado += "INTEGER;\n";
-					break;
-				case real:
-					resultado += "FLOAT;\n";
-					break;
-				case vacio:
-					resultado += "VACIO?? ;\n";
-					break;
-				case error_tipo: 	
-					resultado += "ERROR?? ;\n";
-				}
-			}else{
-				switch(entrada.getTipo().getTipoNoBasico()){
-				case vector:
-					resultado += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"] OF "+((Vector)entrada.getTipo()).getTipoElementos().toStringPascal()+"; \n";
+			if(!entrada.esParametro()){
+				resultado += entrada.getLexemaTrad()+": ";
+				if(entrada.getTipo().esTipoBasico()){
+					switch(entrada.getTipo().getTipoBasico()){
+					case logico:
+						resultado += "BOOLEAN;\n";
+						break;
+					case caracter:
+						resultado += "CHAR;\n";
+						break;
+					case entero:
+						resultado += "INTEGER;\n";
+						break;
+					case real:
+						resultado += "FLOAT;\n";
+						break;
+					case vacio:
+						resultado += "VACIO?? ;\n";
+						break;
+					case error_tipo: 	
+						resultado += "ERROR?? ;\n";
+					}
+				}else{
+					switch(entrada.getTipo().getTipoNoBasico()){
+					case vector:
+						resultado += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"] OF "+((Vector)entrada.getTipo()).getTipoElementos().toStringPascal()+"; \n";
+					}
 				}
 			}
 		}
+		
+		
 		
 		resultado += "\nBEGIN\n";
 		for(Iterator<String> i = bufferMetodos.iterator(); i.hasNext();)
@@ -181,6 +185,12 @@ public class GestorSalida {
 		resultado = s1 + s + s2;
 	}
 
+	public String getBufferExpresion(){
+		String res="";
+		for(Iterator<String> i=bufferExpresion.iterator();i.hasNext();)
+			res += i.next();
+		return res;
+	}
 	
 	public String getResultadoFinal(){
 		return resultadoFinal;
@@ -199,6 +209,10 @@ public class GestorSalida {
 		modoActual = modoSalida.PROGRAMA;
 	}
 
+	public void vaciarExpresion(){
+		bufferExpresion.clear();
+	}
+	
 	public void emitirRes(){
 		resultadoFinal+=resultado;
 		resultado="";
@@ -210,74 +224,81 @@ public class GestorSalida {
 		EntradaTS entrada;
 		boolean yaVARS = false;
 		for(Iterator<EntradaTS> i = al.iterator(); i.hasNext();){
-			resultadoFinal += "VAR\n";
+			if(!yaVARS)
+				resultadoFinal += "VAR\n";
 			yaVARS = true;
 			entrada = i.next();
-			resultadoFinal += entrada.getLexemaTrad()+": ";
-			if(entrada.getTipo().esTipoBasico()){
-				switch(entrada.getTipo().getTipoBasico()){
-				case logico:
-					resultadoFinal += "BOOLEAN;\n";
-					break;
-				case caracter:
-					resultadoFinal += "CHAR;\n";
-					break;
-				case entero:
-					resultadoFinal += "INTEGER;\n";
-					break;
-				case real:
-					resultadoFinal += "FLOAT;\n";
-					break;
-				case vacio:
-					resultadoFinal += "VACIO?? ;\n";
-					break;
-				case error_tipo: 	
-					resultadoFinal += "ERROR?? ;\n";
-				}
-			}else{
-				switch(entrada.getTipo().getTipoNoBasico()){
-				case vector:
-					resultadoFinal += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"] OF "+((Vector)entrada.getTipo()).getTipoElementos().toStringPascal()+"; \n";
+			if(!entrada.esParametro()){
+				resultadoFinal += entrada.getLexemaTrad()+": ";
+				if(entrada.getTipo().esTipoBasico()){
+					switch(entrada.getTipo().getTipoBasico()){
+					case logico:
+						resultadoFinal += "BOOLEAN;\n";
+						break;
+					case caracter:
+						resultadoFinal += "CHAR;\n";
+						break;
+					case entero:
+						resultadoFinal += "INTEGER;\n";
+						break;
+					case real:
+						resultadoFinal += "FLOAT;\n";
+						break;
+					case vacio:
+						resultadoFinal += "VACIO?? ;\n";
+						break;
+					case error_tipo: 	
+						resultadoFinal += "ERROR?? ;\n";
+					}
+				}else{
+					switch(entrada.getTipo().getTipoNoBasico()){
+					case vector:
+						resultadoFinal += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"] OF "+((Vector)entrada.getTipo()).getTipoElementos().toStringPascal()+"; \n";
+					}
 				}
 			}
 		}
 		
 		TablaSimbolos t = gestorTS.dameBloqueActual().getBloquePrincipal();
-		if(t!=null)
+		if(t!=null){
 			al = t.getEntradasTrad();
-		for(Iterator<EntradaTS> i = al.iterator(); i.hasNext();){
-			entrada = i.next();
-			if(!yaVARS)
-				resultadoFinal += "VAR\n";
-			yaVARS = true;
-			resultadoFinal += entrada.getLexemaTrad()+": ";
-			if(entrada.getTipo().esTipoBasico()){
-				switch(entrada.getTipo().getTipoBasico()){
-				case logico:
-					resultadoFinal += "BOOLEAN;\n";
-					break;
-				case caracter:
-					resultadoFinal += "CHAR;\n";
-					break;
-				case entero:
-					resultadoFinal += "INTEGER;\n";
-					break;
-				case real:
-					resultadoFinal += "FLOAT;\n";
-					break;
-				case vacio:
-					resultadoFinal += "VACIO?? ;\n";
-					break;
-				case error_tipo: 	
-					resultadoFinal += "ERROR?? ;\n";
-				}
-			}else{
-				switch(entrada.getTipo().getTipoNoBasico()){
-				case vector:
-					resultadoFinal += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"] OF "+((Vector)entrada.getTipo()).getTipoElementos().toStringPascal()+"; \n";
+			for(Iterator<EntradaTS> i = al.iterator(); i.hasNext();){
+				entrada = i.next();
+				if(!entrada.esParametro()){
+					if(!yaVARS)
+						resultadoFinal += "VAR\n";
+					yaVARS = true;
+					resultadoFinal += entrada.getLexemaTrad()+": ";
+					if(entrada.getTipo().esTipoBasico()){
+						switch(entrada.getTipo().getTipoBasico()){
+						case logico:
+							resultadoFinal += "BOOLEAN;\n";
+							break;
+						case caracter:
+							resultadoFinal += "CHAR;\n";
+							break;
+						case entero:
+							resultadoFinal += "INTEGER;\n";
+							break;
+						case real:
+							resultadoFinal += "FLOAT;\n";
+							break;
+						case vacio:
+							resultadoFinal += "VACIO?? ;\n";
+							break;
+						case error_tipo: 	
+							resultadoFinal += "ERROR?? ;\n";
+						}
+					}else{
+						switch(entrada.getTipo().getTipoNoBasico()){
+						case vector:
+							resultadoFinal += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"] OF "+((Vector)entrada.getTipo()).getTipoElementos().toStringPascal()+"; \n";
+						}
+					}
 				}
 			}
 		}
+		resultadoFinal += "\n";
 	}
 	
 }

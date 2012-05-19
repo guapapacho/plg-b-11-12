@@ -2,6 +2,7 @@ package compilador.gestionTablasSimbolos;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Vector;
 
 import compilador.analizadorSemantico.Cabecera;
@@ -46,6 +47,13 @@ public class TablaSimbolos {
 		return continente;
 	}
 
+	public ArrayList<EntradaTS> getEntradasTradCompletas(){
+		ArrayList<EntradaTS> a = getEntradasTrad();
+		for(Iterator<TablaSimbolos> i = contenidos.iterator();i.hasNext();)
+			a.addAll(i.next().getEntradasTradCompletas());
+		return a;
+	}
+	
 	public ArrayList<EntradaTS> getEntradasTrad(){
 		ArrayList<EntradaTS> a = new ArrayList<EntradaTS>();
 		for(EntradaTS entrada: entradasTS.values()){

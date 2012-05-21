@@ -76,6 +76,10 @@ public class GestorSalida {
 		//this.modoActual = modoSalida.FUNCION;
 	}
 	
+	public ArrayList<String> getBufferMetodos(){
+		return bufferMetodos;
+	}
+	
 	public void finalBloque(){
 		resultado += "\nVAR\n";
 		GestorTablasSimbolos gestorTS = GestorTablasSimbolos.getGestorTS();
@@ -180,16 +184,27 @@ public class GestorSalida {
 	}
 	
 	public void emiteEnPos(int pos, String s) {
-		String s1 = resultado.substring(0, pos);
-		String s2 = resultado.substring(pos, resultado.length());
-		resultado = s1 + s + s2;
+//		String s1 = resultado.substring(0, pos);
+//		String s2 = resultado.substring(pos, resultado.length());
+//		resultado = s1 + s + s2;
+		pos = (pos < 0) ? 0 : pos;
+		if(bufferMetodos.size() == 0)
+			bufferMetodos.add(s);
+		else {
+			s += bufferMetodos.get(pos);
+			bufferMetodos.set(pos, s);
+		}
 	}
 
-	public String getBufferExpresion(){
+	public String getBufferExpString(){
 		String res="";
 		for(Iterator<String> i=bufferExpresion.iterator();i.hasNext();)
 			res += i.next();
 		return res;
+	}
+	
+	public ArrayList<String> getBufferExp(){
+		return bufferExpresion;
 	}
 	
 	public String getResultadoFinal(){

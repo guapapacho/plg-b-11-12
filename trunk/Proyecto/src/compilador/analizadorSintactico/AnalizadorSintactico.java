@@ -2623,7 +2623,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
 			parse.add(71);
 			lexico.desactivaModo(modo.Declaracion); lexico.desactivaModo(modo.NoMeto);//comienza el modo "uso de variables"
-			gestorSal.emite("write");
+			//gestorSal.emite("write");
 			nextToken();
 			return resto_esc();
 		}
@@ -2647,23 +2647,23 @@ public class AnalizadorSintactico {
 		if(esLiteral()){
 			parse.add(72);
 			if(token.esIgual(TipoToken.LIT_CADENA))
-				gestorSal.emite("(\""+token.atrString()+"\");\n");
+				gestorSal.emite("write(\""+token.atrString()+"\");\n");
 			else if (token.esIgual(TipoToken.CARACTER) || token.esIgual(TipoToken.LIT_CARACTER))
-				gestorSal.emite("('"+token.atrString()+"');\n");
+				gestorSal.emite("write('"+token.atrString()+"');\n");
 			else
-				gestorSal.emite("("+token.atrString()+");\n");
+				gestorSal.emite("write("+token.atrString()+");\n");
 			nextToken();
 			return ins_esc2();
 		}
 		else if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(73);
-			gestorSal.emite("("+token.atrString()+");\n");
+			gestorSal.emite("write("+token.atrString()+");\n");
 			nextToken();
 			return ins_esc2();		
 		}
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,76 /*endl*/)){ 
 			parse.add(74);
-			gestorSal.emite("ln;");
+			gestorSal.emite("writeln;\n");
 			nextToken();
 			return ins_esc2();
 		}
@@ -2684,7 +2684,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo ins_esc2() throws Exception{
 		if(token.esIgual(TipoToken.OP_LOGICO,OpLogico.DOS_MENORES)){
 			parse.add(75);
-			gestorSal.emite("write");
+			//gestorSal.emite("write");
 			nextToken();
 			return resto_esc();
 		}

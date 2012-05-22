@@ -2823,7 +2823,7 @@ public class AnalizadorSintactico {
 		{
 			ExpresionTipo RESTO_IF_tipo, CUERPO_tipo;
 			parse.add(84);
-			gestorSal.emite("if ");
+			gestorSal.emite("if (");
 			nextToken();
 			RESTO_IF_tipo = resto_if();
 			CUERPO_tipo = cuerpo();
@@ -3092,7 +3092,7 @@ public class AnalizadorSintactico {
 		else if(token.esIgual(TipoToken.PAL_RESERVADA,32 /*if*/))
 		{
 			parse.add(90);
-			gestorSal.emite("if ");
+			gestorSal.emite("if (");
 			nextToken();
 			return resto_if();
 		}
@@ -3265,7 +3265,7 @@ public class AnalizadorSintactico {
 			gestorTS.abreBloque("For");
 			nextToken();
 			FOR_INIT_tipo = for_init();
-			gestorSal.emite("while");
+			gestorSal.emite("while (");
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 				nextToken();
 				EXPRESSIONOPT_tipo = expressionOpt(false,false);
@@ -3567,7 +3567,7 @@ public class AnalizadorSintactico {
 			gestorTS.abreBloque("If");
 			nextToken();
 			EXPRESSION_tipo = expression(false,false);
-			gestorSal.emite(" then ");
+			gestorSal.emite(") then ");
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
 				CUERPO2_tipo = cuerpo2();
@@ -5275,9 +5275,9 @@ public class AnalizadorSintactico {
 				ArrayList<String> al3 = gestorSal.vaciarBufferExpresion();
 				modoSalida modo_anterior = gestorSal.getModo();
 				gestorSal.setModo(modoSalida.FUNCION);
-				gestorSal.emite("IF");
+				gestorSal.emite("IF (");
 				gestorSal.emite(al1);
-				gestorSal.emite("THEN\nBEGIN");
+				gestorSal.emite(") THEN\nBEGIN");
 				gestorSal.emite(al2);
 				gestorSal.emite(";\n");
 				gestorSal.emite("ELSE\nBEGIN");

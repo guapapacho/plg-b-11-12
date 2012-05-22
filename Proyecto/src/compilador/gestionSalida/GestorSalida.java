@@ -251,6 +251,7 @@ public class GestorSalida {
 		GestorTablasSimbolos gestorTS = GestorTablasSimbolos.getGestorTS();
 		ArrayList<EntradaTS> al = gestorTS.getEntradasBloqueActual();
 		EntradaTS entrada;
+		String res="";
 		boolean yaVARS = false;
 		for(Iterator<EntradaTS> i = al.iterator(); i.hasNext();){
 			if(!yaVARS)
@@ -259,11 +260,15 @@ public class GestorSalida {
 			entrada = i.next();
 			if(!entrada.esParametro() && !entrada.isConstante()){
 				resultadoFinal += entrada.getLexemaTrad()+": ";
-				if(entrada.getTipo().esTipoBasico()){
-					resultadoFinal += entrada.getTipo().toStringPascal()+";\n";
+				/*if(!entrada.getNomTipoDef().equals("")){
+					res += entrada.getNomTipoDef()+";\n";
+				}else*/ if(entrada.getTipo().esTipoBasico()){
+					res += entrada.getTipo().toStringPascal()+";\n";
 				}else{
-					resultadoFinal += entrada.getTipo().toStringPascalDec()+";\n";
+					res += entrada.getTipo().toStringPascalDec()+";\n";
 				}
+				resultadoFinal += res;
+				
 					/*switch(entrada.getTipo().getTipoBasico()){
 					case logico:
 						resultadoFinal += "BOOLEAN;\n";
@@ -302,6 +307,11 @@ public class GestorSalida {
 					yaVARS = true;
 					resultadoFinal += entrada.getLexemaTrad()+": ";
 					if(entrada.getTipo().esTipoBasico()){
+						resultadoFinal += entrada.getTipo().toStringPascal()+";\n";
+					}else{
+						resultadoFinal += entrada.getTipo().toStringPascalDec()+";\n";
+					}
+					/*if(entrada.getTipo().esTipoBasico()){
 						switch(entrada.getTipo().getTipoBasico()){
 						case logico:
 							resultadoFinal += "BOOLEAN;\n";
@@ -326,7 +336,7 @@ public class GestorSalida {
 						case vector:
 							resultadoFinal += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"] OF "+((Vector)entrada.getTipo()).getTipoElementos().toStringPascal()+"; \n";
 						}
-					}
+					}*/
 				}
 			}
 		}
@@ -350,7 +360,7 @@ public class GestorSalida {
 			if(!yaTYPE)
 				resultadoFinal += "TYPE\n";
 			yaTYPE = true;
-			resultadoFinal += s + " = " + e.toStringPascal();
+			resultadoFinal += s + " = " + e.toStringPascal()+";\n";
 		}
 		resultadoFinal += "\n";
 	}

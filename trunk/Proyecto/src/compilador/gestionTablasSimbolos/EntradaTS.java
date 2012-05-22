@@ -19,16 +19,27 @@ public class EntradaTS {
 	/** si es un parametro de función/procedimiento o no **/
 	private boolean parametro;
 
+	private String nomTipoDef;
+	
 	public EntradaTS(String lexema) {
-		this(lexema, null, false, false);
+		this(lexema, null, false, false,"");
 	}
 	
-	public EntradaTS(String lexema, ExpresionTipo tipo, boolean constante, boolean parametro) {
+	public EntradaTS(String lexema, ExpresionTipo tipo, boolean constante, boolean parametro, String nomTipoDef) {
 		this.lexema = lexema;
 		this.lexemaTrad = lexema;
 		this.tipo = tipo;
 		this.constante = constante;
 		this.parametro = parametro;
+		this.nomTipoDef = nomTipoDef;
+	}
+	
+	public void setTipoDef(String t){
+		this.nomTipoDef = t;
+	}
+	
+	public String getNomTipoDef(){
+		return nomTipoDef;
 	}
 	
 	public boolean isConstante() {

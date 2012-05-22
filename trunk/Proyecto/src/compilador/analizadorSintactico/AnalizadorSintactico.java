@@ -2195,6 +2195,9 @@ public class AnalizadorSintactico {
 	 */
 	private ExpresionTipo ins_dec2(ExpresionTipo tipo_h) throws Exception {
 		ExpresionTipo aux2 = tipo_h;
+		/*String nom="";
+		if(tokenAnterior.getAtributo() instanceof EntradaTS) // Esto es porque es un tipo definido
+			nom += ((EntradaTS)tokenAnterior.getAtributo()).getLexemaTrad();*/
 		if(punt()){
 			nextToken();
 			aux2 = new Puntero(tipo_h);
@@ -2202,6 +2205,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.IDENTIFICADOR)){
 			parse.add(52);
 			((EntradaTS)token.getAtributo()).setTipo(aux2);
+//			((EntradaTS)token.getAtributo()).setTipoDef(nom);
 //			gestorSal.emite(" "+token.atrString()+" ");
 			nextToken();
 			
@@ -5458,7 +5462,8 @@ public class AnalizadorSintactico {
 	 * 56. TYPEDEF -> enum ID ID ;
 	 */
 	private ExpresionTipo typedef() throws Exception{
-		ExpresionTipo aux1 = tipo_simple();
+//		ExpresionTipo aux1 = tipo_simple();
+		ExpresionTipo aux1 = tipo();
 		Vector<modo> modos = lexico.getModos();
 		if(!aux1.equals(TipoBasico.vacio)){
 			parse.add(54);
@@ -5560,10 +5565,13 @@ public class AnalizadorSintactico {
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta nombre del tipo definido");	
 				return null;
 			}
+		}else{
+			gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");
+			return null;
 		}
 		
 		
-		return aux1;
+//		return aux1;
 	}
 	
 	

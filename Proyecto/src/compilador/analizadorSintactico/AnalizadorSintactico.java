@@ -1336,7 +1336,7 @@ public class AnalizadorSintactico {
 				gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado. Falta separador \";\"");
 				return null;
 			}else{
-				gestorSal.emite(";\n");
+//				gestorSal.emite(";\n");
 				nextToken();
 				if(INICIALIZACION_tipo_h.getTipoBasico()!=TipoBasico.error_tipo && DECLARACIONES_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)
 					return ExpresionTipo.getVacio();
@@ -1602,12 +1602,12 @@ public class AnalizadorSintactico {
 	 * 					{ INIC_DIM.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo inicDim(ExpresionTipo tipo,int num_comp,String dimensiones) throws Exception {
+	private ExpresionTipo inicDim(ExpresionTipo tipo,int num_comp, int longitud,String dimensiones) throws Exception {
 		if(token.esIgual(TipoToken.OP_ASIGNACION, OpAsignacion.ASIGNACION)){
 			parse.add(26);
-			gestorSal.emite(dimensiones+" :=");
+//			gestorSal.emite(dimensiones+" :=");
 			nextToken();
-			ExpresionTipo INIC_DIM_tipo_s=inicDim2(tipo,num_comp);
+			ExpresionTipo INIC_DIM_tipo_s=inicDim2(tipo,num_comp,longitud,dimensiones);
 //			if(ExpresionTipo.sonEquivComp(INIC_DIM_tipo_s, tipo, OpComparacion.IGUALDAD)!=null){
 			if(!INIC_DIM_tipo_s.equals(TipoBasico.error_tipo)){
 				return INIC_DIM_tipo_s;
@@ -1628,22 +1628,22 @@ public class AnalizadorSintactico {
 	 * 					{ INIC_DIM2.tipo_s := INIC_DIM3.tipo_s }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo inicDim2(ExpresionTipo tipo_h, int num_comp) throws Exception {
+	private ExpresionTipo inicDim2(ExpresionTipo tipo_h, int num_comp,int longitud, String nombreArray) throws Exception {
 		if(!token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_LLAVE)){
 			gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"{\"");
 			return null;
 		}
 		else{
 			parse.add(28);
-			gestorSal.emite("(");
+//			gestorSal.emite("(");
 			nextToken();
-			ExpresionTipo INIC_DIM2_tipo_s=inicDim3(tipo_h, num_comp);
+			ExpresionTipo INIC_DIM2_tipo_s=inicDim3(tipo_h, num_comp, longitud, nombreArray);
 			if(!token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_LLAVE)){
 				gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \"}\"");
 				return null;
 			}
 			else{
-				gestorSal.emite(");");
+//				gestorSal.emite(");");
 				nextToken();
 				return INIC_DIM2_tipo_s;
 			}
@@ -1661,12 +1661,15 @@ public class AnalizadorSintactico {
      *					   else INIC_DIM3.tipo_s := error_tipo  } 
 	 * @throws Exception 
 	 */
-	private ExpresionTipo inicDim3(ExpresionTipo tipo_h, int num_comp) throws Exception {
+	private ExpresionTipo inicDim3(ExpresionTipo tipo_h, int num_comp, int longitud, String nombreArray) throws Exception {
 		if(!token.esIgual(TipoToken.EOF)){
+			gestorSal.emite(nombreArray + "[" + (longitud-num_comp) + "] := ");
 			ExpresionTipo LITERAL_TIPOSIMPLE=literal();
+//			if(num_comp != 1)
+				gestorSal.emite(";\n");
 			if(LITERAL_TIPOSIMPLE != null){
 				parse.add(29);
-				ExpresionTipo INIC_DIM4_tipo_s=inicDim4(tipo_h, num_comp-1);
+				ExpresionTipo INIC_DIM4_tipo_s=inicDim4(tipo_h, num_comp-1,longitud,nombreArray);
 				if(ExpresionTipo.sonCompComp(LITERAL_TIPOSIMPLE, tipo_h, OpComparacion.IGUALDAD)!=null){
 					if(INIC_DIM4_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 						return ExpresionTipo.getVacio();
@@ -1683,8 +1686,8 @@ public class AnalizadorSintactico {
 			else{
 				parse.add(30);
 				ExpresionTipo INIC_DIM2_tipo_s,INIC_DIM5_tipo_s;
-				INIC_DIM2_tipo_s=inicDim2(tipo_h,num_comp); // TODO cambiar!!!!
-				INIC_DIM5_tipo_s=inicDim5(tipo_h);
+				INIC_DIM2_tipo_s=inicDim2(tipo_h,num_comp,longitud,nombreArray); // TODO cambiar!!!!
+				INIC_DIM5_tipo_s=inicDim5(tipo_h,longitud,nombreArray);
 				if(INIC_DIM2_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && INIC_DIM5_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 					return ExpresionTipo.getVacio();
 				else{
@@ -1707,18 +1710,21 @@ public class AnalizadorSintactico {
 	 *					{ INIC_DIM4.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo inicDim4(ExpresionTipo tipo_h, int num_comp) throws Exception {
+	private ExpresionTipo inicDim4(ExpresionTipo tipo_h, int num_comp,int longitud,String nombreArray) throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 			parse.add(31);
-			gestorSal.emite(",");
+//			gestorSal.emite(",");
+			gestorSal.emite(nombreArray + "[" + (longitud-num_comp) + "] := ");
 			nextToken();
 			ExpresionTipo LITERAL_TIPOSIMPLE=literal();
+//			if(num_comp != 1)
+				gestorSal.emite(";\n");
 			if(LITERAL_TIPOSIMPLE == null){
 				gestorErr.insertaErrorSintactico(linea, columna,"Falta token literal");
 				return null;
 			}
 			else{
-				ExpresionTipo INIC_DIM4_tipo_s=inicDim4(tipo_h,num_comp-1);
+				ExpresionTipo INIC_DIM4_tipo_s=inicDim4(tipo_h,num_comp-1,longitud,nombreArray);
 				if(ExpresionTipo.sonCompComp(LITERAL_TIPOSIMPLE, tipo_h, OpComparacion.IGUALDAD)!=null){
 					if(INIC_DIM4_tipo_s.getTipoBasico()!=TipoBasico.error_tipo){
 						if(num_comp<=0){
@@ -1752,14 +1758,14 @@ public class AnalizadorSintactico {
 	 *					{ INIC_DIM5.tipo_s := vacio }
 	 * @throws Exception 
 	 */
-	private ExpresionTipo inicDim5(ExpresionTipo tipo_h) throws Exception {
+	private ExpresionTipo inicDim5(ExpresionTipo tipo_h, int longitud, String nombreArray) throws Exception {
 		if(token.esIgual(TipoToken.SEPARADOR, Separadores.COMA)){
 			parse.add(33);
-			gestorSal.emite(",");
+//			gestorSal.emite(",");
 			nextToken();
 			ExpresionTipo INIC_DIM2_tipo_s,INIC_DIM5_tipo_s;
-			INIC_DIM2_tipo_s=inicDim2(tipo_h,1); // TODO:  cambiar el 1!!!
-			INIC_DIM5_tipo_s=inicDim5(tipo_h);
+			INIC_DIM2_tipo_s=inicDim2(tipo_h,1,longitud,nombreArray); // TODO:  cambiar el 1!!!
+			INIC_DIM5_tipo_s=inicDim5(tipo_h,longitud,nombreArray);
 			if(INIC_DIM2_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && INIC_DIM5_tipo_s.getTipoBasico()!=TipoBasico.error_tipo){
 				return ExpresionTipo.getVacio();
 			}
@@ -1894,25 +1900,29 @@ public class AnalizadorSintactico {
 		}
 		else if(token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_CORCHETE)){
 			parse.add(40);
+			modoSalida modo_anterior = gestorSal.getModo();
+			if(modo_anterior==modoSalida.PROGRAMA)
+				gestorSal.setModo(modoSalida.PRINCIPAL);
 			hayInic=true;
 			//gestorSal.emite("[ 0 ..");
-			String s = entrada.getLexemaTrad()+"[";
+			String s = entrada.getLexemaTrad();//+"[";
 			nextToken();
 			if(token.esIgual(TipoToken.NUM_ENTERO )){
 				//gestorSal.emite(token.getAtributo().toString());
-				s+=(Integer)token.getAtributo();
+//				s+=(Integer)token.getAtributo();
 				Token token_aux=token;
 				nextToken();
 				if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_CORCHETE)){
 					//gestorSal.emite("]");
-					s+="]";
+					//s+="]";
 					//Aqui debemos cambiar el tipo asociado a la variable ya insertada en la TS
 					compilador.analizadorSemantico.Vector v = new compilador.analizadorSemantico.Vector((Integer)(token_aux.getAtributo()), tipo_h); //TODO cambiar longitud
 					entrada.setTipo(v);
 //					declaraciones.add("Declaramos "+ entrada.getLexema()+ " con tipo semantico: \'"+v.getTipo().toString()+"\'");
 					nextToken();
 					ExpresionTipo DIMENSION_tipo=dimension(s);
-					ExpresionTipo INIC_DIM_tipo_s=inicDim(tipo_h,v.getLongitud(),s);
+					ExpresionTipo INIC_DIM_tipo_s=inicDim(tipo_h,v.getLongitud(),v.getLongitud(),s);
+					gestorSal.setModo(modo_anterior);
 					if((token_aux.esIgual(TipoToken.NUM_ENTERO))&&(DIMENSION_tipo.getTipoBasico()!=TipoBasico.error_tipo)&&(INIC_DIM_tipo_s.getTipoBasico()!=TipoBasico.error_tipo))
 						return ExpresionTipo.getVacio();
 					else{

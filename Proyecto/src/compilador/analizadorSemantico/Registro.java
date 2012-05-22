@@ -25,6 +25,16 @@ public class Registro extends ExpresionTipo {
 		return campos;
 	}
 	
+	public String toStringPascal(){
+		String res = "RECORD\n";
+		res += campos.toStringPascal()+"END;\n";
+		return res;
+	}
+	
+	public String toStringPascalDec(){
+		return nombreRegistro;
+	}
+	
 	public String toString() {
 		return "Registro con los siguientes campos: " + campos.toString(false);
 	}

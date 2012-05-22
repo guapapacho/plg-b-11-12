@@ -126,21 +126,22 @@ public class AnalizadorSintactico {
 			String comentario = token.getComentario();
 			if(comentario != "") {
 				comentario = comentario.replaceAll("}", "'cierra_llave'");
-				gestorSal.emite(" { " + comentario + " } "); // suponemos que todos los comentarios son de varias lineas
+				gestorSal.emite(" { " + comentario + " } \n"); // suponemos que todos los comentarios son de varias lineas
 			}
 		}
 	}
 	
 	private ExpresionTipo idConst(ExpresionTipo tipo) throws Exception {
 		EntradaTS entradaTS = (EntradaTS)token.getAtributo();
-		String aux=entradaTS.getLexemaTrad();
+//		String aux=entradaTS.getLexemaTrad();
 		entradaTS.setTipo(tipo);
 		entradaTS.setConstante(true);
 		nextToken();
 		if(token.esIgual(TipoToken.OP_ASIGNACION,OpAsignacion.ASIGNACION)) {
-			aux=aux+" = ";
-			gestorSal.emite(aux);
+//			aux=aux+" = ";
+//			gestorSal.emite(aux);
 			nextToken();
+			gestorSal.emite(" = ");
 			ExpresionTipo LITERAL_tipo=literal();
 			if(LITERAL_tipo != null) {
 				if(ExpresionTipo.sonCompAsig(tipo, LITERAL_tipo, OpAsignacion.ASIGNACION)!=null){
@@ -306,6 +307,8 @@ public class AnalizadorSintactico {
 		if (!token.esIgual(TipoToken.EOF)) {
 			gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado.");
 		}else{
+			gestorSal.emitirConsts();
+			gestorSal.emitirTipos();
 			gestorSal.emitirVars();
 			gestorSal.emitirRes();
 			gestorSal.emitirPrincipal();
@@ -864,6 +867,8 @@ public class AnalizadorSintactico {
 			//return new Objeto(((String)tokenAnterior.getAtributo()));
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
+			//gestorSal.emite(gestorTS.dameNombrePalRes((Integer)token.getAtributo()));
+			
 			//gestorSal.emite((String) token.getAtributo());
 			//gestorSal.emite(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
@@ -890,7 +895,7 @@ public class AnalizadorSintactico {
 			return new Objeto(((EntradaTS)tokenAnterior.getAtributo()).getLexema());
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
-			gestorSal.emite((String) token.getAtributo());
+			//gestorSal.emite((String) token.getAtributo());
 			tipo_s = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			nextToken();
 			if(tipo_s!=null && token.getAtributo()!=null && (token.getAtributo() instanceof EntradaTS)){
@@ -906,7 +911,7 @@ public class AnalizadorSintactico {
 		ExpresionTipo tipo = ExpresionTipo.getVacio();
 		if(token.esIgual(TipoToken.PAL_RESERVADA) && gestorTS.esTipoSimple((Integer)token.getAtributo())){
 			parse.add(7);
-			gestorSal.emite((String) token.getAtributo());
+			//gestorSal.emite((String) token.getAtributo());
 			tipo = ExpresionTipo.expresionTipoDeString(gestorTS.getTipoSimple((Integer)token.getAtributo()));
 			nextToken();
 		}
@@ -959,19 +964,25 @@ public class AnalizadorSintactico {
 		if(!token.esIgual(TipoToken.EOF)) {
 			if(token.esIgual(TipoToken.PAL_RESERVADA, 9 /*const*/)){
 				parse.add(8);
-				gestorSal.emite("CONST"+'\n');
+//				gestorSal.emite("CONST"+'\n');
+				modoSalida modo_anterior = gestorSal.getModo();
+				gestorSal.setModo(modoSalida.CONSTANTE);
 				nextToken();
 				if(esTipo(token)){
 					ExpresionTipo TIPO_tipo_s=tipo();
 					if(TIPO_tipo_s!=null){
+						//gestorSal.emite(TIPO_tipo_s.toStringPascal());
 						if(token.esIgual(TipoToken.IDENTIFICADOR)) {
+							gestorSal.emite(((EntradaTS) token.getAtributo()).getLexemaTrad());
 							idConst(TIPO_tipo_s); // ID = LITERAL
-							gestorSal.emite(";"+'\n');
+//							gestorSal.emite(";"+'\n');
 							ExpresionTipo INIC_CONST_tipo_h=inic_const(TIPO_tipo_s);
 							if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 								gestorErr.insertaErrorSintactico(linea, columna,"Falta separador \";\"");
 							} else {
 								nextToken();
+								gestorSal.emite(";"+'\n');
+								gestorSal.setModo(modo_anterior);
 								ExpresionTipo COSAS1_tipo_s=cosas();
 								if((!TIPO_tipo_s.equals(TipoBasico.error_tipo))&&(!INIC_CONST_tipo_h.equals(TipoBasico.error_tipo))&&(!COSAS1_tipo_s.equals(TipoBasico.error_tipo))){
 									return ExpresionTipo.getVacio();
@@ -1050,7 +1061,7 @@ public class AnalizadorSintactico {
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 23 /* enum */)){
 				parse.add(11);
-				gestorSal.emite("TYPE"+'\n');
+//				gestorSal.emite("TYPE"+'\n');
 				lexico.activaModo(modo.NoMeto);
 				nextToken();
 				lexico.desactivaModo(modo.NoMeto);
@@ -1063,7 +1074,7 @@ public class AnalizadorSintactico {
 						//se pone a modo declaracion porque interesa insertar los id de los 
 						//enumerados en la TS como constantes enteras.
 						lexico.activaModo(modo.Declaracion);
-						gestorSal.emite(IDlexema+"=(");
+//						gestorSal.emite(IDlexema+"=(");
 						nextToken();
 						LISTANOMBRES_tipo_s=listaNombres(aux);
 //						if(LISTANOMBRES_tipo_s.getTipoBasico() != TipoBasico.error_tipo)
@@ -1073,7 +1084,7 @@ public class AnalizadorSintactico {
 							if(!token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 								gestorErr.insertaErrorSintactico(linea, columna, "Falta separador \";\"");
 							} else {
-								gestorSal.emite(");"+'\n');
+//								gestorSal.emite(");"+'\n');
 								nextToken();
 								if(LISTANOMBRES_tipo_s.getTipoBasico()!=TipoBasico.error_tipo) {
 									((Enumerado)LISTANOMBRES_tipo_s).setNombreEnumerado(IDlexema);
@@ -1104,13 +1115,13 @@ public class AnalizadorSintactico {
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 54 /* struct */)){
 				parse.add(12);	
-				gestorSal.emite("TYPE"+'\n');
+//				gestorSal.emite("TYPE"+'\n');
 				ExpresionTipo RESTO_ST_tipo_s,COSAS1_tipo_s;
 				lexico.activaModo(modo.NoMeto);
 				nextToken();
 				lexico.desactivaModo(modo.NoMeto);
 				RESTO_ST_tipo_s=resto_st();
-				gestorSal.emite(";"+'\n');
+//				gestorSal.emite(";"+'\n');
 				COSAS1_tipo_s=cosas();
 				if(RESTO_ST_tipo_s.getTipoBasico()!=TipoBasico.error_tipo && COSAS1_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 					return ExpresionTipo.getVacio();
@@ -1120,7 +1131,7 @@ public class AnalizadorSintactico {
 				}
 			} else if(token.esIgual(TipoToken.PAL_RESERVADA, 62 /* typedef */)){
 				parse.add(57);
-				gestorSal.emite("TYPE"+'\n');
+//				gestorSal.emite("TYPE"+'\n');
 				nextToken();
 				ExpresionTipo aux1 = typedef();
 				ExpresionTipo aux2 = cosas();
@@ -1193,7 +1204,7 @@ public class AnalizadorSintactico {
 			entradaTS.setConstante(true);
 			entradaTS.setTipo(new ExpresionTipo(TipoBasico.entero));
 			String IDlexema = token.atrString();
-			gestorSal.emite(IDlexema);
+//			gestorSal.emite(IDlexema);
 			nextToken();
 			ExpresionTipo resto_ln = resto_ln(tipo_h);
 			if(resto_ln.esTipoBasico() && resto_ln.getTipoBasico() == TipoBasico.error_tipo)
@@ -1234,7 +1245,7 @@ public class AnalizadorSintactico {
 			parse.add(102);
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
-				gestorSal.emite(" , "+token.atrString());
+//				gestorSal.emite(" , "+token.atrString());
 				entradaTS = (EntradaTS)token.getAtributo();
 				entradaTS.setConstante(true);
 				entradaTS.setTipo(new ExpresionTipo(TipoBasico.entero));
@@ -1325,7 +1336,7 @@ public class AnalizadorSintactico {
 				gestorErr.insertaErrorSintactico(linea, columna,"Palabra o termino \""+token.atrString()+"\" inesperado. Falta separador \";\"");
 				return null;
 			}else{
-//				gestorSal.emite(";\n");
+				gestorSal.emite(";\n");
 				nextToken();
 				if(INICIALIZACION_tipo_h.getTipoBasico()!=TipoBasico.error_tipo && DECLARACIONES_tipo_h.getTipoBasico()!=TipoBasico.error_tipo)
 					return ExpresionTipo.getVacio();
@@ -1856,6 +1867,8 @@ public class AnalizadorSintactico {
 			lexico.desactivaModo(modo.NoMeto);
 			parse.add(39);
 			hayInic=true;
+			if(gestorSal.getModo()==modoSalida.PROGRAMA)
+				gestorSal.setModo(modoSalida.PRINCIPAL);
 			gestorSal.emite(entrada.getLexemaTrad()+" := ");
 			nextToken();
 			//comprueba que los tipos son equivalentes
@@ -1864,9 +1877,13 @@ public class AnalizadorSintactico {
 			ExpresionTipo ASSIGNMENT_EXPRESSION_tipo_s=assignment_expression();
 			lexico.setModos(modos);
 			//gestorSal.setModo(modoSalida.NORMAL);
-			gestorSal.finalExpresion("main".equals(nombreFuncion));
-//			gestorSal.emite(";\n");
+			String s = gestorSal.getBufferExpString();
+			gestorSal.vaciarExpresion();
 			gestorSal.setModo(modo_anterior);
+			gestorSal.emite(s);
+			//gestorSal.finalExpresion("main".equals(nombreFuncion));
+//			gestorSal.emite(";\n");
+			
 			ExpresionTipo equiv = ExpresionTipo.sonCompAsig(ASSIGNMENT_EXPRESSION_tipo_s, tipo_h, OpAsignacion.ASIGNACION);
 			if(equiv != null && ASSIGNMENT_EXPRESSION_tipo_s.getTipoBasico()!=TipoBasico.error_tipo)
 				return ExpresionTipo.getVacio();

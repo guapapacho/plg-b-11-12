@@ -31,6 +31,14 @@ public class Vector extends ExpresionTipo {
 		return tipoElementos;
 	}
 	
+	public String toStringPascal(){
+		return "ARRAY [0.."+(longitud-1)+"] OF "+tipoElementos.toStringPascal();
+	}
+	
+	public String toStringPascalDec(){
+		return toStringPascal();
+	}
+	
 	public String toString() {
 		return "Vector de " + tipoElementos + "s de dimensión " + longitud + ".";
 	}

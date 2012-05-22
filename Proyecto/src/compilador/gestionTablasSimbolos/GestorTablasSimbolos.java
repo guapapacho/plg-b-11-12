@@ -36,6 +36,10 @@ public class GestorTablasSimbolos {
 		return instance;			
 	}
 		
+	public Hashtable<String,ExpresionTipo> getTablaTiposDef(){
+		return tiposDefinidos;
+	}
+	
 	/**
 	 * Constructora privada de la clase (singleton)
 	 */

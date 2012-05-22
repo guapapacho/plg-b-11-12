@@ -16,6 +16,10 @@ public class Puntero extends ExpresionTipo {
 		return tipo;
 	}
 	
+	public String toStringPascal(){
+		return "^"+tipo.toStringPascal();
+	}
+	
 	public String toString() {
 		return "Puntero a " + tipo;
 	}

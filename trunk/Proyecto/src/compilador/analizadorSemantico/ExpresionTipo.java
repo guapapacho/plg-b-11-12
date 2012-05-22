@@ -353,6 +353,8 @@ public class ExpresionTipo {
 				return "ninguno?2";
 	}
 	
+	public String toStringPascalDec(){return "";};
+	
 	public void setRetorno(boolean b) {
 		hayRetorno = b;
 	}

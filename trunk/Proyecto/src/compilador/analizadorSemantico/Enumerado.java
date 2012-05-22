@@ -1,6 +1,8 @@
 
 package compilador.analizadorSemantico;
 
+import java.util.Iterator;
+
 public class Enumerado extends ExpresionTipo {
  
 	/** vector donde guardar los elementos que contiene el tipo Vector*/
@@ -22,8 +24,23 @@ public class Enumerado extends ExpresionTipo {
 		elementos = new java.util.Vector<String>();	
 	}
 	
+	public String toStringPascalDec(){
+		return nombreEnumerado;
+	}
+	
 	public boolean equals(Enumerado e){
 		return this.elementos.equals(e.elementos);
+	}
+	
+	public String toStringPascal(){
+		String res = "(";
+		for(Iterator<String> i=elementos.iterator();i.hasNext();){
+			res += i.next();
+			if(i.hasNext())
+				res+=",";
+		}
+		res+=");\n";
+		return res;
 	}
 	
 	public String getNombreEnumerado() {

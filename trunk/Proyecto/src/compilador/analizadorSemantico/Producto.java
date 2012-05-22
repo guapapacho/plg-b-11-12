@@ -86,6 +86,16 @@ public class Producto extends ExpresionTipo {
 		//return listaProd.isEmpty();
 	}
 	
+	public String toStringPascal(){
+		ExpresionTipo e;
+		String res = "";
+		for(String s: tablaProd.keySet()){
+			e = tablaProd.get(s);
+			res += s+" : "+e.toStringPascal()+";\n";
+		}
+		return res;
+	}
+	
 	public String toString (boolean funcion) {
 		String s = "";
 		Set<String> colection = tablaProd.keySet(); 

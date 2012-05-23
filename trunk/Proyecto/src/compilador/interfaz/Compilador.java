@@ -276,10 +276,10 @@ public class Compilador extends JFrame {
 		panelPrincipal_1.add(sp3);
 		
 		ta1=new JTextArea();
-		ta1.setText("#include <Alina.h> \n#include \"cris.h\" " +
-				"\n\nint a,b[3]={1,2,3},c=7; " +
-				"\nconst bool i=true; \nconst float k=1.2; \n\nint f(int a, int b); " +
-				"\n\nfloat g=3; \n\ndouble h();");
+//		ta1.setText("#include <Alina.h> \n#include \"cris.h\" " +
+//				"\n\nint a,b[3]={1,2,3},c=7; " +
+//				"\nconst bool i=true; \nconst float k=1.2; \n\nint f(int a, int b); " +
+//				"\n\nfloat g=3; \n\ndouble h();");
 		ta1.setFont(new java.awt.Font(Font.MONOSPACED, Font.BOLD, 16));
 		ta1.setTabSize(3);
 		sp1.setViewportView(ta1);

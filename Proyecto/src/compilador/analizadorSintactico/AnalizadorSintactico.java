@@ -3271,7 +3271,7 @@ public class AnalizadorSintactico {
 				EXPRESSIONOPT_tipo = expressionOpt(false,false);
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
 					nextToken();
-					gestorSal.emite("do\n");
+					gestorSal.emite(") do\n");
 					EXPRESSIONOPT1_tipo = expressionOpt(false,true);
 					if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)) {
 						nextToken();
@@ -3799,7 +3799,9 @@ public class AnalizadorSintactico {
 		} else if (token.esIgual(TipoToken.IDENTIFICADOR)) {
 			parse.add(153);
 			EntradaTS entrada = (EntradaTS) token.getAtributo();
-			gestorSal.emite(entrada.getLexemaTrad()); 
+//			gestorSal.emite((String)token.getAtributo());
+			gestorSal.emite(entrada.getLexemaTrad());
+//			ExpresionTipo tipoSem = gestorTS.buscaIdGeneral((String)token.getAtributo()).getTipo();
 			ExpresionTipo tipoSem = entrada.getTipo();
 			nextToken();
 			ExpresionTipo params = resto_pe();
@@ -3860,8 +3862,14 @@ public class AnalizadorSintactico {
 		
 		if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 			parse.add(164);
+			gestorSal.emite("(");
+			Vector<modo> v = lexico.getModos();
+			lexico.desactivaModo(modo.Declaracion);
+			lexico.desactivaModo(modo.NoMeto);
 			nextToken();
 			aux = postfix3();
+			lexico.setModos(v);
+			
 		} else {
 			parse.add(165);
 			aux = ExpresionTipo.getVacio();

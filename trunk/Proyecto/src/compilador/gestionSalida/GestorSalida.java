@@ -268,7 +268,7 @@ public class GestorSalida {
 					res += entrada.getTipo().toStringPascalDec()+";\n";
 				}
 				resultadoFinal += res;
-				
+				res = "";
 					/*switch(entrada.getTipo().getTipoBasico()){
 					case logico:
 						resultadoFinal += "BOOLEAN;\n";

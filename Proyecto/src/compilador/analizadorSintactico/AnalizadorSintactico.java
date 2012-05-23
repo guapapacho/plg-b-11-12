@@ -1383,6 +1383,7 @@ public class AnalizadorSintactico {
 				gestorSal.emite(";");
 				gestorSal.setModo(modoSalida.FUNCION);
 			}
+			gestorSal.sumarTab();
 			entradaTS.setTipo(new Funcion((Producto) params, tipo_id));
 			lexico.desactivaModo(modo.NoMeto);
 			lexico.desactivaModo(modo.Declaracion);
@@ -1390,6 +1391,7 @@ public class AnalizadorSintactico {
 			inicializaMarcadoresGoto();
 			nextToken();
 			CUERPO_tipo_s = cuerpo();
+			gestorSal.restarTab();
 			ExpresionTipo aux = compruebaEtiquetasGoto();
 			if(aux.equals(TipoBasico.error_tipo)) {
 				CUERPO_tipo_s = ExpresionTipo.getError();
@@ -2074,7 +2076,7 @@ public class AnalizadorSintactico {
 					token = tokens.get(tokens.size()-2); // el penultimo token (tipo (id))
 					parse.add(133); // creo que deberia añadir otra regla
 					
-					expression(false,false);
+					expression(false,false,false);
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
 						lexico.desactivaModo(modo.Declaracion);
 						lexico.desactivaModo(modo.NoMeto);
@@ -2095,7 +2097,7 @@ public class AnalizadorSintactico {
 			} 
 			else{
 				parse.add(133);
-				gestorSal.emiteTabs(gestorTS.getNumTabs());
+//				gestorSal.emiteTabs(gestorTS.getNumTabs());
 				ExpresionTipo aux1 = expressionOpt(false,false);
 				if (!aux1.equals(TipoBasico.vacio)) {
 					if(token.esIgual(TipoToken.SEPARADOR, Separadores.PUNTO_COMA)) {
@@ -2881,7 +2883,7 @@ public class AnalizadorSintactico {
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA,5 /*break*/)) {
 			parse.add(128);
-			gestorSal.emiteTabs(gestorTS.getNumTabs());
+//			gestorSal.emiteTabs(gestorTS.getNumTabs());
 			if(!"Switch".equals(gestorTS.dameBloqueActual().getNombre()))
 				gestorSal.emite("break");
 			nextToken();
@@ -2910,7 +2912,7 @@ public class AnalizadorSintactico {
 			}
 		} else if(token.esIgual(TipoToken.PAL_RESERVADA, 12 /*continue*/)) {
 			parse.add(129);
-			gestorSal.emiteTabs(gestorTS.getNumTabs());
+//			gestorSal.emiteTabs(gestorTS.getNumTabs());
 			gestorSal.emite("continue");
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.PUNTO_COMA)) {
@@ -2939,7 +2941,7 @@ public class AnalizadorSintactico {
 			parse.add(130);
 			lexico.desactivaModo(modo.Declaracion);
 			lexico.desactivaModo(modo.NoMeto);
-			gestorSal.emiteTabs(gestorTS.getNumTabs());
+//			gestorSal.emiteTabs(gestorTS.getNumTabs());
 			if(!"main".equals(nombreFuncion))
 				gestorSal.emite(this.nombreFuncion + " := ");
 			nextToken();
@@ -2973,7 +2975,7 @@ public class AnalizadorSintactico {
 		}  else if(token.esIgual(TipoToken.PAL_RESERVADA, 31 /*goto*/)) {
 			lexico.activaModo(modo.NoMeto);
 			parse.add(131);
-			gestorSal.emiteTabs(gestorTS.getNumTabs());
+//			gestorSal.emiteTabs(gestorTS.getNumTabs());
 			gestorSal.emite("GOTO ");
 			nextToken();
 			if(token.esIgual(TipoToken.IDENTIFICADOR)){
@@ -3001,7 +3003,7 @@ public class AnalizadorSintactico {
 			parse.add(132);
 			ExpresionTipo aux1, aux2;
 			
-			gestorSal.emiteTabs(gestorTS.getNumTabs());
+//			gestorSal.emiteTabs(gestorTS.getNumTabs());
 			
 			aux1 = instruccion();
 			if(aux1 != null){
@@ -3157,7 +3159,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			parse.add(94);
 			nextToken();
-			 EXPRESSION_tipo = expression(false,false);
+			 EXPRESSION_tipo = expression(false,false,false);
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){			
 				nextToken();
 				gestorSal.emite("do\n");
@@ -3212,7 +3214,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 				nextToken();
-				EXPRESSION_tipo = expression(false,false);
+				EXPRESSION_tipo = expression(false,false,false);
 				gestorSal.emite(";\n");
 				if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 					nextToken();
@@ -3387,7 +3389,7 @@ public class AnalizadorSintactico {
 			lexico.desactivaTodosLosModos();
 			parse.add(97);
 			nextToken();
-			EXPRESSION_tipo = expression(false,false); 
+			EXPRESSION_tipo = expression(false,false,false); 
 			lexico.setModos(modos);
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
@@ -3566,7 +3568,7 @@ public class AnalizadorSintactico {
 			parse.add(99);
 			gestorTS.abreBloque("If");
 			nextToken();
-			EXPRESSION_tipo = expression(false,false);
+			EXPRESSION_tipo = expression(false,false,false);
 			gestorSal.emite(") then ");
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				nextToken();
@@ -3634,7 +3636,7 @@ public class AnalizadorSintactico {
 			gestorSal.emite(" (");
 			parse.add(147);
 			nextToken();
-			tipo = expression(false,false);
+			tipo = expression(false,false,false);
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 				gestorSal.emite(") ");
 				nextToken();
@@ -3643,7 +3645,7 @@ public class AnalizadorSintactico {
 			}
 		} else if (token.esIgual(TipoToken.PAL_RESERVADA, 57 /* this */)) {
 			parse.add(145);
-			gestorSal.emiteTabs(gestorTS.getNumTabs());
+//			gestorSal.emiteTabs(gestorTS.getNumTabs());
 			gestorSal.emite("{ No se puede traducir a pascal el 'this' }\n");
 			nextToken();
 			tipo = new Objeto(nombreClase);
@@ -3691,7 +3693,7 @@ public class AnalizadorSintactico {
 			}
 			nextToken();
 		} else if (token.esIgual(TipoToken.OP_LOGICO,OpLogico.SOBRERO)) {
-			gestorSal.emiteTabs(gestorTS.getNumTabs());
+//			gestorSal.emiteTabs(gestorTS.getNumTabs());
 			gestorSal.emite("{ No se puede traducir a pascal la regla UNQUALIFIED-ID →  ~ RESTO_UNQ }\n");
 			parse.add(149);
 			nextToken();
@@ -3723,7 +3725,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 				nextToken();
-				tipo = expression(false,false);
+				tipo = expression(false,false,false);
 				if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 					nextToken();
 				} else {
@@ -3781,7 +3783,7 @@ public class AnalizadorSintactico {
 			nextToken();
 			if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 				nextToken();
-				ExpresionTipo aux1 = expression(false,false);
+				ExpresionTipo aux1 = expression(false,false,false);
 				if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 					nextToken();
 					ExpresionTipo aux2 = resto_postfix_exp(aux1); // TODO creo que deberia pasar el tipo que devuelve typeid(expresion)...
@@ -3926,7 +3928,7 @@ public class AnalizadorSintactico {
 			gestorSal.emite("[");
 			parse.add(155);
 			nextToken();
-			ExpresionTipo aux = expression(false,false);
+			ExpresionTipo aux = expression(false,false,false);
 			if((!exp.equals(TipoNoBasico.vector)) && (!exp.equals(TipoNoBasico.cadena))) {
 				tipo = ExpresionTipo.getError();
 				gestorErr.insertaErrorSemantico(linea, columna, "Aqui no vale lo de los [ ]"); //TODO cambiar el mensaje
@@ -4061,7 +4063,7 @@ public class AnalizadorSintactico {
 				nextToken();
 				if (token.esIgual(TipoToken.SEPARADOR, Separadores.ABRE_PARENTESIS)) {
 					nextToken();
-					aux =  expression(false,false);
+					aux =  expression(false,false,false);
 					if (token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)) {
 						nextToken();
 					} else {
@@ -4409,7 +4411,7 @@ public class AnalizadorSintactico {
 	 */
 	private ExpresionTipo expression_list() throws Exception{
 		parse.add(253);
-		ExpresionTipo aux1 = expression(false,false);
+		ExpresionTipo aux1 = expression(false,false,false);
 		ExpresionTipo aux2 = resto_lista_exp();
 		if(aux1.getTipoBasico()!=TipoBasico.error_tipo && aux2.getTipoBasico()!=TipoBasico.error_tipo)
 			return ExpresionTipo.getVacio();
@@ -4473,7 +4475,7 @@ public class AnalizadorSintactico {
 		if(token.esIgual(TipoToken.SEPARADOR,Separadores.ABRE_PARENTESIS)){
 			gestorSal.emite("(");
 			nextToken();
-			aux = expression(false,false);
+			aux = expression(false,false,false);
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.CIERRA_PARENTESIS)){
 				parse.add(193);
 				gestorSal.emite(")");
@@ -4540,7 +4542,7 @@ public class AnalizadorSintactico {
 			}
 		}else{
 			parse.add(140);
-			tipo = expression(false,false);
+			tipo = expression(false,false,false);
 			if(token.esIgual(TipoToken.SEPARADOR,Separadores.CIERRA_PARENTESIS)){
 				gestorSal.emite(")");
 				nextToken();
@@ -5275,7 +5277,7 @@ public class AnalizadorSintactico {
 			parse.add(238);
 			ArrayList<String> al1 = gestorSal.vaciarBufferExpresion();
 			nextToken();
-			ExpresionTipo aux1 = expression(false,false);
+			ExpresionTipo aux1 = expression(false,false,true);
 			ArrayList<String> al2 = gestorSal.vaciarBufferExpresion();
 			if(token.esIgual(TipoToken.SEPARADOR, Separadores.DOS_PUNTOS)){
 				nextToken();
@@ -5285,12 +5287,26 @@ public class AnalizadorSintactico {
 				gestorSal.setModo(modoSalida.FUNCION);
 				gestorSal.emite("IF (");
 				gestorSal.emite(al1);
-				gestorSal.emite(") THEN\nBEGIN");
+//				gestorSal.emite(") THEN\n   BEGIN\n      ");
+				gestorSal.emite(") THEN\n");
+				gestorSal.sumarTab();
+				gestorSal.emite("BEGIN\n");
+				gestorSal.sumarTab();
 				gestorSal.emite(al2);
 				gestorSal.emite(";\n");
-				gestorSal.emite("ELSE\nBEGIN");
+//				gestorSal.emite("   END\nELSE\n   BEGIN\n      ");
+				gestorSal.emite("END\n");
+				gestorSal.restarTab();
+				gestorSal.emite("ELSE\n");
+				gestorSal.sumarTab();
+				gestorSal.emite("BEGIN\n");
+				gestorSal.sumarTab();
 				gestorSal.emite(al3);
-				gestorSal.emite("END");
+				gestorSal.emite(";\n");
+				gestorSal.restarTab();
+//				gestorSal.emite("   END");
+				gestorSal.emite("END;");
+				gestorSal.restarTab();
 				gestorSal.setModo(modo_anterior);
 				if(ExpresionTipo.sonCompLog(tipo_h, new ExpresionTipo(TipoBasico.logico), OpLogico.AND)!=null){
 					ExpresionTipo aux3 = ExpresionTipo.sonCompArit(aux1, aux2, OpAritmetico.SUMA); 
@@ -5390,7 +5406,7 @@ public class AnalizadorSintactico {
 	 * 						else EXPRESSION.tipo_s := error_tipo }  
 	 * @throws Exception 
 	 */
-	private ExpresionTipo expression(boolean retornoMain, boolean incFor) throws Exception {
+	private ExpresionTipo expression(boolean retornoMain, boolean incFor,boolean expInterna) throws Exception {
 		parse.add(246);
 		modoSalida modo_anterior = gestorSal.getModo();
 		gestorSal.setModo(modoSalida.EXPRESION);
@@ -5401,13 +5417,15 @@ public class AnalizadorSintactico {
 			instruccionPostIncDec="";
 		}
 		//gestorSal.setModo(modoSalida.NORMAL);
-		if(retornoMain)
-			gestorSal.vaciarExpresion();
-		else if(incFor){//"For".equals(gestorTS.dameBloqueActual().getNombre())){
-			incrementoFor = gestorSal.getBufferExpString();
-			gestorSal.vaciarExpresion();
-		}else //if(gestorSal.getBufferExp().size()>2 || gestorSal.getBufferMetodos().get(gestorSal.getBufferMetodos().size()-1).equals("= "))
-			gestorSal.finalExpresion("main".equals(nombreFuncion));
+		if(!expInterna){
+			if(retornoMain)
+				gestorSal.vaciarExpresion();
+			else if(incFor){//"For".equals(gestorTS.dameBloqueActual().getNombre())){
+				incrementoFor = gestorSal.getBufferExpString();
+				gestorSal.vaciarExpresion();
+			}else //if(gestorSal.getBufferExp().size()>2 || gestorSal.getBufferMetodos().get(gestorSal.getBufferMetodos().size()-1).equals("= "))
+				gestorSal.finalExpresion("main".equals(nombreFuncion));
+		}
 		gestorSal.setModo(modo_anterior);
 		if(aux1.equals(TipoBasico.error_tipo))
 			return aux1;
@@ -5436,7 +5454,7 @@ public class AnalizadorSintactico {
 			}
 			gestorSal.emite(";\n");
 			nextToken();
-			return expression(false,false);
+			return expression(false,false,false);
 		}	
 		else {
 			parse.add(248);
@@ -5454,7 +5472,7 @@ public class AnalizadorSintactico {
 	private ExpresionTipo expressionOpt(boolean retornoMain, boolean incFor) throws Exception {
 		if(primeroDeExpression()) {
 			parse.add(249);
-			return expression(retornoMain,incFor);
+			return expression(retornoMain,incFor,false);
 		}
 		else{
 			parse.add(250);

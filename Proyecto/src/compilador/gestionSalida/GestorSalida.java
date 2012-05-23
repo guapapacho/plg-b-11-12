@@ -32,6 +32,8 @@ public class GestorSalida {
 	
 	private modoSalida modoActual;
 	
+	private int numTabs;
+	
 	public static GestorSalida getGestorSalida(){//String nombre) {
 		if(instance == null) {
 			instance = new GestorSalida();//nombre);
@@ -48,6 +50,7 @@ public class GestorSalida {
 		bufferPrincipal = new ArrayList<String>();
 		bufferConstantes = new ArrayList<String>();
 		modoActual = modoSalida.PROGRAMA;
+		numTabs=0;
 	}
 	
 	/*
@@ -91,10 +94,11 @@ public class GestorSalida {
 		GestorTablasSimbolos gestorTS = GestorTablasSimbolos.getGestorTS();
 		ArrayList<EntradaTS> al = gestorTS.getEntradasCompletas();
 		EntradaTS entrada;
+//		sumarTab();
 		for(Iterator<EntradaTS> i = al.iterator(); i.hasNext();){
 			entrada = i.next();
 			if(!entrada.esParametro() && !entrada.isConstante() ){
-				resultado += entrada.getLexemaTrad()+": ";
+				resultado += "   "+entrada.getLexemaTrad()+": ";
 				if(entrada.getTipo().esTipoBasico()){
 					resultado += entrada.getTipo().toStringPascal()+";\n";
 				}else{
@@ -129,29 +133,53 @@ public class GestorSalida {
 			}
 		}
 		
-		
+//		restarTab();
 		
 		resultado += "\nBEGIN\n";
+		sumarTab();
 		for(Iterator<String> i = bufferMetodos.iterator(); i.hasNext();)
 			resultado += i.next()+" ";
+		restarTab();
 		resultado += "END;\n\n";
 		
 		bufferMetodos.clear();
 		this.setModo(modoSalida.PROGRAMA);
 	}
 
+	public void sumarTab(){
+		numTabs++;
+	}
+	
+	public void restarTab(){
+		numTabs--;
+	}
+	
+	public int getNumTabs(){
+		return numTabs;
+	}
+	/*
 	public void emiteTabs(int num) {
 		for(int i=0; i < num; i++) {
 			resultado += "\t";
 		}
 	}
-	
+	*/
 	public void emitirPrincipal(){
 		resultado += "BEGIN\n";
+		sumarTab();
 		for(Iterator<String> i = bufferPrincipal.iterator();i.hasNext();){
 			resultado += i.next();
 		}
+		restarTab();
 		resultado += "END.";
+	}
+	
+	public String tabsToString(){
+		String res="";
+		for(int i=0; i < numTabs; i++) {
+			res += "  ";
+		}
+		return res;
 	}
 	
 	public void emite(String s) {
@@ -159,18 +187,27 @@ public class GestorSalida {
 		switch(modoActual){
 		case FUNCION:
 			bufferMetodos.add(s);
+			if(s.contains("\n"))
+				bufferMetodos.add(tabsToString());
 			break;
 		case EXPRESION:
 			bufferExpresion.add(s);
 			break;
 		case PROGRAMA:
 			resultado += s+" ";
+			if(s.contains("\n"))
+				resultado += tabsToString();
 			break;
 		case PRINCIPAL:
 			bufferPrincipal.add(s);
+			if(s.contains("\n"))
+				bufferMetodos.add(tabsToString());
 			break;
 		case CONSTANTE:
 			bufferConstantes.add(s);
+			if(s.contains("\n"))
+				bufferMetodos.add(tabsToString());
+			
 		}
 		//System.out.println(s);
 	}
@@ -253,13 +290,14 @@ public class GestorSalida {
 		EntradaTS entrada;
 		String res="";
 		boolean yaVARS = false;
+		sumarTab();
 		for(Iterator<EntradaTS> i = al.iterator(); i.hasNext();){
 			if(!yaVARS)
 				resultadoFinal += "VAR\n";
 			yaVARS = true;
 			entrada = i.next();
 			if(!entrada.esParametro() && !entrada.isConstante()){
-				resultadoFinal += entrada.getLexemaTrad()+": ";
+				resultadoFinal += "   "+entrada.getLexemaTrad()+": ";
 				/*if(!entrada.getNomTipoDef().equals("")){
 					res += entrada.getNomTipoDef()+";\n";
 				}else*/ if(entrada.getTipo().esTipoBasico()){
@@ -305,7 +343,7 @@ public class GestorSalida {
 					if(!yaVARS)
 						resultadoFinal += "VAR\n";
 					yaVARS = true;
-					resultadoFinal += entrada.getLexemaTrad()+": ";
+					resultadoFinal += "   "+entrada.getLexemaTrad()+": ";
 					if(entrada.getTipo().esTipoBasico()){
 						resultadoFinal += entrada.getTipo().toStringPascal()+";\n";
 					}else{
@@ -340,14 +378,17 @@ public class GestorSalida {
 				}
 			}
 		}
+		restarTab();
 		resultadoFinal += "\n";
 	}
 	
 	public void emitirConsts(){
 		resultadoFinal += "CONST\n";
+		sumarTab();
 		for(Iterator<String> i = bufferConstantes.iterator();i.hasNext();)
 			resultadoFinal += i.next();
 		bufferConstantes.clear();
+		restarTab();
 	}
 	
 	public void emitirTipos(){
@@ -355,6 +396,7 @@ public class GestorSalida {
 		Hashtable<String,ExpresionTipo> h = gestorTS.getTablaTiposDef();
 		boolean yaTYPE = false;
 		ExpresionTipo e;
+		sumarTab();
 		for(String s: h.keySet()){
 			e = h.get(s);
 			if(!yaTYPE)
@@ -362,6 +404,7 @@ public class GestorSalida {
 			yaTYPE = true;
 			resultadoFinal += s + " = " + e.toStringPascal()+";\n";
 		}
+		restarTab();
 		resultadoFinal += "\n";
 	}
 	

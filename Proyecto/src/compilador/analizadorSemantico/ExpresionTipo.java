@@ -12,8 +12,6 @@ public class ExpresionTipo {
 	private TipoBasico tipoBasico;
 	private TipoNoBasico tipoNoBasico;
 	private boolean hayRetorno = false;
-//	private static ExpresionTipo instanceVacio;
-//	private static ExpresionTipo instanceError;
 	
 	public enum TipoBasico{logico, caracter, entero, real, error_tipo, vacio}; 
 	public enum TipoNoBasico{enumerado, vector, producto, registro, union, puntero, cabecera, funcion, objeto, cadena}
@@ -218,16 +216,10 @@ public class ExpresionTipo {
 	}
 	
 	public static ExpresionTipo getError() {
-//		if(instanceError == null)
-//			instanceError = new ExpresionTipo(TipoBasico.error_tipo);
-//		return instanceError;
 		return new ExpresionTipo(TipoBasico.error_tipo);
 	}
 	
 	public static ExpresionTipo getVacio() {
-//		if(instanceVacio == null)
-//			instanceVacio = new ExpresionTipo(TipoBasico.vacio);
-//		return instanceVacio;
 		return new ExpresionTipo(TipoBasico.vacio);
 	}
 	
@@ -258,23 +250,22 @@ public class ExpresionTipo {
 		case real: return "real";
 		case error_tipo: return "error_tipo"; 
 		case vacio: return "vacio";
-		default: return "ninguno?";
+		default: return "ninguno";
 		}
 	}
 	
 	public static ExpresionTipo expresionTipoDeString(String s){
 	
-//		System.out.println("El tipo es: "+ s);
 		if (s.equals("bool")) return new ExpresionTipo(TipoBasico.logico);
 		if (s.equals("char")) return new ExpresionTipo(TipoBasico.caracter);
 		if (s.equals("char_16t")) return new ExpresionTipo(TipoBasico.caracter);
 		if (s.equals("char_32t")) return new ExpresionTipo(TipoBasico.caracter);
-		if (s.equals("short")) return new ExpresionTipo(TipoBasico.entero); //?? 
-		if (s.equals("long")) return new ExpresionTipo(TipoBasico.entero); //?? 
+		if (s.equals("short")) return new ExpresionTipo(TipoBasico.entero);
+		if (s.equals("long")) return new ExpresionTipo(TipoBasico.entero); 
 		if (s.equals("int")) return new ExpresionTipo(TipoBasico.entero);
 		if (s.equals("double")) return new ExpresionTipo(TipoBasico.real);
 		if (s.equals("float")) return new ExpresionTipo(TipoBasico.real);
-		if (s.equals("string")) return new Cadena(); //longitud 0??
+		if (s.equals("string")) return new Cadena();
 		
 		return null;
 		
@@ -282,13 +273,6 @@ public class ExpresionTipo {
 	
 	public boolean equals(ExpresionTipo e) {
 		return e.esTipoBasico() && tipoBasico.equals(e.getTipoBasico());
-		/*		if(this.esTipoBasico() != e.esTipoBasico())
-			return false;
-		if(this.esTipoBasico()) {
-			return this.getTipoBasico().equals(e.getTipoBasico());
-		} else {
-			return this.getTipoNoBasico().equals(e.getTipoNoBasico());
-		}*/
 	}
 	
 	public boolean equals(TipoBasico t) {
@@ -332,10 +316,10 @@ public class ExpresionTipo {
 		case real: return "Real";
 		case error_tipo: return "Error"; 
 		case vacio: return "Vacio";
-		default: return "ninguno?";
+		default: return "ninguno"; 
 		}
 		else 
-			return "ninguno?2";
+			return "ninguno2";
 	}
 	
 	public String toStringPascal(){
@@ -345,12 +329,12 @@ public class ExpresionTipo {
 			case caracter: return "CHAR";
 			case entero: return "INTEGER";
 			case real: return "FLOAT";
-			case error_tipo: return "Error??"; 
-			case vacio: return "Vacio??";
-			default: return "ninguno??";
+			case error_tipo: return "Error"; 
+			case vacio: return "Vacio";
+			default: return "ninguno";
 			}
 			else 
-				return "ninguno?2";
+				return "ninguno2";
 	}
 	
 	public String toStringPascalDec(){return "";};

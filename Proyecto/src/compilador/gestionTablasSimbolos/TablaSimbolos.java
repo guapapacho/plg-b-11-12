@@ -62,8 +62,6 @@ public class TablaSimbolos {
 					a.add(entrada);
 					}
 			}
-			/*else 
-				ERROR!!*/
 		}
 		return a;
 	}
@@ -105,7 +103,6 @@ public class TablaSimbolos {
 	}
 	
 	private String generaLexemaTrad(String lexema) {
-		// TODO (alina) si ya hay una función con ese nombre también debería renombrar la nueva variable?
 		GestorTablasSimbolos gestorTS = GestorTablasSimbolos.getGestorTS();
 		if(gestorTS.buscaIdGeneralTrad(lexema) != null) { // el lexema ya aparece en un ámbito superior
 			int i = 1;

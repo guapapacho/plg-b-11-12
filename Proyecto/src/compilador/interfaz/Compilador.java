@@ -59,7 +59,6 @@ public class Compilador extends JFrame {
 	private JScrollPane sp2a =null;
 	private JScrollPane sp2b =null;
 	private JScrollPane sp3 =null;
-//	private JLabel l0=null;
 	private JLabel l1=null;
 	private JLabel l2=null;
 	private JButton botonTokens=null;
@@ -220,11 +219,6 @@ public class Compilador extends JFrame {
 		panelPrincipal_1.setLayout(null);
 		
 		panelPestanas = new JTabbedPane();
-		
-//		l0=new JLabel();
-//		l0.setBounds(puntox2, 7, 250, 34);
-//		l0.setFont(new java.awt.Font("Verdana", Font.BOLD, 18));
-//		l0.setText("Analizador sintáctico");
 		l1=new JLabel();
 		l1.setBounds(puntox6, puntoy4, 163, 34);
 		l1.setText("Código de entrada");
@@ -235,7 +229,6 @@ public class Compilador extends JFrame {
 		l2.setFont(new java.awt.Font("Verdana", Font.BOLD, 14));
 		
 		sp0=new JScrollPane();
-		//sp0.setBounds(puntox8, puntoy1-3, 30, puntoy2+3);
 		sp0.setBounds(puntox8, puntoy1, 30, puntoy2);
 		sp0.setVerticalScrollBarPolicy(sp0.VERTICAL_SCROLLBAR_NEVER);
 		sp0.setHorizontalScrollBarPolicy(sp0.HORIZONTAL_SCROLLBAR_NEVER);
@@ -267,19 +260,15 @@ public class Compilador extends JFrame {
 		ta3.setFont(new java.awt.Font("Verdana", Font.PLAIN, 11));
 		sp3.setViewportView(ta3);
 		
-//		panelPrincipal_1.add(l0);
+
 		panelPrincipal_1.add(l1);
 		panelPrincipal_1.add(l2);
 		panelPrincipal_1.add(getBotonTokens());
 		panelPrincipal_1.add(sp1);
-//		panelPrincipal_1.add(sp0);
 		panelPrincipal_1.add(sp3);
 		
 		ta1=new JTextArea();
-//		ta1.setText("#include <Alina.h> \n#include \"cris.h\" " +
-//				"\n\nint a,b[3]={1,2,3},c=7; " +
-//				"\nconst bool i=true; \nconst float k=1.2; \n\nint f(int a, int b); " +
-//				"\n\nfloat g=3; \n\ndouble h();");
+
 		ta1.setFont(new java.awt.Font(Font.MONOSPACED, Font.BOLD, 16));
 		ta1.setTabSize(3);
 		sp1.setViewportView(ta1);
@@ -329,7 +318,6 @@ public class Compilador extends JFrame {
 		
 		
 		panelPrincipal_1.validate();
-		//System.out.println("Esquinas del panel 1: "+puntox1+" "+puntox2+" "+puntoy1+" "+puntoy2);
 		return panelPrincipal_1;
 	}
 
@@ -350,7 +338,6 @@ public class Compilador extends JFrame {
 		}
 		out += j;
 		out += '\n';
-		//tp0.setText(out);
 		ta0.setText(out);
 	}
 	
@@ -388,7 +375,6 @@ public class Compilador extends JFrame {
 						AnalizadorSintactico anSin = new AnalizadorSintactico(anLex);
 						
 						
-						//GestorSalida gestorS = GestorSalida.getGestorSalida("");
 						ta2a.setText("");
 						ta2a.append("Tokens:");
 						ta2a.append(anSin.getStringTokens());

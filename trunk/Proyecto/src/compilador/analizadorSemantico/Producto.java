@@ -7,16 +7,14 @@ import java.util.Hashtable;
 import java.util.Set;
 
 public class Producto extends ExpresionTipo {
-	/** Para simpliicar codigo se crea una tabla hash que contiene el lexema de cada 
+	/** Para simplificar codigo se crea una tabla hash que contiene el lexema de cada 
 	 * identificador y el tipo semantico **/
 	private Hashtable<String,ExpresionTipo> tablaProd;
-	//private ArrayList<Pareja<String,ExpresionTipo>> listaProd;
 	
 	public Producto()
 	{
 		super(TipoNoBasico.producto);
 		this.tablaProd = new Hashtable<String,ExpresionTipo>();
-		//this.listaProd = new ArrayList<Pareja<String,ExpresionTipo>>();
 	}
 	
 	public Producto(String s, ExpresionTipo e)
@@ -24,28 +22,16 @@ public class Producto extends ExpresionTipo {
 		super(TipoNoBasico.producto);
 		this.tablaProd = new Hashtable<String,ExpresionTipo>();
 		this.tablaProd.put(s, e);
-		//this.listaProd = new ArrayList<Pareja<String,ExpresionTipo>>();
-		//this.listaProd.add(new Pareja<String,ExpresionTipo>(s,e));
 	}
 
 	public boolean equals(Producto p){
 		return this.toString(true).equals(p.toString(true));
-		//JOptionPane.showMessageDialog(null, this.toString()+"\n"+p.toString());
-		//return this.toString().equals(p.toString());
-		//return false;
 	}
 	
 	public void ponProducto(String s, ExpresionTipo e) throws Exception {
 		if(this.tablaProd.containsKey(s))
 			throw new Exception("id repetido");
 		this.tablaProd.put(s, e);
-		/*Pareja<String,ExpresionTipo> p;
-		for(Iterator<Pareja<String,ExpresionTipo>> i = listaProd.iterator();i.hasNext();){
-			p = i.next();
-			if(p.getPrim().equals(s))
-				throw new Exception("id repetido");
-		}*/
-		//this.listaProd.add(new Pareja<String,ExpresionTipo>(s,e));
 	}
 	
 	public void ponProductos(Hashtable<String,ExpresionTipo> e) throws Exception {
@@ -61,13 +47,6 @@ public class Producto extends ExpresionTipo {
 	
 	public ExpresionTipo getTipoCampo(String campo) {
 		return tablaProd.get(campo);
-		/*Pareja<String,ExpresionTipo> p;
-		for(Iterator<Pareja<String,ExpresionTipo>> i = listaProd.iterator();i.hasNext();){
-			p = i.next();
-			if(p.getPrim().equals(campo))
-				return p.getSeg();
-		}
-		return null;*/
 	}
 	
 	
@@ -83,7 +62,6 @@ public class Producto extends ExpresionTipo {
 	
 	public boolean esVacio() {
 		return tablaProd.size() == 0;
-		//return listaProd.isEmpty();
 	}
 	
 	public String toStringPascal(){
@@ -100,7 +78,6 @@ public class Producto extends ExpresionTipo {
 		String s = "";
 		Set<String> colection = tablaProd.keySet(); 
 		if(funcion) {
-		//if(true){
 			ArrayList<String> lista = new ArrayList<String>();
 			for(String tipo: colection) {
 				lista.add(tipo);

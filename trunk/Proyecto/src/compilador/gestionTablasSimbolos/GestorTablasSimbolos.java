@@ -195,9 +195,6 @@ public class GestorTablasSimbolos {
 	
 	public String toString() {
 		String s = "";
-//		s += "-----------------------------------\n";
-//		s += "       TABLAS DE SIMBOLOS: \n";
-//		s += "-----------------------------------\n";
 		if(bloque_actual != null)
 			s = s + bloque_actual.toString("");
 		
@@ -335,7 +332,7 @@ public class GestorTablasSimbolos {
 		palRes.put("string", 73);
 		palRes.put("cin", 74);
 		palRes.put("cout", 75);
-		palRes.put("endl", 76); // TODO: agregar en otros sitios pertinentes !??
+		palRes.put("endl", 76);
 		palRes.put("include", 77);
 
 	}

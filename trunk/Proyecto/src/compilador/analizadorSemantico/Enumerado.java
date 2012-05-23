@@ -69,7 +69,6 @@ public class Enumerado extends ExpresionTipo {
 	}
 	
 	public String toString() {
-//		return "Enumerado con los siguientes elementos: " + elementos;
 		return "Enumerado con los siguientes elementos: " + elementosOrdenados();
 	}
 

@@ -6,7 +6,6 @@ import java.util.Iterator;
 
 
 import compilador.analizadorSemantico.ExpresionTipo;
-import compilador.analizadorSemantico.Vector;
 import compilador.gestionTablasSimbolos.EntradaTS;
 import compilador.gestionTablasSimbolos.GestorTablasSimbolos;
 import compilador.gestionTablasSimbolos.TablaSimbolos;
@@ -34,30 +33,24 @@ public class GestorSalida {
 	
 	private int numTabs;
 	
-	public static GestorSalida getGestorSalida(){//String nombre) {
+	public static GestorSalida getGestorSalida(){
 		if(instance == null) {
-			instance = new GestorSalida();//nombre);
+			instance = new GestorSalida();
 		}
 		return instance;			
 	}
 		
-	private GestorSalida(){//String nombre){
+	private GestorSalida(){
 		bufferMetodos = new ArrayList<String>();
 		resultado = "";
 		resultadoFinal = "";
-		//resultado = "PROGRAM "+nombre+";\n";	
 		bufferExpresion = new ArrayList<String>();
 		bufferPrincipal = new ArrayList<String>();
 		bufferConstantes = new ArrayList<String>();
 		modoActual = modoSalida.PROGRAMA;
 		numTabs=0;
 	}
-	
-	/*
-	public void anyadirAbuffer(String s){
-		bufferMetodos.add(s);
-	}
-	*/
+
 	
 	public modoSalida getModo(){
 		return modoActual;
@@ -82,7 +75,6 @@ public class GestorSalida {
 				bufferMetodos.add(i.next());
 		}
 		bufferExpresion = new ArrayList<String>();
-		//this.modoActual = modoSalida.FUNCION;
 	}
 	
 	public ArrayList<String> getBufferMetodos(){
@@ -94,7 +86,6 @@ public class GestorSalida {
 		GestorTablasSimbolos gestorTS = GestorTablasSimbolos.getGestorTS();
 		ArrayList<EntradaTS> al = gestorTS.getEntradasCompletas();
 		EntradaTS entrada;
-//		sumarTab();
 		for(Iterator<EntradaTS> i = al.iterator(); i.hasNext();){
 			entrada = i.next();
 			if(!entrada.esParametro() && !entrada.isConstante() ){
@@ -104,37 +95,8 @@ public class GestorSalida {
 				}else{
 					resultado += entrada.getTipo().toStringPascalDec()+";\n";
 				}
-				/*if(entrada.getTipo().esTipoBasico()){
-					switch(entrada.getTipo().getTipoBasico()){
-					case logico:
-						resultado += "BOOLEAN;\n";
-						break;
-					case caracter:
-						resultado += "CHAR;\n";
-						break;
-					case entero:
-						resultado += "INTEGER;\n";
-						break;
-					case real:
-						resultado += "FLOAT;\n";
-						break;
-					case vacio:
-						resultado += "VACIO?? ;\n";
-						break;
-					case error_tipo: 	
-						resultado += "ERROR?? ;\n";
-					}
-				}else{
-					switch(entrada.getTipo().getTipoNoBasico()){
-					case vector:
-						resultado += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"] OF "+((Vector)entrada.getTipo()).getTipoElementos().toStringPascal()+"; \n";
-					}
-				}*/
 			}
-		}
-		
-//		restarTab();
-		
+		}		
 		resultado += "\nBEGIN\n";
 		sumarTab();
 		for(Iterator<String> i = bufferMetodos.iterator(); i.hasNext();)
@@ -157,13 +119,7 @@ public class GestorSalida {
 	public int getNumTabs(){
 		return numTabs;
 	}
-	/*
-	public void emiteTabs(int num) {
-		for(int i=0; i < num; i++) {
-			resultado += "\t";
-		}
-	}
-	*/
+
 	public void emitirPrincipal(){
 		resultado += "BEGIN\n";
 		sumarTab();
@@ -183,7 +139,6 @@ public class GestorSalida {
 	}
 	
 	public void emite(String s) {
-		//resultado += " " + s;
 		switch(modoActual){
 		case FUNCION:
 			bufferMetodos.add(s);
@@ -209,7 +164,6 @@ public class GestorSalida {
 				bufferMetodos.add(tabsToString());
 			
 		}
-		//System.out.println(s);
 	}
 	
 	public void emite(ArrayList<String> al){
@@ -235,9 +189,6 @@ public class GestorSalida {
 	}
 	
 	public void emiteEnPos(int pos, String s) {
-//		String s1 = resultado.substring(0, pos);
-//		String s2 = resultado.substring(pos, resultado.length());
-//		resultado = s1 + s + s2;
 		pos = (pos < 0) ? 0 : pos;
 		if(bufferMetodos.size() == 0)
 			bufferMetodos.add(s);
@@ -298,39 +249,13 @@ public class GestorSalida {
 			entrada = i.next();
 			if(!entrada.esParametro() && !entrada.isConstante()){
 				resultadoFinal += "   "+entrada.getLexemaTrad()+": ";
-				/*if(!entrada.getNomTipoDef().equals("")){
-					res += entrada.getNomTipoDef()+";\n";
-				}else*/ if(entrada.getTipo().esTipoBasico()){
+				if(entrada.getTipo().esTipoBasico()){
 					res += entrada.getTipo().toStringPascal()+";\n";
 				}else{
 					res += entrada.getTipo().toStringPascalDec()+";\n";
 				}
 				resultadoFinal += res;
 				res = "";
-					/*switch(entrada.getTipo().getTipoBasico()){
-					case logico:
-						resultadoFinal += "BOOLEAN;\n";
-						break;
-					case caracter:
-						resultadoFinal += "CHAR;\n";
-						break;
-					case entero:
-						resultadoFinal += "INTEGER;\n";
-						break;
-					case real:
-						resultadoFinal += "FLOAT;\n";
-						break;
-					case vacio:
-						resultadoFinal += "VACIO?? ;\n";
-						break;
-					case error_tipo: 	
-						resultadoFinal += "ERROR?? ;\n";
-					}
-				}else{
-					switch(entrada.getTipo().getTipoNoBasico()){
-					case vector:
-						resultadoFinal += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"] OF "+((Vector)entrada.getTipo()).getTipoElementos().toStringPascal()+"; \n";
-					}*/
 			}
 		}
 		
@@ -349,32 +274,6 @@ public class GestorSalida {
 					}else{
 						resultadoFinal += entrada.getTipo().toStringPascalDec()+";\n";
 					}
-					/*if(entrada.getTipo().esTipoBasico()){
-						switch(entrada.getTipo().getTipoBasico()){
-						case logico:
-							resultadoFinal += "BOOLEAN;\n";
-							break;
-						case caracter:
-							resultadoFinal += "CHAR;\n";
-							break;
-						case entero:
-							resultadoFinal += "INTEGER;\n";
-							break;
-						case real:
-							resultadoFinal += "FLOAT;\n";
-							break;
-						case vacio:
-							resultadoFinal += "VACIO?? ;\n";
-							break;
-						case error_tipo: 	
-							resultadoFinal += "ERROR?? ;\n";
-						}
-					}else{
-						switch(entrada.getTipo().getTipoNoBasico()){
-						case vector:
-							resultadoFinal += "ARRAY [0.."+(((Vector)entrada.getTipo()).getLongitud()-1)+"] OF "+((Vector)entrada.getTipo()).getTipoElementos().toStringPascal()+"; \n";
-						}
-					}*/
 				}
 			}
 		}

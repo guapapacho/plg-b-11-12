@@ -161,7 +161,7 @@ public class Token {
 		 break;
 		case NUM_REAL:		s=String.valueOf((Double)atributo);
 		 break;
-		case NUM_REAL_EXPO:	s=(String)atributo; //TODO:<<--CORREGIR!!
+		case NUM_REAL_EXPO:	s=(String)atributo;
 		 break;
 		case NUM_ENTERO:	s=String.valueOf((Integer)atributo);
 		 break;
